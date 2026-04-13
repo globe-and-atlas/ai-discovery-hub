@@ -1,0 +1,394 @@
+{
+  "scanned_at": "2026-04-13T03:36:41Z",
+  "window_days": 7,
+  "videos": [
+    {
+      "title": "CuerdOS Is Not Just Another Distro! (Or Is It?)",
+      "channel": "Dot CSV",
+      "date": "2026-04-12",
+      "url": "https://www.youtube.com/watch?v=Bh4cQJ5aTUg",
+      "summary": "CuerdOS is a GNU/Linux distribution of Spanish origin focused on stability, efficiency, and performance. Today, I'm taking a look ..."
+    },
+    {
+      "title": "I Built My Own AI Trading Research Team with Claude Code",
+      "channel": "Zubair Trabzada | AI Workshop",
+      "date": "2026-04-12",
+      "url": "https://www.youtube.com/watch?v=HfEu7XPUnAU",
+      "summary": "One line installation + unlimited tech support https://skool.com/aiworkshop Download the skills zip file for free ..."
+    },
+    {
+      "title": "Gemma 4 + Ollama = FREE Claude Code Setup!",
+      "channel": "WorldofAI",
+      "date": "2026-04-12",
+      "url": "https://www.youtube.com/watch?v=eAleab2cL3I",
+      "summary": "If you want to start using OpenClaw without the headache, go to https://klausai.com/r/mWAzO and get started. You'll get FREE ..."
+    },
+    {
+      "title": "GeoSpatial File - Read &amp; view on Map with Chrome Extension",
+      "channel": "Code&Learn AI",
+      "date": "2026-04-11",
+      "url": "https://www.youtube.com/watch?v=pL1S6bRI2zo",
+      "summary": "Tired of spinning up Python scripts or QGIS just to peek at a GeoJSON file? GeoSpatial Helper is a Chrome Extension that lets you ..."
+    },
+    {
+      "title": "\ud83d\ude80Conecta QGIS con Claude AI usando MCP - Model Context Protocol",
+      "channel": "Geomatica Ambiental",
+      "date": "2026-04-11",
+      "url": "https://www.youtube.com/watch?v=U7RKIOb_F2Q",
+      "summary": "En este video aprender\u00e1s paso a paso c\u00f3mo instalar y configurar el plugin QGIS MCP, una herramienta innovadora que permite ..."
+    },
+    {
+      "title": "NASA&#39;s Artemis II mission in 20 minutes",
+      "channel": "CNN",
+      "date": "2026-04-11",
+      "url": "https://www.youtube.com/watch?v=6uOqqPupSyA",
+      "summary": "The monumental 10-day Artemis II mission, which sent four astronauts on a record-breaking flyby of the moon, has concluded."
+    },
+    {
+      "title": "Claude Mythos is too dangerous for public consumption...",
+      "channel": "Fireship",
+      "date": "2026-04-10",
+      "url": "https://www.youtube.com/watch?v=d3Qq-rkp_to",
+      "summary": "Browserbase is the simplest way to give your agents access to the whole web. Try it for free - https://browserbase.run/fireship ..."
+    },
+    {
+      "title": "Meet our team&#39;s MVP lineup",
+      "channel": "sentdex",
+      "date": "2026-04-10",
+      "url": "https://www.youtube.com/watch?v=G2li2xagzfY",
+      "summary": "Developers at Google Plex reveal their MVP picks for 2026, highlighting tools, APIs, or features that solve tough development ..."
+    },
+    {
+      "title": "I Ran Claude Code With Gemma 4 FREE Local LLM on My MacBook and PC (No API Key Needed) step by step",
+      "channel": "Tech-Practice",
+      "date": "2026-04-10",
+      "url": "https://www.youtube.com/watch?v=bxMmDlcUNZQ",
+      "summary": "Run Claude Code completely FREE using Google's brand-new Gemma 4 open-source model \u2014 no API key, no cloud, no monthly ..."
+    },
+    {
+      "title": "Stop Paying for AI \u2014 The $0 Developer Stack",
+      "channel": "Marius Urbelis",
+      "date": "2026-04-10",
+      "url": "https://www.youtube.com/watch?v=E7dktlq7HTA",
+      "summary": "You don't need to spend a dollar on AI inference to build real projects. Here's a breakdown of every free option available to ..."
+    }
+  ],
+  "tools": [
+    {
+      "name": "n8n-io/n8n",
+      "description": "Fair-code workflow automation platform with native AI capabilities. Combine visual building with custom code, self-host or cloud, 400+ integrations.",
+      "stars": 183763,
+      "url": "https://github.com/n8n-io/n8n",
+      "date": "2026-04-13",
+      "topics": [
+        "ai",
+        "apis",
+        "automation",
+        "cli",
+        "data-flow"
+      ],
+      "language": "TypeScript"
+    },
+    {
+      "name": "Significant-Gravitas/AutoGPT",
+      "description": "AutoGPT is the vision of accessible AI for everyone, to use and to build on. Our mission is to provide the tools, so that you can focus on what matters.",
+      "stars": 183354,
+      "url": "https://github.com/Significant-Gravitas/AutoGPT",
+      "date": "2026-04-13",
+      "topics": [
+        "agentic-ai",
+        "agents",
+        "ai",
+        "artificial-intelligence",
+        "autonomous-agents"
+      ],
+      "language": "Python"
+    },
+    {
+      "name": "ollama/ollama",
+      "description": "Get up and running with Kimi-K2.5, GLM-5, MiniMax, DeepSeek, gpt-oss, Qwen, Gemma and other models.",
+      "stars": 168748,
+      "url": "https://github.com/ollama/ollama",
+      "date": "2026-04-12",
+      "topics": [
+        "deepseek",
+        "gemma",
+        "gemma3",
+        "glm",
+        "go"
+      ],
+      "language": "Go"
+    },
+    {
+      "name": "f/prompts.chat",
+      "description": "f.k.a. Awesome ChatGPT Prompts. Share, discover, and collect prompts from the community. Free and open source \u2014 self-host for your organization with complete privacy.",
+      "stars": 159497,
+      "url": "https://github.com/f/prompts.chat",
+      "date": "2026-04-12",
+      "topics": [
+        "ai",
+        "artificial-intelligence",
+        "awesome-list",
+        "chatgpt",
+        "chatgpt-prompts"
+      ],
+      "language": "HTML"
+    },
+    {
+      "name": "huggingface/transformers",
+      "description": "\ud83e\udd17 Transformers: the model-definition framework for state-of-the-art machine learning models in text, vision, audio, and multimodal models, for both inference and training. ",
+      "stars": 159262,
+      "url": "https://github.com/huggingface/transformers",
+      "date": "2026-04-11",
+      "topics": [
+        "audio",
+        "deep-learning",
+        "deepseek",
+        "gemma",
+        "glm"
+      ],
+      "language": "Python"
+    },
+    {
+      "name": "affaan-m/everything-claude-code",
+      "description": "The agent harness performance optimization system. Skills, instincts, memory, security, and research-first development for Claude Code, Codex, Opencode, Cursor and beyond.",
+      "stars": 152935,
+      "url": "https://github.com/affaan-m/everything-claude-code",
+      "date": "2026-04-12",
+      "topics": [
+        "ai-agents",
+        "anthropic",
+        "claude",
+        "claude-code",
+        "developer-tools"
+      ],
+      "language": "JavaScript"
+    },
+    {
+      "name": "langchain-ai/langchain",
+      "description": "The agent engineering platform",
+      "stars": 133313,
+      "url": "https://github.com/langchain-ai/langchain",
+      "date": "2026-04-12",
+      "topics": [
+        "agents",
+        "ai",
+        "ai-agents",
+        "anthropic",
+        "chatgpt"
+      ],
+      "language": "Python"
+    },
+    {
+      "name": "open-webui/open-webui",
+      "description": "User-friendly AI Interface (Supports Ollama, OpenAI API, ...)",
+      "stars": 131488,
+      "url": "https://github.com/open-webui/open-webui",
+      "date": "2026-04-13",
+      "topics": [
+        "ai",
+        "llm",
+        "llm-ui",
+        "llm-webui",
+        "llms"
+      ],
+      "language": "Python"
+    },
+    {
+      "name": "google-gemini/gemini-cli",
+      "description": "An open-source AI agent that brings the power of Gemini directly into your terminal.",
+      "stars": 101040,
+      "url": "https://github.com/google-gemini/gemini-cli",
+      "date": "2026-04-13",
+      "topics": [
+        "ai",
+        "ai-agents",
+        "cli",
+        "gemini",
+        "gemini-api"
+      ],
+      "language": "TypeScript"
+    },
+    {
+      "name": "infiniflow/ragflow",
+      "description": "RAGFlow is a leading open-source Retrieval-Augmented Generation (RAG) engine that fuses cutting-edge RAG with Agent capabilities to create a superior context layer for LLMs",
+      "stars": 77874,
+      "url": "https://github.com/infiniflow/ragflow",
+      "date": "2026-04-13",
+      "topics": [
+        "agent",
+        "agentic",
+        "agentic-ai",
+        "agentic-workflow",
+        "ai"
+      ],
+      "language": "Python"
+    },
+    {
+      "name": "lobehub/lobehub",
+      "description": "The ultimate space for work and life \u2014 to find, build, and collaborate with agent teammates that grow with you. We are taking agent harness to the next level \u2014 enabling multi-agent collaboration, effo",
+      "stars": 75101,
+      "url": "https://github.com/lobehub/lobehub",
+      "date": "2026-04-13",
+      "topics": [
+        "agent",
+        "agent-collaboration",
+        "agent-harness",
+        "ai",
+        "chatgpt"
+      ],
+      "language": "TypeScript"
+    },
+    {
+      "name": "NousResearch/hermes-agent",
+      "description": "The agent that grows with you",
+      "stars": 68948,
+      "url": "https://github.com/NousResearch/hermes-agent",
+      "date": "2026-04-13",
+      "topics": [
+        "ai",
+        "ai-agent",
+        "ai-agents",
+        "anthropic",
+        "chatgpt"
+      ],
+      "language": "Python"
+    },
+    {
+      "name": "bytedance/deer-flow",
+      "description": "An open-source long-horizon SuperAgent harness that researches, codes, and creates. With the help of sandboxes, memories, tools, skill, subagents and message gateway, it handles different levels of ta",
+      "stars": 60867,
+      "url": "https://github.com/bytedance/deer-flow",
+      "date": "2026-04-13",
+      "topics": [
+        "agent",
+        "agentic",
+        "agentic-framework",
+        "agentic-workflow",
+        "ai"
+      ],
+      "language": "Python"
+    },
+    {
+      "name": "Mintplex-Labs/anything-llm",
+      "description": "The all-in-one AI productivity accelerator. On device and privacy first with no annoying setup or configuration.",
+      "stars": 58184,
+      "url": "https://github.com/Mintplex-Labs/anything-llm",
+      "date": "2026-04-12",
+      "topics": [
+        "ai-agents",
+        "custom-ai-agents",
+        "deepseek",
+        "kimi",
+        "llama3"
+      ],
+      "language": "JavaScript"
+    },
+    {
+      "name": "upstash/context7",
+      "description": "Context7 Platform -- Up-to-date code documentation for LLMs and AI code editors",
+      "stars": 52473,
+      "url": "https://github.com/upstash/context7",
+      "date": "2026-04-13",
+      "topics": [
+        "llm",
+        "mcp",
+        "mcp-server",
+        "vibe-coding"
+      ],
+      "language": "TypeScript"
+    }
+  ],
+  "signals": [
+    {
+      "title": "\u201cWow\u201d - my brother in silicon you are the demand curve",
+      "url": "https://www.reddit.com/r/ClaudeAI/comments/1sj5vby/wow_my_brother_in_silicon_you_are_the_demand_curve/",
+      "source": "r/ClaudeAI",
+      "date": "2026-04-12",
+      "score": 3574,
+      "comments": 73,
+      "summary": "https://i.redd.it/7y7n11qf5pug1.jpeg"
+    },
+    {
+      "title": "Anthropic: Stop shipping. Seriously.",
+      "url": "https://www.reddit.com/r/ClaudeAI/comments/1siqwmp/anthropic_stop_shipping_seriously/",
+      "source": "r/ClaudeAI",
+      "date": "2026-04-11",
+      "score": 2631,
+      "comments": 351,
+      "summary": "Hi. Claude Max user here.\n\nFirst, I want to acknowledge the work that\u2019s gone into Claude Code. I appreciate the effort. But this is a serious criticism aimed at leadership and the product team, becaus"
+    },
+    {
+      "title": "Gone but never forgotten",
+      "url": "https://www.reddit.com/r/gis/comments/1sgtfe3/gone_but_never_forgotten/",
+      "source": "r/gis",
+      "date": "2026-04-09",
+      "score": 2024,
+      "comments": 128,
+      "summary": "https://i.redd.it/lvx6c8hir6ug1.jpeg"
+    },
+    {
+      "title": "What is my purpose? \"You chase pigs.\" Oh my God.",
+      "url": "https://www.reddit.com/r/singularity/comments/1sjjayz/what_is_my_purpose_you_chase_pigs_oh_my_god/",
+      "source": "r/singularity",
+      "date": "2026-04-12",
+      "score": 1318,
+      "comments": 116,
+      "summary": "Wish I had context. "
+    },
+    {
+      "title": "this is the first time ive actually had it happen to me",
+      "url": "https://www.reddit.com/r/ClaudeAI/comments/1sj5vb4/this_is_the_first_time_ive_actually_had_it_happen/",
+      "source": "r/ClaudeAI",
+      "date": "2026-04-12",
+      "score": 1229,
+      "comments": 81,
+      "summary": "https://i.redd.it/hw2pbexc5pug1.png"
+    },
+    {
+      "title": "Anthropic's Claude Mythos isn't a sentient super-hacker, it's a sales pitch \u2014 claims of 'thousands' of severe zero-days ",
+      "url": "https://www.reddit.com/r/ClaudeAI/comments/1sjbsyg/anthropics_claude_mythos_isnt_a_sentient/",
+      "source": "r/ClaudeAI",
+      "date": "2026-04-12",
+      "score": 825,
+      "comments": 200,
+      "summary": "https://www.tomshardware.com/tech-industry/artificial-intelligence/anthropics-claude-mythos-isnt-a-sentient-super-hacker-its-a-sales-pitch-claims-of-thousands-of-severe-zero-days-rely-on-just-198-manu"
+    },
+    {
+      "title": "Workers in some Indian factories have started wearing cameras on their heads to record their movements so robots can be ",
+      "url": "https://www.reddit.com/r/singularity/comments/1sitb37/workers_in_some_indian_factories_have_started/",
+      "source": "r/singularity",
+      "date": "2026-04-11",
+      "score": 757,
+      "comments": 121,
+      "summary": "\"Big robot companies will train their humanoid robots, on movement data from Indian sweatshops \u2026 Wild \""
+    },
+    {
+      "title": "\u2018I hate working 5 days\u2019: Zoom CEO says traditional work schedules are becoming obsolete\u2014and predicts a 3-day workweek by",
+      "url": "https://www.reddit.com/r/singularity/comments/1sjh1d7/i_hate_working_5_days_zoom_ceo_says_traditional/",
+      "source": "r/singularity",
+      "date": "2026-04-12",
+      "score": 752,
+      "comments": 131,
+      "summary": "https://www.aol.com/finance/zoom-ceo-predicts-3-day-144202969.html"
+    },
+    {
+      "title": "AMD's senior director of AI thinks 'Claude has regressed' and that it 'cannot be trusted to perform complex engineering'",
+      "url": "https://www.reddit.com/r/singularity/comments/1sinatl/amds_senior_director_of_ai_thinks_claude_has/",
+      "source": "r/singularity",
+      "date": "2026-04-11",
+      "score": 689,
+      "comments": 148,
+      "summary": "https://www.pcgamer.com/software/ai/amds-senior-director-of-ai-thinks-claude-has-regressed-and-that-it-cannot-be-trusted-to-perform-complex-engineering/\n\nhttps://www.theregister.com/2026/04/06/anthrop"
+    },
+    {
+      "title": "I made a site that uses Anthropic and OpenAI data to calculate how soon your job will be replaced by AI",
+      "url": "https://www.reddit.com/r/singularity/comments/1sj0mcw/i_made_a_site_that_uses_anthropic_and_openai_data/",
+      "source": "r/singularity",
+      "date": "2026-04-11",
+      "score": 643,
+      "comments": 200,
+      "summary": "The goal was to be faithful to the facts, with a touch of humor and irony. Let me know if anything looks inaccurate.\n\n"
+    }
+  ]
+}

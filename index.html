@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Discovery Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080b12; --bg2: #0e1220; --bg3: #151c2e; --border: #252e4a;
+    --text: #e6eaf4; --text2: #8e9ab8; --text3: #58678e; --blue: #5b8af7;
+    --green: #34d89a; --yellow: #f5c842; --orange: #f97c3c;
+    --teal: #38c9d4; --purple: #7c5cfc;
+    --font-sans: 'Inter', -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-sans); padding: 40px 36px 60px; line-height: 1.4; }
+  
+  .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+  .h-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--text3); font-family: var(--font-mono); margin-bottom: 8px; }
+  .h-title { font-size: 32px; font-weight: 900; letter-spacing: -1px; background: linear-gradient(120deg,#fff 0%,#8e9ab8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 6px; }
+  .h-sub { font-size: 14px; color: var(--text2); max-width: 600px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; margin-bottom: 60px; }
+  
+  .dash-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 24px; text-decoration: none; display: block; position: relative; overflow: hidden; transition: all .2s; }
+  .dash-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--blue), var(--purple)); }
+  .dash-card:hover { border-color: rgba(91,138,247,.4); transform: translateY(-3px); box-shadow: 0 12px 24px rgba(0,0,0,.3); }
+  
+  .dash-card.latest::before { background: linear-gradient(90deg, var(--yellow), var(--orange)); }
+  .latest-pill { position: absolute; top: 18px; right: 20px; font-size: 9px; font-weight: 800; padding: 3px 8px; border-radius: 5px; background: rgba(245,200,66,.1); color: var(--yellow); letter-spacing: 0.5px; text-transform: uppercase; }
+  
+  .c-date { font-family: var(--font-mono); font-size: 10px; color: var(--text3); margin-bottom: 8px; }
+  .c-title { font-size: 18px; font-weight: 800; color: var(--text); margin-bottom: 6px; line-height: 1.2; }
+  .c-desc { font-size: 12.5px; color: var(--text2); margin-bottom: 18px; line-height: 1.5; }
+  
+  .c-meta { display: flex; gap: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+  .cm-item { display: flex; flex-direction: column; }
+  .cm-val { font-size: 20px; font-weight: 900; line-height: 1; margin-bottom: 4px; }
+  .cm-lbl { font-size: 9px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .5px; }
+
+  .nav-box { margin-top: 80px; padding: 30px; border-radius: 20px; background: var(--bg3); border: 1px dashed var(--border); }
+  .nav-title { font-size: 14px; font-weight: 800; margin-bottom: 12px; color: var(--text2); }
+  .nav-links { display: flex; gap: 20px; }
+  .nav-link { font-size: 12px; color: var(--blue); text-decoration: none; font-weight: 600; }
+  .nav-link:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <div class="h-eyebrow">Consolidated Intelligence</div>
+    <div class="h-title">AI Discovery Hub</div>
+    <div class="h-sub">The unified reference for agentic workflows, repository discovery, and market signals.</div>
+  </div>
+</div>
+
+<div class="grid">
+  <a class="dash-card latest" href="dashboards/latest.html">
+    <div class="latest-pill">Newest Edition</div>
+    <div class="c-date">April 12, 2026</div>
+    <div class="c-title">Weekly Deep-Scout</div>
+    <div class="c-desc">Consolidated analysis of 17 YouTube channels, trending GitHub repositories, and social signals.</div>
+    <div class="c-meta">
+      <div class="cm-item"><div class="cm-val" style="color:var(--blue)">12</div><div class="cm-lbl">Signals</div></div>
+      <div class="cm-item"><div class="cm-val" style="color:var(--green)">4</div><div class="cm-lbl">Adopt Now</div></div>
+      <div class="cm-item"><div class="cm-val" style="color:var(--yellow)">3</div><div class="cm-lbl">Home Picks</div></div>
+    </div>
+  </a>
+</div>
+
+<div class="nav-box">
+  <div class="nav-title">Legacy Resources</div>
+  <div class="nav-links">
+    <a href="../ai-briefings/index.html" class="nav-link">YouTube Briefing Archive</a>
+    <a href="../ai-repo-discovery/index.html" class="nav-link">Repo Discovery Archive</a>
+  </div>
+</div>
+</body>
+</html>

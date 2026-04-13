@@ -1,0 +1,450 @@
+import os
+import sys
+import json
+import argparse
+from datetime import datetime
+from pathlib import Path
+from dotenv import load_dotenv
+import anthropic
+import google.generativeai as genai
+
+# Load environment variables
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+load_dotenv(PROJECT_ROOT / ".env")
+
+# Model Backend Selection (Transparent)
+DEFAULT_MODEL = os.getenv("HUB_MODEL", "claude-3-5-sonnet-latest")
+DEFAULT_PROVIDER = os.getenv("HUB_PROVIDER", "anthropic")
+
+def get_client():
+    """Returns the appropriate LLM client based on environment config."""
+    provider = os.getenv("HUB_PROVIDER", "anthropic")
+    if provider == "anthropic":
+        return anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+    elif provider == "gemini":
+        genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+        return genai.GenerativeModel(os.getenv("HUB_MODEL", "gemini-1.5-pro"))
+    raise ValueError(f"Provider {provider} not implemented yet.")
+
+def generate_hub_content(data):
+    """
+    Consolidated prompt engine that sends mixed signal data to the LLM.
+    Returns structured JSON for the dashboard.
+    """
+    provider = os.getenv("HUB_PROVIDER", "anthropic")
+    model_name = os.getenv("HUB_MODEL", "claude-3-5-sonnet-latest")
+    
+    # Import unified prompt
+    sys.path.insert(0, str(Path(__file__).parent))
+    from prompts import build_hub_prompt
+    
+    prompt = build_hub_prompt(data)
+
+    print(f"Calling {provider} ({model_name})...")
+    
+    if provider == "anthropic":
+        client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+        response = client.messages.create(
+            model=model_name,
+            max_tokens=4000,
+            messages=[{"role": "user", "content": prompt}]
+        )
+        text = response.content[0].text
+    elif provider == "gemini":
+        genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+        model = genai.GenerativeModel(model_name)
+        response = model.generate_content(prompt)
+        text = response.text
+    else:
+        raise ValueError(f"Provider {provider} not supported.")
+    
+    # Extract JSON
+    if "```json" in text:
+        text = text.split("```json")[1].split("```")[0].strip()
+    elif "```" in text:
+        text = text.split("```")[1].split("```")[0].strip()
+    
+    return json.loads(text)
+
+def render_html(data):
+    """
+    Renders the AI Discovery Hub dashboard.
+    """
+    today = datetime.now().strftime("%B %d, %Y")
+
+    # ── Compute stats from artifacts ──────────────────────────────────────────
+    artifacts = data.get('artifacts', [])
+    n_total  = len(artifacts)
+    n_adopt  = sum(1 for a in artifacts if 'Adopt'  in a['tier'])
+    n_watch  = sum(1 for a in artifacts if 'Watch'  in a['tier'])
+    n_hype   = sum(1 for a in artifacts if 'Hype'   in a['tier'])
+    n_found  = sum(1 for a in artifacts if 'Found'  in a['tier'] or 'Foundation' in a['tier'])
+    n_home   = sum(1 for a in artifacts if 'Home'   in a.get('lens', ''))
+    n_curr   = sum(1 for a in artifacts if 'Current' in a.get('lens', '') or 'Staying' in a.get('lens', ''))
+    n_gis    = sum(1 for a in artifacts if 'GIS'    in a.get('lens', ''))
+    n_video  = sum(1 for a in artifacts if a.get('type') == 'video')
+    n_repo   = sum(1 for a in artifacts if a.get('type') == 'repo')
+    n_signal = sum(1 for a in artifacts if a.get('type') == 'signal')
+
+    def pct(n): return f"{int(n/n_total*100)}%" if n_total else "0%"
+
+    # ── Pre-render sidebar panels ─────────────────────────────────────────────
+    themes_html = "".join([f'<span class="tpill tp-{t.get("type","curr")}"><span class="tpill-dot"></span>{t["label"]}</span>' for t in data.get('themes', [])])
+
+    # Relevance bars (type breakdown)
+    bars_html = (
+        f'<div class="sig"><div class="sig-icon">🎥</div><div class="sig-lbl">Videos</div>'
+        f'<div class="sig-bar-bg"><div class="sig-bar" style="width:{pct(n_video)};background:var(--blue);"></div></div>'
+        f'<div class="sig-ct">{n_video}</div></div>'
+        f'<div class="sig"><div class="sig-icon">📦</div><div class="sig-lbl">Repos</div>'
+        f'<div class="sig-bar-bg"><div class="sig-bar" style="width:{pct(n_repo)};background:var(--purple);"></div></div>'
+        f'<div class="sig-ct">{n_repo}</div></div>'
+        f'<div class="sig"><div class="sig-icon">📰</div><div class="sig-lbl">Signals</div>'
+        f'<div class="sig-bar-bg"><div class="sig-bar" style="width:{pct(n_signal)};background:var(--teal);"></div></div>'
+        f'<div class="sig-ct">{n_signal}</div></div>'
+        f'<div class="sig"><div class="sig-icon">🏠</div><div class="sig-lbl">Home picks</div>'
+        f'<div class="sig-bar-bg"><div class="sig-bar" style="width:{pct(n_home)};background:var(--yellow);"></div></div>'
+        f'<div class="sig-ct">{n_home}</div></div>'
+        f'<div class="sig"><div class="sig-icon">🗺</div><div class="sig-lbl">GIS picks</div>'
+        f'<div class="sig-bar-bg"><div class="sig-bar" style="width:{pct(n_gis)};background:var(--green);"></div></div>'
+        f'<div class="sig-ct">{n_gis}</div></div>'
+    )
+
+    ms_classes = {'new': 'ms-new', 'watch': 'ms-watch', 'arch': 'ms-arch', 'tool': 'ms-tool', 'infra': 'ms-infra', 'design': 'ms-watch'}
+    tracker_html = "".join([
+        f'<div class="model-row">'
+        f'<div><div class="model-name">{m["name"]}</div><div class="model-co">{m["company"]} · {m["date"]}</div></div>'
+        f'<span class="model-status {ms_classes.get(m["status"], "ms-watch")}">{m["status"].upper()}</span>'
+        f'</div>'
+        for m in data.get('model_tracker', [])
+    ])
+
+    effort_cls = {'low': 'e-low', 'med': 'e-med', 'high': 'e-high'}
+    lab_html = "".join([
+        f'<div class="apply-card">'
+        f'<div class="apply-head"><div class="apply-title">{ex["title"]}</div>'
+        f'<span class="effort {effort_cls.get(ex["effort"], "e-med")}">{ex["effort"].title()} effort</span></div>'
+        f'<div class="apply-desc">{ex["desc"]}</div>'
+        f'</div>'
+        for ex in data.get('exercises', [])
+    ])
+
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Discovery Hub — {today}</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {{
+    --bg: #080b12; --bg2: #0e1220; --bg3: #151c2e; --bg4: #1d2540;
+    --border: #252e4a; --border2: #36416a; --text: #e6eaf4;
+    --text2: #8e9ab8; --text3: #58678e; --blue: #5b8af7;
+    --purple: #7c5cfc; --green: #34d89a; --orange: #f97c3c;
+    --pink: #f05d9a; --yellow: #f5c842; --teal: #38c9d4; --cyan: #4fd9f5;
+    --font-sans: 'Inter', -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }}
+  * {{ margin:0; padding:0; box-sizing:border-box; }}
+  body {{ background:var(--bg); color:var(--text); font-family:var(--font-sans); padding:26px 28px; line-height:1.5; }}
+
+  /* ── Header ── */
+  .header {{ display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; padding-bottom:20px; border-bottom:1px solid var(--border); }}
+  .h-title {{ font-size:24px; font-weight:900; letter-spacing:-.5px; background:linear-gradient(120deg,#fff 0%,#8e9ab8 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }}
+  .h-sub {{ font-size:12px; color:var(--text3); font-family:var(--font-mono); margin-top:3px; }}
+  
+  /* ── Stat row ── */
+  .stat-row {{ display:grid; grid-template-columns:repeat(6,1fr); gap:10px; margin-bottom:14px; }}
+  .sc {{ background:var(--bg2); border:1px solid var(--border); border-radius:11px; padding:13px 14px; text-align:center; }}
+  .sc-num {{ font-size:28px; font-weight:900; line-height:1; margin-bottom:3px; }}
+  .sc-lbl {{ font-size:10px; color:var(--text3); font-weight:500; }}
+  .c-blue {{ color:var(--blue); }} .c-green {{ color:var(--green); }} .c-orange {{ color:var(--orange); }}
+  .c-yellow {{ color:var(--yellow); }} .c-teal {{ color:var(--teal); }} .c-pink {{ color:var(--pink); }}
+
+  /* ── Controls ── */
+  .controls {{ margin-bottom:16px; display:flex; flex-direction:column; gap:8px; }}
+  .sort-row {{ display:flex; gap:8px; align-items:center; }}
+  .filter-row {{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }}
+  .row-lbl {{ font-size:9px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:var(--text3); font-family:var(--font-mono); width:38px; flex-shrink:0; }}
+  .sort-btn, .filter-btn {{ font-size:11px; font-weight:700; padding:4px 12px; border-radius:6px; border:1px solid var(--border); background:var(--bg2); color:var(--text3); cursor:pointer; transition:.2s; }}
+  .sort-btn.active {{ border-color:var(--blue); color:var(--text); background:rgba(91,138,247,.1); }}
+  .filter-btn.active {{ border-color:var(--text3); color:var(--text); background:rgba(255,255,255,.05); }}
+  .filter-btn.f-home.active {{ border-color:var(--yellow); color:var(--yellow); background:rgba(245,200,66,.1); }}
+  .filter-btn.f-curr.active {{ border-color:var(--blue); color:var(--blue); background:rgba(91,138,247,.1); }}
+  .filter-btn.f-gis.active  {{ border-color:var(--green); color:var(--green); background:rgba(52,216,154,.1); }}
+  .filter-btn.fb-adopt.active {{ border-color:var(--green); color:var(--green); background:rgba(52,216,154,.1); }}
+  .filter-btn.fb-watch.active {{ border-color:var(--blue); color:var(--blue); background:rgba(91,138,247,.1); }}
+  .filter-btn.fb-hype.active  {{ border-color:var(--pink); color:var(--pink); background:rgba(240,93,154,.1); }}
+  .filter-btn.fb-found.active {{ border-color:var(--yellow); color:var(--yellow); background:rgba(245,200,66,.1); }}
+
+  /* ── Artifact Cards ── */
+  .hub-grid {{ display:grid; grid-template-columns:repeat(4,1fr); gap:11px; transition:all .4s ease; }}
+  .fycard {{ background:rgba(255,255,255,.033); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:13px; display:flex; flex-direction:column; text-decoration:none; color:inherit; transition:border-color .2s, transform .2s, opacity .2s; }}
+  .fycard:hover {{ border-color:rgba(245,200,66,.35); transform:translateY(-2px); }}
+  .fycard-icon {{ font-size:20px; margin-bottom:7px; }}
+  .fycard-title {{ font-size:12.5px; font-weight:700; color:var(--text); margin-bottom:3px; line-height:1.3; }}
+  .fycard-src {{ font-size:9.5px; color:var(--text3); font-family:var(--font-mono); margin-bottom:6px; }}
+  .fycard-desc {{ font-size:11px; color:var(--text2); line-height:1.5; margin-bottom:8px; flex-grow:1; }}
+  .tag-row {{ display:flex; flex-wrap:wrap; gap:5px; }}
+  .tag {{ padding:2px 7px; border-radius:4px; font-size:9px; font-weight:700; }}
+  .t-lens {{ background:rgba(255,255,255,0.05); color:var(--text3); }}
+  .t-tier {{ border:1px solid transparent; }}
+  .t-adopt {{ color:var(--green); border-color:rgba(52,216,154,.3); }}
+  .t-watch {{ color:var(--blue); border-color:rgba(91,138,247,.3); }}
+  .t-hype  {{ color:var(--pink); border-color:rgba(240,93,154,.3); }}
+  .t-found {{ color:var(--yellow); border-color:rgba(245,200,66,.3); }}
+  .t-topic {{ background:rgba(124,92,252,.08); color:var(--purple); border:1px solid rgba(124,92,252,.2); }}
+  .fycard.hidden {{ display:none; }}
+
+  /* ── Bottom panels ── */
+  .p-pink::before  {{ background:linear-gradient(90deg,var(--pink),var(--purple)); }}
+  .p-teal::before  {{ background:linear-gradient(90deg,var(--teal),var(--cyan)); }}
+  .p-yellow::before {{ background:linear-gradient(90deg,var(--yellow),var(--orange)); }}
+  .tpill {{ display:flex; align-items:center; gap:5px; padding:5px 11px; border-radius:20px; font-size:11px; font-weight:600; border:1px solid; margin-bottom:5px; }}
+  .tpill-dot {{ width:6px; height:6px; border-radius:50%; flex-shrink:0; }}
+  .theme-wrap {{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; }}
+  .tp-curr  {{ background:rgba(91,138,247,.07);  color:var(--blue);   border-color:rgba(91,138,247,.25);  }} .tp-curr .tpill-dot  {{ background:var(--blue); }}
+  .tp-home  {{ background:rgba(245,200,66,.07);  color:var(--yellow); border-color:rgba(245,200,66,.25);  }} .tp-home .tpill-dot  {{ background:var(--yellow); }}
+  .tp-agent {{ background:rgba(249,124,60,.07);  color:var(--orange); border-color:rgba(249,124,60,.25);  }} .tp-agent .tpill-dot {{ background:var(--orange); }}
+  .tp-model {{ background:rgba(124,92,252,.07);  color:var(--purple); border-color:rgba(124,92,252,.25);  }} .tp-model .tpill-dot {{ background:var(--purple); }}
+  .tp-infra {{ background:rgba(56,201,212,.07);  color:var(--teal);   border-color:rgba(56,201,212,.25);  }} .tp-infra .tpill-dot {{ background:var(--teal); }}
+  .tp-econ  {{ background:rgba(240,93,154,.07);  color:var(--pink);   border-color:rgba(240,93,154,.25);  }} .tp-econ .tpill-dot  {{ background:var(--pink); }}
+  .tp-gis   {{ background:rgba(52,216,154,.07);  color:var(--green);  border-color:rgba(52,216,154,.25);  }} .tp-gis .tpill-dot   {{ background:var(--green); }}
+  .tp-design {{ background:rgba(56,201,212,.07); color:var(--cyan);   border-color:rgba(56,201,212,.25);  }} .tp-design .tpill-dot {{ background:var(--cyan); }}
+  .sig {{ display:flex; align-items:center; gap:9px; margin-bottom:8px; }}
+  .sig-icon {{ font-size:13px; width:18px; flex-shrink:0; text-align:center; }}
+  .sig-lbl {{ font-size:11px; color:var(--text2); flex:1; }}
+  .sig-bar-bg {{ width:80px; height:5px; background:var(--bg4); border-radius:3px; flex-shrink:0; overflow:hidden; }}
+  .sig-bar {{ height:100%; border-radius:3px; }}
+  .sig-ct {{ font-size:10px; font-family:var(--font-mono); color:var(--text3); width:14px; text-align:right; }}
+  .model-row {{ display:flex; align-items:center; justify-content:space-between; padding:7px 0; border-bottom:1px solid var(--border); }}
+  .model-row:last-child {{ border-bottom:none; }}
+  .model-name {{ font-size:12px; font-weight:700; color:var(--text); }}
+  .model-co {{ font-size:10px; color:var(--text3); font-family:var(--font-mono); }}
+  .model-status {{ font-size:9px; font-weight:700; padding:3px 8px; border-radius:20px; }}
+  .ms-new  {{ background:rgba(52,216,154,.12); color:var(--green); }}
+  .ms-watch {{ background:rgba(91,138,247,.12); color:var(--blue); }}
+  .ms-arch {{ background:rgba(124,92,252,.12); color:var(--purple); }}
+  .ms-tool {{ background:rgba(249,124,60,.12); color:var(--orange); }}
+  .ms-infra {{ background:rgba(56,201,212,.12); color:var(--teal); }}
+  .apply-card {{ background:var(--bg3); border:1px solid var(--border); border-radius:9px; padding:12px 14px; margin-bottom:9px; }}
+  .apply-card:last-child {{ margin-bottom:0; }}
+  .apply-head {{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:5px; }}
+  .apply-title {{ font-size:12px; font-weight:700; color:var(--text); flex:1; line-height:1.3; }}
+  .effort {{ font-size:8.5px; font-weight:700; padding:2px 6px; border-radius:5px; margin-left:8px; flex-shrink:0; white-space:nowrap; }}
+  .e-low  {{ background:rgba(52,216,154,.12); color:var(--green); }}
+  .e-med  {{ background:rgba(245,200,66,.12); color:var(--yellow); }}
+  .e-high {{ background:rgba(249,124,60,.12); color:var(--orange); }}
+  .apply-desc {{ font-size:10.5px; color:var(--text2); line-height:1.5; }}
+
+  /* ── Panels ── */
+  .panel {{ background:var(--bg2); border:1px solid var(--border); border-radius:13px; padding:18px 20px; position:relative; overflow:hidden; }}
+  .panel::before {{ content:''; position:absolute; top:0; left:0; right:0; height:2px; }}
+  .p-blue::before {{ background:linear-gradient(90deg,var(--blue),var(--purple)); }}
+  .plabel {{ font-size:10px; font-weight:700; letter-spacing:1.1px; text-transform:uppercase; color:var(--text3); margin-bottom:11px; }}
+
+  /* ── Layout ── */
+  .g21 {{ display:grid; grid-template-columns:2fr 1fr; gap:12px; margin-top:12px; }}
+  .g3 {{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-top:12px; }}
+
+  .footer {{ margin-top:20px; padding-top:14px; border-top:1px solid var(--border); font-size:10px; color:var(--text3); font-family:var(--font-mono); display:flex; justify-content:space-between; }}
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <div class="h-title">AI Discovery Hub</div>
+    <div class="h-sub">{today} &nbsp;·&nbsp; {n_total} signals processed</div>
+  </div>
+</div>
+
+<div class="stat-row">
+  <div class="sc"><div class="sc-num c-blue">{n_total}</div><div class="sc-lbl">Total Signals</div></div>
+  <div class="sc"><div class="sc-num c-green">{n_adopt}</div><div class="sc-lbl">✅ Adopt Now</div></div>
+  <div class="sc"><div class="sc-num c-blue">{n_watch}</div><div class="sc-lbl">👁 Watch Closely</div></div>
+  <div class="sc"><div class="sc-num c-pink">{n_hype}</div><div class="sc-lbl">🔥 Hype Check</div></div>
+  <div class="sc"><div class="sc-num c-yellow">{n_home}</div><div class="sc-lbl">🏠 Home Picks</div></div>
+  <div class="sc"><div class="sc-num c-green">{n_gis}</div><div class="sc-lbl">🗺 GIS Picks</div></div>
+</div>
+
+<div class="controls">
+  <div class="sort-row">
+    <span class="row-lbl">SORT</span>
+    <button class="sort-btn active" id="sort-tier" onclick="sortHub('tier')">By Tier Priority</button>
+    <button class="sort-btn" id="sort-date" onclick="sortHub('date')">By Recency</button>
+  </div>
+  <div class="filter-row">
+    <span class="row-lbl">LENS</span>
+    <button class="filter-btn active" id="f-all" onclick="filterHub('all')">All</button>
+    <button class="filter-btn f-home" id="f-home" onclick="filterHub('home')">🏠 Home</button>
+    <button class="filter-btn f-curr" id="f-curr" onclick="filterHub('curr')">📡 Current</button>
+    <button class="filter-btn f-gis" id="f-gis" onclick="filterHub('gis')">🗺 GIS/FME</button>
+  </div>
+  <div class="filter-row">
+    <span class="row-lbl">TIER</span>
+    <button class="filter-btn active" id="t-all" onclick="filterTier('all')">All</button>
+    <button class="filter-btn fb-adopt" id="t-adopt" onclick="filterTier('adopt')">✅ Adopt Now</button>
+    <button class="filter-btn fb-watch" id="t-watch" onclick="filterTier('watch')">👁 Watch Closely</button>
+    <button class="filter-btn fb-hype"  id="t-hype"  onclick="filterTier('hype')">🔥 Hype Check</button>
+    <button class="filter-btn fb-found" id="t-found" onclick="filterTier('found')">🏗 Foundation</button>
+  </div>
+</div>
+
+<div class="hub-grid" id="hub-grid">
+"""
+    
+    # Render cards
+    for art in data['artifacts']:
+        icon = art.get('icon', '📦')
+        tier_class = "t-adopt" if "Adopt" in art['tier'] else "t-watch" if "Watch" in art['tier'] else "t-hype" if "Hype" in art['tier'] else "t-found"
+        topics = art.get('topics', [])
+        topic_tags = "".join(f'<span class="tag t-topic">{t.replace("t-","")}</span>' for t in topics)
+        html += f"""
+  <a class="fycard" href="{art['url']}" target="_blank" rel="noopener noreferrer" data-date="{art['date']}" data-tier="{art['tier']}" data-lens="{art['lens']}">
+    <div class="fycard-icon">{icon}</div>
+    <div class="fycard-title">{art['title']}</div>
+    <div class="fycard-src">{art['source']} · {art['date']} · [{art['type'].upper()}]</div>
+    <div class="fycard-desc">{art['desc']}</div>
+    <div class="tag-row">
+      <span class="tag t-lens">{art['lens']}</span>
+      <span class="tag t-tier {tier_class}">{art['tier']}</span>
+      {topic_tags}
+    </div>
+  </a>"""
+
+    html += f"""
+</div>
+
+<div class="g3">
+  <div class="panel p-pink">
+    <div class="plabel">Weekly Themes</div>
+    <div class="theme-wrap">{themes_html}</div>
+    <div class="plabel">Signal Mix</div>
+    {bars_html}
+  </div>
+  <div class="panel p-teal">
+    <div class="plabel">Model Tracker</div>
+    {tracker_html}
+  </div>
+  <div class="panel p-yellow">
+    <div class="plabel">The Lab — Apply This Week</div>
+    {lab_html}
+  </div>
+</div>
+
+<div class="footer">
+  <div>powered by {data['metadata']['model']} · hub-v1</div>
+  <div>{today}</div>
+</div>
+
+<script>
+  let currentLens = 'all';
+  let currentTier = 'all';
+  let currentSort = 'tier';
+
+  function applyFilters() {{
+    document.querySelectorAll('#hub-grid .fycard').forEach(card => {{
+      const l = card.dataset.lens || '';
+      const t = card.dataset.tier || '';
+      const lensOk = currentLens === 'all'
+        || (currentLens === 'home' && l.includes('Home'))
+        || (currentLens === 'curr' && (l.includes('Current') || l.includes('Staying')))
+        || (currentLens === 'gis'  && l.includes('GIS'));
+      const tierOk = currentTier === 'all'
+        || (currentTier === 'adopt' && t.includes('Adopt'))
+        || (currentTier === 'watch' && t.includes('Watch'))
+        || (currentTier === 'hype'  && t.includes('Hype'))
+        || (currentTier === 'found' && (t.includes('Found') || t.includes('Foundation')));
+      card.classList.toggle('hidden', !(lensOk && tierOk));
+    }});
+  }}
+
+  function filterHub(lens) {{
+    currentLens = lens;
+    ['all','home','curr','gis'].forEach(id => document.getElementById('f-' + id).classList.remove('active'));
+    document.getElementById('f-' + lens).classList.add('active');
+    applyFilters();
+  }}
+
+  function filterTier(tier) {{
+    currentTier = tier;
+    ['all','adopt','watch','hype','found'].forEach(id => document.getElementById('t-' + id).classList.remove('active'));
+    document.getElementById('t-' + tier).classList.add('active');
+    applyFilters();
+  }}
+
+  function sortHub(method) {{
+    currentSort = method;
+    const grid = document.getElementById('hub-grid');
+    const cards = Array.from(grid.children);
+
+    document.getElementById('sort-tier').classList.toggle('active', method === 'tier');
+    document.getElementById('sort-date').classList.toggle('active', method === 'date');
+
+    const getTierVal = (tierStr) => {{
+      if (!tierStr) return 5;
+      const s = tierStr.toLowerCase();
+      if (s.includes('adopt')) return 1;
+      if (s.includes('watch')) return 2;
+      if (s.includes('hype'))  return 3;
+      if (s.includes('found')) return 4;
+      return 5;
+    }};
+
+    cards.sort((a, b) => method === 'date'
+      ? new Date(b.dataset.date) - new Date(a.dataset.date)
+      : getTierVal(a.dataset.tier) - getTierVal(b.dataset.tier));
+
+    grid.innerHTML = '';
+    cards.forEach(card => grid.appendChild(card));
+    applyFilters();
+  }}
+
+  document.addEventListener('DOMContentLoaded', () => sortHub('tier'));
+</script>
+</body>
+</html>"""
+    return html
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--input", type=str, default="data/hub-input.json", help="Path to unified input data")
+    parser.add_argument("--output", type=str, default="dashboards", help="Output directory")
+    args = parser.parse_args()
+
+    input_path = PROJECT_ROOT / args.input
+    if not input_path.exists():
+        print(f"Error: Input file {input_path} not found.")
+        sys.exit(1)
+
+    with open(input_path, "r") as f:
+        input_data = json.load(f)
+
+    print("Generating Unified Hub Content...")
+    content = generate_hub_content(input_data)
+    
+    # Add generation metadata
+    content["metadata"] = {
+        "generated_at": datetime.now().isoformat(),
+        "model": DEFAULT_MODEL,
+        "provider": DEFAULT_PROVIDER
+    }
+
+    print("Rendering HTML...")
+    html = render_html(content)
+    
+    today_iso = datetime.now().strftime("%Y-%m-%d")
+    output_dir_path = Path(args.output)
+    output_path = output_dir_path / f"AI-Discovery-Hub-{today_iso}.html"
+    output_path.write_text(html, encoding="utf-8")
+    
+    # Also create latest.html
+    latest_path = output_dir_path / "latest.html"
+    latest_path.write_text(html, encoding="utf-8")
+    
+    print(f"Dashboard created: {output_path}")
+    print(f"Latest dashboard updated: {latest_path}")
+
+if __name__ == "__main__":
+    main()
