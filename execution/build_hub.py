@@ -156,7 +156,8 @@ def render_html(data):
   
   /* ── Stat row ── */
   .stat-row {{ display:grid; grid-template-columns:repeat(6,1fr); gap:10px; margin-bottom:14px; }}
-  .sc {{ background:var(--bg2); border:1px solid var(--border); border-radius:11px; padding:13px 14px; text-align:center; }}
+  .sc {{ background:var(--bg2); border:1px solid var(--border); border-radius:11px; padding:13px 14px; text-align:center; transition:.15s; }}
+  .sc:hover {{ border-color:var(--border2); background:var(--bg3); }}
   .sc-num {{ font-size:28px; font-weight:900; line-height:1; margin-bottom:3px; }}
   .sc-lbl {{ font-size:10px; color:var(--text3); font-weight:500; }}
   .c-blue {{ color:var(--blue); }} .c-green {{ color:var(--green); }} .c-orange {{ color:var(--orange); }}
@@ -260,12 +261,12 @@ def render_html(data):
 </div>
 
 <div class="stat-row">
-  <div class="sc"><div class="sc-num c-blue">{n_total}</div><div class="sc-lbl">Total Signals</div></div>
-  <div class="sc"><div class="sc-num c-green">{n_adopt}</div><div class="sc-lbl">✅ Adopt Now</div></div>
-  <div class="sc"><div class="sc-num c-blue">{n_watch}</div><div class="sc-lbl">👁 Watch Closely</div></div>
-  <div class="sc"><div class="sc-num c-pink">{n_hype}</div><div class="sc-lbl">🔥 Hype Check</div></div>
-  <div class="sc"><div class="sc-num c-yellow">{n_home}</div><div class="sc-lbl">🏠 Home Picks</div></div>
-  <div class="sc"><div class="sc-num c-green">{n_gis}</div><div class="sc-lbl">🗺 GIS Picks</div></div>
+  <div class="sc" onclick="filterTier('all');filterHub('all')" style="cursor:pointer"><div class="sc-num c-blue">{n_total}</div><div class="sc-lbl">Total Signals</div></div>
+  <div class="sc" onclick="filterTier('adopt')" style="cursor:pointer"><div class="sc-num c-green">{n_adopt}</div><div class="sc-lbl">✅ Adopt Now</div></div>
+  <div class="sc" onclick="filterTier('watch')" style="cursor:pointer"><div class="sc-num c-blue">{n_watch}</div><div class="sc-lbl">👁 Watch Closely</div></div>
+  <div class="sc" onclick="filterTier('hype')" style="cursor:pointer"><div class="sc-num c-pink">{n_hype}</div><div class="sc-lbl">🔥 Hype Check</div></div>
+  <div class="sc" onclick="filterHub('home')" style="cursor:pointer"><div class="sc-num c-yellow">{n_home}</div><div class="sc-lbl">🏠 Home Picks</div></div>
+  <div class="sc" onclick="filterHub('gis')" style="cursor:pointer"><div class="sc-num c-green">{n_gis}</div><div class="sc-lbl">🗺 GIS Picks</div></div>
 </div>
 
 <div class="controls">
@@ -297,11 +298,13 @@ def render_html(data):
     # Render cards
     for art in data['artifacts']:
         icon = art.get('icon', '📦')
-        tier_class = "t-adopt" if "Adopt" in art['tier'] else "t-watch" if "Watch" in art['tier'] else "t-hype" if "Hype" in art['tier'] else "t-found"
+        tier_key  = "adopt" if "Adopt" in art['tier'] else "watch" if "Watch" in art['tier'] else "hype" if "Hype" in art['tier'] else "found"
+        tier_class = f"t-{tier_key}"
+        lens_key  = "home" if "Home" in art.get('lens','') else "gis" if "GIS" in art.get('lens','') else "curr"
         topics = art.get('topics', [])
         topic_tags = "".join(f'<span class="tag t-topic">{t.replace("t-","")}</span>' for t in topics)
         html += f"""
-  <a class="fycard" href="{art['url']}" target="_blank" rel="noopener noreferrer" data-date="{art['date']}" data-tier="{art['tier']}" data-lens="{art['lens']}">
+  <a class="fycard" href="{art['url']}" target="_blank" rel="noopener noreferrer" data-date="{art['date']}" data-tier="{art['tier']}" data-tierkey="{tier_key}" data-lens="{art['lens']}" data-lenskey="{lens_key}">
     <div class="fycard-icon">{icon}</div>
     <div class="fycard-title">{art['title']}</div>
     <div class="fycard-src">{art['source']} · {art['date']} · [{art['type'].upper()}]</div>
@@ -345,17 +348,10 @@ def render_html(data):
 
   function applyFilters() {{
     document.querySelectorAll('#hub-grid .fycard').forEach(card => {{
-      const l = card.dataset.lens || '';
-      const t = card.dataset.tier || '';
-      const lensOk = currentLens === 'all'
-        || (currentLens === 'home' && l.includes('Home'))
-        || (currentLens === 'curr' && (l.includes('Current') || l.includes('Staying')))
-        || (currentLens === 'gis'  && l.includes('GIS'));
-      const tierOk = currentTier === 'all'
-        || (currentTier === 'adopt' && t.includes('Adopt'))
-        || (currentTier === 'watch' && t.includes('Watch'))
-        || (currentTier === 'hype'  && t.includes('Hype'))
-        || (currentTier === 'found' && (t.includes('Found') || t.includes('Foundation')));
+      const lk = card.dataset.lenskey || '';
+      const tk = card.dataset.tierkey || '';
+      const lensOk = currentLens === 'all' || lk === currentLens;
+      const tierOk = currentTier === 'all' || tk === currentTier;
       card.classList.toggle('hidden', !(lensOk && tierOk));
     }});
   }}
