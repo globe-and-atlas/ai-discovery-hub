@@ -170,7 +170,15 @@ def render_html(data, duration_map=None):
   .sort-row {{ display:flex; gap:8px; align-items:center; }}
   .filter-row {{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }}
   .row-lbl {{ font-size:9px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:var(--text3); font-family:var(--font-mono); width:38px; flex-shrink:0; }}
-  .sort-btn, .filter-btn {{ font-size:11px; font-weight:700; padding:4px 12px; border-radius:6px; border:1px solid var(--border); background:var(--bg2); color:var(--text3); cursor:pointer; transition:.2s; }}
+  .sort-btn, .filter-btn {{ font-size:11px; font-weight:700; padding:4px 12px; border-radius:6px; border:1px solid var(--border); background:var(--bg2); color:var(--text3); cursor:pointer; transition:.2s; position:relative; }}
+  .filter-btn[data-tip]:hover::after {{
+    content:attr(data-tip);
+    position:absolute; bottom:calc(100% + 7px); left:50%; transform:translateX(-50%);
+    background:var(--bg4); border:1px solid var(--border2); color:var(--text2);
+    font-size:10.5px; font-weight:400; line-height:1.45; padding:7px 11px; border-radius:7px;
+    white-space:nowrap; pointer-events:none; z-index:200; font-family:var(--font-sans);
+    box-shadow:0 4px 16px rgba(0,0,0,.4);
+  }}
   .sort-btn.active {{ border-color:var(--blue); color:var(--text); background:rgba(91,138,247,.1); }}
   .filter-btn.active {{ border-color:var(--text3); color:var(--text); background:rgba(255,255,255,.05); }}
   .filter-btn.f-home.active {{ border-color:var(--yellow); color:var(--yellow); background:rgba(245,200,66,.1); }}
@@ -284,18 +292,18 @@ def render_html(data, duration_map=None):
   <div class="filter-row">
     <span class="row-lbl">LENS</span>
     <button class="filter-btn active" id="f-all" onclick="filterHub('all')">All</button>
-    <button class="filter-btn f-home" id="f-home" onclick="filterHub('home')">🏠 Home</button>
-    <button class="filter-btn f-curr" id="f-curr" onclick="filterHub('curr')">📡 Current</button>
-    <button class="filter-btn f-gis" id="f-gis" onclick="filterHub('gis')">🗺 GIS/FME</button>
+    <button class="filter-btn f-home" id="f-home" onclick="filterHub('home')" data-tip="Personal projects, home automation, local tools, budgeting">🏠 Home</button>
+    <button class="filter-btn f-curr" id="f-curr" onclick="filterHub('curr')" data-tip="AI model releases, industry news, tooling updates, research">📡 Current</button>
+    <button class="filter-btn f-gis"  id="f-gis"  onclick="filterHub('gis')"  data-tip="Geospatial AI, satellite imagery, FME/QGIS, spatial data pipelines">🗺 GIS/FME</button>
   </div>
   <div class="filter-row">
     <span class="row-lbl">TIER</span>
     <button class="filter-btn active" id="t-all" onclick="filterTier('all')">All</button>
-    <button class="filter-btn fb-adopt" id="t-adopt" onclick="filterTier('adopt')">✅ Adopt Now</button>
-    <button class="filter-btn fb-watch" id="t-watch" onclick="filterTier('watch')">👁 Watch Closely</button>
-    <button class="filter-btn fb-hype"  id="t-hype"  onclick="filterTier('hype')">🔥 Hype Check</button>
-    <button class="filter-btn fb-found" id="t-found" onclick="filterTier('found')">🏗 Foundation</button>
-    <button class="filter-btn fb-radar" id="t-radar" onclick="filterTier('radar')">🌱 On Radar</button>
+    <button class="filter-btn fb-adopt" id="t-adopt" onclick="filterTier('adopt')" data-tip="High ROI — ready to use today, clear practical value">✅ Adopt Now</button>
+    <button class="filter-btn fb-watch" id="t-watch" onclick="filterTier('watch')" data-tip="Important signal — worth evaluating soon, not quite ready to act">👁 Watch Closely</button>
+    <button class="filter-btn fb-hype"  id="t-hype"  onclick="filterTier('hype')"  data-tip="Viral or contested — interesting but possibly noise, verify before acting">🔥 Hype Check</button>
+    <button class="filter-btn fb-found" id="t-found" onclick="filterTier('found')" data-tip="Core infrastructure or concept — foundational knowledge worth understanding">🏗 Foundation</button>
+    <button class="filter-btn fb-radar" id="t-radar" onclick="filterTier('radar')" data-tip="Early traction or niche signal — not proven yet, but watch if it gains momentum">🌱 On Radar</button>
   </div>
 </div>
 
