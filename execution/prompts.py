@@ -37,6 +37,7 @@ def build_hub_prompt(data: dict) -> str:
        - 👁 Watch Closely: Important signal, check repo health or more videos.
        - 🔥 Hype Check: Viral/contested, interesting but possibly noise.
        - 🏗 Foundation: Essential infrastructure or learning concepts.
+       - 🌱 On Radar: Periphery signal — early traction, niche, or emerging. Not proven yet but worth tracking in case it pops.
 
     3. TYPE: 'video', 'repo', or 'signal'.
 
@@ -68,7 +69,7 @@ def build_hub_prompt(data: dict) -> str:
           "url": str,
           "desc": str,
           "lens": "🏠 Home Hobbyist|📡 Staying Current|🗺 GIS/FME",
-          "tier": "✅ Adopt Now|👁 Watch Closely|🔥 Hype Check|🏗 Foundation",
+          "tier": "✅ Adopt Now|👁 Watch Closely|🔥 Hype Check|🏗 Foundation|🌱 On Radar",
           "topics": [str],
           "date": "YYYY-MM-DD",
           "icon": str
@@ -80,9 +81,9 @@ def build_hub_prompt(data: dict) -> str:
     }}
 
     CONSTRAINTS:
-    - Total artifacts: exactly 12 items.
-    - Mix: At least 4 videos, 4 repos, and 2 signals.
-    - Sorting: Order them by Tier Priority (Adopt -> Watch -> Hype -> Found).
+    - Total artifacts: exactly 18 items.
+    - Mix: At least 5 videos, 5 repos, and 3 signals. At least 3 items must be "🌱 On Radar" tier.
+    - Sorting: Order them by Tier Priority (Adopt -> Watch -> Hype -> Found -> On Radar).
     - ALL output (titles, descriptions, themes, exercises, model names) MUST be in English only. Translate any non-English titles or summaries from the input.
     - Output ONLY the JSON. No markdown fences.
     """

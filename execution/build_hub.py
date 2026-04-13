@@ -46,7 +46,7 @@ def generate_hub_content(data):
         client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
         response = client.messages.create(
             model=model_name,
-            max_tokens=4000,
+            max_tokens=7000,
             messages=[{"role": "user", "content": prompt}]
         )
         text = response.content[0].text
@@ -79,6 +79,7 @@ def render_html(data):
     n_watch  = sum(1 for a in artifacts if 'Watch'  in a['tier'])
     n_hype   = sum(1 for a in artifacts if 'Hype'   in a['tier'])
     n_found  = sum(1 for a in artifacts if 'Found'  in a['tier'] or 'Foundation' in a['tier'])
+    n_radar  = sum(1 for a in artifacts if 'Radar'  in a['tier'])
     n_home   = sum(1 for a in artifacts if 'Home'   in a.get('lens', ''))
     n_curr   = sum(1 for a in artifacts if 'Current' in a.get('lens', '') or 'Staying' in a.get('lens', ''))
     n_gis    = sum(1 for a in artifacts if 'GIS'    in a.get('lens', ''))
@@ -155,7 +156,7 @@ def render_html(data):
   .h-sub {{ font-size:12px; color:var(--text3); font-family:var(--font-mono); margin-top:3px; }}
   
   /* ── Stat row ── */
-  .stat-row {{ display:grid; grid-template-columns:repeat(6,1fr); gap:10px; margin-bottom:14px; }}
+  .stat-row {{ display:grid; grid-template-columns:repeat(7,1fr); gap:10px; margin-bottom:14px; }}
   .sc {{ background:var(--bg2); border:1px solid var(--border); border-radius:11px; padding:13px 14px; text-align:center; transition:.15s; }}
   .sc:hover {{ border-color:var(--border2); background:var(--bg3); }}
   .sc-num {{ font-size:28px; font-weight:900; line-height:1; margin-bottom:3px; }}
@@ -178,6 +179,7 @@ def render_html(data):
   .filter-btn.fb-watch.active {{ border-color:var(--blue); color:var(--blue); background:rgba(91,138,247,.1); }}
   .filter-btn.fb-hype.active  {{ border-color:var(--pink); color:var(--pink); background:rgba(240,93,154,.1); }}
   .filter-btn.fb-found.active {{ border-color:var(--yellow); color:var(--yellow); background:rgba(245,200,66,.1); }}
+  .filter-btn.fb-radar.active {{ border-color:var(--teal);   color:var(--teal);   background:rgba(56,201,212,.1); }}
 
   /* ── Artifact Cards ── */
   .hub-grid {{ display:grid; grid-template-columns:repeat(4,1fr); gap:11px; transition:all .4s ease; }}
@@ -195,6 +197,7 @@ def render_html(data):
   .t-watch {{ color:var(--blue); border-color:rgba(91,138,247,.3); }}
   .t-hype  {{ color:var(--pink); border-color:rgba(240,93,154,.3); }}
   .t-found {{ color:var(--yellow); border-color:rgba(245,200,66,.3); }}
+  .t-radar {{ color:var(--teal);   border-color:rgba(56,201,212,.3); }}
   .t-topic {{ background:rgba(124,92,252,.08); color:var(--purple); border:1px solid rgba(124,92,252,.2); }}
   .fycard.hidden {{ display:none; }}
 
@@ -265,6 +268,7 @@ def render_html(data):
   <div class="sc" onclick="filterTier('adopt')" style="cursor:pointer"><div class="sc-num c-green">{n_adopt}</div><div class="sc-lbl">✅ Adopt Now</div></div>
   <div class="sc" onclick="filterTier('watch')" style="cursor:pointer"><div class="sc-num c-blue">{n_watch}</div><div class="sc-lbl">👁 Watch Closely</div></div>
   <div class="sc" onclick="filterTier('hype')" style="cursor:pointer"><div class="sc-num c-pink">{n_hype}</div><div class="sc-lbl">🔥 Hype Check</div></div>
+  <div class="sc" onclick="filterTier('radar')" style="cursor:pointer"><div class="sc-num c-teal">{n_radar}</div><div class="sc-lbl">🌱 On Radar</div></div>
   <div class="sc" onclick="filterHub('home')" style="cursor:pointer"><div class="sc-num c-yellow">{n_home}</div><div class="sc-lbl">🏠 Home Picks</div></div>
   <div class="sc" onclick="filterHub('gis')" style="cursor:pointer"><div class="sc-num c-green">{n_gis}</div><div class="sc-lbl">🗺 GIS Picks</div></div>
 </div>
@@ -289,6 +293,7 @@ def render_html(data):
     <button class="filter-btn fb-watch" id="t-watch" onclick="filterTier('watch')">👁 Watch Closely</button>
     <button class="filter-btn fb-hype"  id="t-hype"  onclick="filterTier('hype')">🔥 Hype Check</button>
     <button class="filter-btn fb-found" id="t-found" onclick="filterTier('found')">🏗 Foundation</button>
+    <button class="filter-btn fb-radar" id="t-radar" onclick="filterTier('radar')">🌱 On Radar</button>
   </div>
 </div>
 
@@ -298,7 +303,7 @@ def render_html(data):
     # Render cards
     for art in data['artifacts']:
         icon = art.get('icon', '📦')
-        tier_key  = "adopt" if "Adopt" in art['tier'] else "watch" if "Watch" in art['tier'] else "hype" if "Hype" in art['tier'] else "found"
+        tier_key  = "adopt" if "Adopt" in art['tier'] else "watch" if "Watch" in art['tier'] else "hype" if "Hype" in art['tier'] else "radar" if "Radar" in art['tier'] else "found"
         tier_class = f"t-{tier_key}"
         lens_key  = "home" if "Home" in art.get('lens','') else "gis" if "GIS" in art.get('lens','') else "curr"
         topics = art.get('topics', [])
@@ -365,7 +370,7 @@ def render_html(data):
 
   function filterTier(tier) {{
     currentTier = tier;
-    ['all','adopt','watch','hype','found'].forEach(id => document.getElementById('t-' + id).classList.remove('active'));
+    ['all','adopt','watch','hype','found','radar'].forEach(id => document.getElementById('t-' + id).classList.remove('active'));
     document.getElementById('t-' + tier).classList.add('active');
     applyFilters();
   }}
