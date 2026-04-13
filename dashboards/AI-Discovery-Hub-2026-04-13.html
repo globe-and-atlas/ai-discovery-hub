@@ -37,7 +37,15 @@
   .sort-row { display:flex; gap:8px; align-items:center; }
   .filter-row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
   .row-lbl { font-size:9px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:var(--text3); font-family:var(--font-mono); width:38px; flex-shrink:0; }
-  .sort-btn, .filter-btn { font-size:11px; font-weight:700; padding:4px 12px; border-radius:6px; border:1px solid var(--border); background:var(--bg2); color:var(--text3); cursor:pointer; transition:.2s; }
+  .sort-btn, .filter-btn { font-size:11px; font-weight:700; padding:4px 12px; border-radius:6px; border:1px solid var(--border); background:var(--bg2); color:var(--text3); cursor:pointer; transition:.2s; position:relative; }
+  .filter-btn[data-tip]:hover::after {
+    content:attr(data-tip);
+    position:absolute; bottom:calc(100% + 7px); left:50%; transform:translateX(-50%);
+    background:var(--bg4); border:1px solid var(--border2); color:var(--text2);
+    font-size:10.5px; font-weight:400; line-height:1.45; padding:7px 11px; border-radius:7px;
+    white-space:nowrap; pointer-events:none; z-index:200; font-family:var(--font-sans);
+    box-shadow:0 4px 16px rgba(0,0,0,.4);
+  }
   .sort-btn.active { border-color:var(--blue); color:var(--text); background:rgba(91,138,247,.1); }
   .filter-btn.active { border-color:var(--text3); color:var(--text); background:rgba(255,255,255,.05); }
   .filter-btn.f-home.active { border-color:var(--yellow); color:var(--yellow); background:rgba(245,200,66,.1); }
@@ -128,15 +136,15 @@
 <div class="header">
   <div>
     <div class="h-title">AI Discovery Hub</div>
-    <div class="h-sub">April 13, 2026 &nbsp;·&nbsp; 17 signals processed</div>
+    <div class="h-sub">April 13, 2026 &nbsp;·&nbsp; 18 signals processed</div>
   </div>
 </div>
 
 <div class="stat-row">
-  <div class="sc" onclick="filterTier('all');filterHub('all')" style="cursor:pointer"><div class="sc-num c-blue">17</div><div class="sc-lbl">Total Signals</div></div>
-  <div class="sc" onclick="filterTier('adopt')" style="cursor:pointer"><div class="sc-num c-green">5</div><div class="sc-lbl">✅ Adopt Now</div></div>
+  <div class="sc" onclick="filterTier('all');filterHub('all')" style="cursor:pointer"><div class="sc-num c-blue">18</div><div class="sc-lbl">Total Signals</div></div>
+  <div class="sc" onclick="filterTier('adopt')" style="cursor:pointer"><div class="sc-num c-green">6</div><div class="sc-lbl">✅ Adopt Now</div></div>
   <div class="sc" onclick="filterTier('watch')" style="cursor:pointer"><div class="sc-num c-blue">3</div><div class="sc-lbl">👁 Watch Closely</div></div>
-  <div class="sc" onclick="filterTier('hype')" style="cursor:pointer"><div class="sc-num c-pink">1</div><div class="sc-lbl">🔥 Hype Check</div></div>
+  <div class="sc" onclick="filterTier('hype')" style="cursor:pointer"><div class="sc-num c-pink">2</div><div class="sc-lbl">🔥 Hype Check</div></div>
   <div class="sc" onclick="filterTier('radar')" style="cursor:pointer"><div class="sc-num c-teal">3</div><div class="sc-lbl">🌱 On Radar</div></div>
   <div class="sc" onclick="filterHub('home')" style="cursor:pointer"><div class="sc-num c-yellow">6</div><div class="sc-lbl">🏠 Home Picks</div></div>
   <div class="sc" onclick="filterHub('gis')" style="cursor:pointer"><div class="sc-num c-green">2</div><div class="sc-lbl">🗺 GIS Picks</div></div>
@@ -151,28 +159,28 @@
   <div class="filter-row">
     <span class="row-lbl">LENS</span>
     <button class="filter-btn active" id="f-all" onclick="filterHub('all')">All</button>
-    <button class="filter-btn f-home" id="f-home" onclick="filterHub('home')">🏠 Home</button>
-    <button class="filter-btn f-curr" id="f-curr" onclick="filterHub('curr')">📡 Current</button>
-    <button class="filter-btn f-gis" id="f-gis" onclick="filterHub('gis')">🗺 GIS/FME</button>
+    <button class="filter-btn f-home" id="f-home" onclick="filterHub('home')" data-tip="Personal projects, home automation, local tools, budgeting">🏠 Home</button>
+    <button class="filter-btn f-curr" id="f-curr" onclick="filterHub('curr')" data-tip="AI model releases, industry news, tooling updates, research">📡 Current</button>
+    <button class="filter-btn f-gis"  id="f-gis"  onclick="filterHub('gis')"  data-tip="Geospatial AI, satellite imagery, FME/QGIS, spatial data pipelines">🗺 GIS/FME</button>
   </div>
   <div class="filter-row">
     <span class="row-lbl">TIER</span>
     <button class="filter-btn active" id="t-all" onclick="filterTier('all')">All</button>
-    <button class="filter-btn fb-adopt" id="t-adopt" onclick="filterTier('adopt')">✅ Adopt Now</button>
-    <button class="filter-btn fb-watch" id="t-watch" onclick="filterTier('watch')">👁 Watch Closely</button>
-    <button class="filter-btn fb-hype"  id="t-hype"  onclick="filterTier('hype')">🔥 Hype Check</button>
-    <button class="filter-btn fb-found" id="t-found" onclick="filterTier('found')">🏗 Foundation</button>
-    <button class="filter-btn fb-radar" id="t-radar" onclick="filterTier('radar')">🌱 On Radar</button>
+    <button class="filter-btn fb-adopt" id="t-adopt" onclick="filterTier('adopt')" data-tip="High ROI — ready to use today, clear practical value">✅ Adopt Now</button>
+    <button class="filter-btn fb-watch" id="t-watch" onclick="filterTier('watch')" data-tip="Important signal — worth evaluating soon, not quite ready to act">👁 Watch Closely</button>
+    <button class="filter-btn fb-hype"  id="t-hype"  onclick="filterTier('hype')"  data-tip="Viral or contested — interesting but possibly noise, verify before acting">🔥 Hype Check</button>
+    <button class="filter-btn fb-found" id="t-found" onclick="filterTier('found')" data-tip="Core infrastructure or concept — foundational knowledge worth understanding">🏗 Foundation</button>
+    <button class="filter-btn fb-radar" id="t-radar" onclick="filterTier('radar')" data-tip="Early traction or niche signal — not proven yet, but watch if it gains momentum">🌱 On Radar</button>
   </div>
 </div>
 
 <div class="hub-grid" id="hub-grid">
 
   <a class="fycard" href="https://www.youtube.com/watch?v=U7RKIOb_F2Q" target="_blank" rel="noopener noreferrer" data-date="2026-04-11" data-tier="✅ Adopt Now" data-tierkey="adopt" data-lens="🗺 GIS/FME" data-lenskey="gis">
-    <div class="fycard-icon">🗺</div>
+    <div class="fycard-icon">🌍</div>
     <div class="fycard-title">Connect QGIS with Claude AI using MCP - Model Context Protocol</div>
     <div class="fycard-src"><span>Geomatica Ambiental · 2026-04-11</span><span class="vid-dur">⏱ 17:55</span></div>
-    <div class="fycard-desc">Step-by-step tutorial on installing and configuring the QGIS MCP plugin to integrate Claude AI directly into QGIS workflows. Bridges geospatial analysis with agentic AI capabilities for spatial data processing.</div>
+    <div class="fycard-desc">Step-by-step tutorial installing and configuring the QGIS MCP plugin to integrate Claude AI directly into QGIS workflows. Critical for GIS practitioners adopting AI agents for spatial automation.</div>
     <div class="tag-row">
       <span class="tag t-lens">🗺 GIS/FME</span>
       <span class="tag t-tier t-adopt">✅ Adopt Now</span>
@@ -180,32 +188,21 @@
     </div>
   </a>
   <a class="fycard" href="https://www.youtube.com/watch?v=pL1S6bRI2zo" target="_blank" rel="noopener noreferrer" data-date="2026-04-11" data-tier="✅ Adopt Now" data-tierkey="adopt" data-lens="🗺 GIS/FME" data-lenskey="gis">
-    <div class="fycard-icon">🗺</div>
+    <div class="fycard-icon">🗺️</div>
     <div class="fycard-title">GeoSpatial File - Read & view on Map with Chrome Extension</div>
     <div class="fycard-src"><span>Code&Learn AI · 2026-04-11</span><span class="vid-dur">⏱ 0:22</span></div>
-    <div class="fycard-desc">Chrome extension that eliminates the need to spin up QGIS or Python scripts for quick GeoJSON inspection and visualization. Quick utility for geospatial practitioners wanting frictionless file exploration.</div>
+    <div class="fycard-desc">Chrome extension for quick GeoJSON inspection without spinning up Python or QGIS. Lightweight utility for rapid geospatial data exploration and validation.</div>
     <div class="tag-row">
       <span class="tag t-lens">🗺 GIS/FME</span>
       <span class="tag t-tier t-adopt">✅ Adopt Now</span>
-      <span class="tag t-topic">geoai</span>
-    </div>
-  </a>
-  <a class="fycard" href="https://www.youtube.com/watch?v=eAleab2cL3I" target="_blank" rel="noopener noreferrer" data-date="2026-04-12" data-tier="✅ Adopt Now" data-tierkey="adopt" data-lens="🏠 Home Hobbyist" data-lenskey="home">
-    <div class="fycard-icon">🏠</div>
-    <div class="fycard-title">Gemma 4 + Ollama = FREE Claude Code Setup!</div>
-    <div class="fycard-src"><span>WorldofAI · 2026-04-12</span><span class="vid-dur">⏱ 11:36</span></div>
-    <div class="fycard-desc">Demonstrates how to run Claude Code-like functionality locally using Google's Gemma 4 model with Ollama, eliminating API costs and cloud dependencies. Practical setup for budget-conscious developers.</div>
-    <div class="tag-row">
-      <span class="tag t-lens">🏠 Home Hobbyist</span>
-      <span class="tag t-tier t-adopt">✅ Adopt Now</span>
-      <span class="tag t-topic">claude</span><span class="tag t-topic">local</span>
+      <span class="tag t-topic">geoai</span><span class="tag t-topic">data</span>
     </div>
   </a>
   <a class="fycard" href="https://www.youtube.com/watch?v=bxMmDlcUNZQ" target="_blank" rel="noopener noreferrer" data-date="2026-04-10" data-tier="✅ Adopt Now" data-tierkey="adopt" data-lens="🏠 Home Hobbyist" data-lenskey="home">
-    <div class="fycard-icon">🏠</div>
-    <div class="fycard-title">I Ran Claude Code With Gemma 4 FREE Local LLM on My MacBook and PC</div>
+    <div class="fycard-icon">💻</div>
+    <div class="fycard-title">I Ran Claude Code With Gemma 4 FREE Local LLM on My MacBook and PC (No API Key Needed)</div>
     <div class="fycard-src"><span>Tech-Practice · 2026-04-10</span><span class="vid-dur">⏱ 12:28</span></div>
-    <div class="fycard-desc">Step-by-step walkthrough of running Claude Code entirely locally using Gemma 4 without API keys or subscriptions. Emphasizes no-cost, self-hosted agent code generation across macOS and Windows.</div>
+    <div class="fycard-desc">Practical walkthrough of running Claude Code-style agents locally using Google's Gemma 4 model with Ollama. Zero-cost alternative to API-based workflows.</div>
     <div class="tag-row">
       <span class="tag t-lens">🏠 Home Hobbyist</span>
       <span class="tag t-tier t-adopt">✅ Adopt Now</span>
@@ -213,146 +210,168 @@
     </div>
   </a>
   <a class="fycard" href="https://www.youtube.com/watch?v=E7dktlq7HTA" target="_blank" rel="noopener noreferrer" data-date="2026-04-10" data-tier="✅ Adopt Now" data-tierkey="adopt" data-lens="🏠 Home Hobbyist" data-lenskey="home">
-    <div class="fycard-icon">🏠</div>
+    <div class="fycard-icon">💰</div>
     <div class="fycard-title">Stop Paying for AI — The $0 Developer Stack</div>
     <div class="fycard-src"><span>Marius Urbelis · 2026-04-10</span><span class="vid-dur">⏱ 7:48</span></div>
-    <div class="fycard-desc">Comprehensive breakdown of free inference options and open-source tools for building real AI projects without cloud subscription costs. Resource map for cost-conscious builders.</div>
+    <div class="fycard-desc">Comprehensive breakdown of free inference options and open-source LLM stacks for building AI projects without cloud costs. Essential reference for budget-conscious developers.</div>
     <div class="tag-row">
       <span class="tag t-lens">🏠 Home Hobbyist</span>
       <span class="tag t-tier t-adopt">✅ Adopt Now</span>
-      <span class="tag t-topic">local</span>
+      <span class="tag t-topic">local</span><span class="tag t-topic">budget</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://github.com/n8n-io/n8n" target="_blank" rel="noopener noreferrer" data-date="2026-04-13" data-tier="✅ Adopt Now" data-tierkey="adopt" data-lens="📡 Staying Current" data-lenskey="curr">
+    <div class="fycard-icon">⚙️</div>
+    <div class="fycard-title">n8n: Fair-code Workflow Automation with Native AI</div>
+    <div class="fycard-src"><span>GitHub · 2026-04-13</span></div>
+    <div class="fycard-desc">Self-hosted workflow automation platform combining visual builders with custom code and 400+ integrations. Directly applicable to GIS data pipelines and AI automation projects.</div>
+    <div class="tag-row">
+      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-tier t-adopt">✅ Adopt Now</span>
+      <span class="tag t-topic">data</span><span class="tag t-topic">agent</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://github.com/infiniflow/ragflow" target="_blank" rel="noopener noreferrer" data-date="2026-04-13" data-tier="✅ Adopt Now" data-tierkey="adopt" data-lens="📡 Staying Current" data-lenskey="curr">
+    <div class="fycard-icon">🧠</div>
+    <div class="fycard-title">RAGFlow: Open-source Retrieval-Augmented Generation + Agent Engine</div>
+    <div class="fycard-src"><span>GitHub · 2026-04-13</span></div>
+    <div class="fycard-desc">RAG + agentic framework combining context retrieval with agent capabilities for LLMs. Production-ready for knowledge-heavy AI applications and data-driven agents.</div>
+    <div class="tag-row">
+      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-tier t-adopt">✅ Adopt Now</span>
+      <span class="tag t-topic">agent</span><span class="tag t-topic">memory</span>
     </div>
   </a>
   <a class="fycard" href="https://www.youtube.com/watch?v=99VHENEKA9o" target="_blank" rel="noopener noreferrer" data-date="2026-04-13" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="📡 Staying Current" data-lenskey="curr">
-    <div class="fycard-icon">📡</div>
+    <div class="fycard-icon">🤖</div>
     <div class="fycard-title">Claude Code vs Google Antigravity... Which is Better?</div>
     <div class="fycard-src"><span>Nate Herk | AI Automation · 2026-04-13</span><span class="vid-dur">⏱ 23:32</span></div>
-    <div class="fycard-desc">Comparative analysis of Claude Code and Google's Antigravity agent frameworks for automation tasks. Evaluates trade-offs in usability, capability, and integration for developers choosing agent tooling.</div>
+    <div class="fycard-desc">Direct comparison of Claude Code and Google's Antigravity AI agent frameworks. Relevant for evaluating which agentic platform best fits automation use cases.</div>
     <div class="tag-row">
       <span class="tag t-lens">📡 Staying Current</span>
       <span class="tag t-tier t-watch">👁 Watch Closely</span>
       <span class="tag t-topic">claude</span><span class="tag t-topic">agent</span>
     </div>
   </a>
-  <a class="fycard" href="https://github.com/n8n-io/n8n" target="_blank" rel="noopener noreferrer" data-date="2026-04-13" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="📡 Staying Current" data-lenskey="curr">
-    <div class="fycard-icon">📡</div>
-    <div class="fycard-title">n8n-io/n8n</div>
-    <div class="fycard-src"><span>GitHub · 2026-04-13</span></div>
-    <div class="fycard-desc">Fair-code workflow automation platform with 400+ integrations and native AI capabilities. Supports both visual and code-based automation with self-hosting options—relevant for data pipeline and geospatial ETL scenarios.</div>
+  <a class="fycard" href="https://www.youtube.com/watch?v=eAleab2cL3I" target="_blank" rel="noopener noreferrer" data-date="2026-04-12" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="🏠 Home Hobbyist" data-lenskey="home">
+    <div class="fycard-icon">🚀</div>
+    <div class="fycard-title">Gemma 4 + Ollama = FREE Claude Code Setup!</div>
+    <div class="fycard-src"><span>WorldofAI · 2026-04-12</span><span class="vid-dur">⏱ 11:36</span></div>
+    <div class="fycard-desc">Tutorial on combining Gemma 4 and Ollama for free Claude Code-like functionality. Demonstrates practical local inference pipeline for AI agents.</div>
     <div class="tag-row">
-      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-lens">🏠 Home Hobbyist</span>
       <span class="tag t-tier t-watch">👁 Watch Closely</span>
-      <span class="tag t-topic">data</span><span class="tag t-topic">fme</span>
+      <span class="tag t-topic">local</span><span class="tag t-topic">claude</span>
     </div>
   </a>
-  <a class="fycard" href="https://github.com/affaan-m/everything-claude-code" target="_blank" rel="noopener noreferrer" data-date="2026-04-13" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="📡 Staying Current" data-lenskey="curr">
-    <div class="fycard-icon">📡</div>
-    <div class="fycard-title">affaan-m/everything-claude-code</div>
-    <div class="fycard-src"><span>GitHub · 2026-04-13</span></div>
-    <div class="fycard-desc">Agent harness optimization system for Claude Code with skills, memory, security, and research-first development patterns. Reference implementation for developers building production agentic systems.</div>
+  <a class="fycard" href="https://github.com/ollama/ollama" target="_blank" rel="noopener noreferrer" data-date="2026-04-12" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="🏠 Home Hobbyist" data-lenskey="home">
+    <div class="fycard-icon">🔧</div>
+    <div class="fycard-title">Ollama: Get Up and Running with Gemma, DeepSeek, Qwen, and More</div>
+    <div class="fycard-src"><span>GitHub · 2026-04-12</span></div>
+    <div class="fycard-desc">Leading local inference runtime supporting 20+ open-source models. Essential infrastructure for anyone running LLMs offline or in air-gapped environments.</div>
     <div class="tag-row">
-      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-lens">🏠 Home Hobbyist</span>
       <span class="tag t-tier t-watch">👁 Watch Closely</span>
-      <span class="tag t-topic">claude</span><span class="tag t-topic">agent</span>
+      <span class="tag t-topic">local</span><span class="tag t-topic">model</span>
     </div>
   </a>
   <a class="fycard" href="https://github.com/langchain-ai/langchain" target="_blank" rel="noopener noreferrer" data-date="2026-04-13" data-tier="🏗 Foundation" data-tierkey="found" data-lens="📡 Staying Current" data-lenskey="curr">
-    <div class="fycard-icon">📡</div>
-    <div class="fycard-title">langchain-ai/langchain</div>
+    <div class="fycard-icon">🔗</div>
+    <div class="fycard-title">LangChain: The Agent Engineering Platform</div>
     <div class="fycard-src"><span>GitHub · 2026-04-13</span></div>
-    <div class="fycard-desc">Agent engineering platform with 133k+ stars. Core infrastructure for orchestrating multi-step LLM workflows, tool integration, and memory management—foundational for agentic AI development.</div>
+    <div class="fycard-desc">Foundational framework for building agentic AI systems, integrating multiple LLMs, tools, and memory backends. Industry standard for agent orchestration.</div>
     <div class="tag-row">
       <span class="tag t-lens">📡 Staying Current</span>
       <span class="tag t-tier t-found">🏗 Foundation</span>
       <span class="tag t-topic">agent</span><span class="tag t-topic">memory</span>
     </div>
   </a>
-  <a class="fycard" href="https://github.com/Significant-Gravitas/AutoGPT" target="_blank" rel="noopener noreferrer" data-date="2026-04-13" data-tier="🏗 Foundation" data-tierkey="found" data-lens="📡 Staying Current" data-lenskey="curr">
-    <div class="fycard-icon">📡</div>
-    <div class="fycard-title">Significant-Gravitas/AutoGPT</div>
-    <div class="fycard-src"><span>GitHub · 2026-04-13</span></div>
-    <div class="fycard-desc">Autonomous agent framework enabling open-ended task execution without human intervention. Demonstrates agent self-direction patterns and represents a major milestone in accessible autonomous AI tooling.</div>
-    <div class="tag-row">
-      <span class="tag t-lens">📡 Staying Current</span>
-      <span class="tag t-tier t-found">🏗 Foundation</span>
-      <span class="tag t-topic">agent</span>
-    </div>
-  </a>
-  <a class="fycard" href="https://github.com/ollama/ollama" target="_blank" rel="noopener noreferrer" data-date="2026-04-12" data-tier="🏗 Foundation" data-tierkey="found" data-lens="🏠 Home Hobbyist" data-lenskey="home">
-    <div class="fycard-icon">🏠</div>
-    <div class="fycard-title">ollama/ollama</div>
-    <div class="fycard-src"><span>GitHub · 2026-04-12</span></div>
-    <div class="fycard-desc">Lightweight runtime for running open-source models (Gemma, DeepSeek, Qwen, GLM) locally on consumer hardware. Essential infrastructure for cost-free, privacy-first local inference.</div>
-    <div class="tag-row">
-      <span class="tag t-lens">🏠 Home Hobbyist</span>
-      <span class="tag t-tier t-found">🏗 Foundation</span>
-      <span class="tag t-topic">local</span>
-    </div>
-  </a>
   <a class="fycard" href="https://github.com/huggingface/transformers" target="_blank" rel="noopener noreferrer" data-date="2026-04-13" data-tier="🏗 Foundation" data-tierkey="found" data-lens="📡 Staying Current" data-lenskey="curr">
-    <div class="fycard-icon">📡</div>
-    <div class="fycard-title">huggingface/transformers</div>
+    <div class="fycard-icon">🧬</div>
+    <div class="fycard-title">HuggingFace Transformers: Model Definition Framework for ML</div>
     <div class="fycard-src"><span>GitHub · 2026-04-13</span></div>
-    <div class="fycard-desc">State-of-the-art model library spanning text, vision, audio, and multimodal architectures. De facto standard for loading and fine-tuning modern foundation models across inference and training.</div>
+    <div class="fycard-desc">Industry-standard library for inference and training of transformers across text, vision, audio, and multimodal modalities. Underpins most modern open-source LLM workflows.</div>
     <div class="tag-row">
       <span class="tag t-lens">📡 Staying Current</span>
       <span class="tag t-tier t-found">🏗 Foundation</span>
       <span class="tag t-topic">model</span>
     </div>
   </a>
-  <a class="fycard" href="https://github.com/open-webui/open-webui" target="_blank" rel="noopener noreferrer" data-date="2026-04-13" data-tier="🏗 Foundation" data-tierkey="found" data-lens="🏠 Home Hobbyist" data-lenskey="home">
-    <div class="fycard-icon">🏠</div>
-    <div class="fycard-title">open-webui/open-webui</div>
+  <a class="fycard" href="https://github.com/Significant-Gravitas/AutoGPT" target="_blank" rel="noopener noreferrer" data-date="2026-04-13" data-tier="🏗 Foundation" data-tierkey="found" data-lens="📡 Staying Current" data-lenskey="curr">
+    <div class="fycard-icon">🎯</div>
+    <div class="fycard-title">AutoGPT: Accessible AI for Everyone to Use and Build On</div>
     <div class="fycard-src"><span>GitHub · 2026-04-13</span></div>
-    <div class="fycard-desc">User-friendly web interface for local and remote LLMs (Ollama, OpenAI API compatible). Bridges the gap between headless model servers and accessible chat-like interaction.</div>
+    <div class="fycard-desc">Open-source autonomous agent framework focusing on accessibility and extensibility. Competitive alternative to Claude Code for local autonomous workflows.</div>
+    <div class="tag-row">
+      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-tier t-found">🏗 Foundation</span>
+      <span class="tag t-topic">agent</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://github.com/open-webui/open-webui" target="_blank" rel="noopener noreferrer" data-date="2026-04-13" data-tier="🏗 Foundation" data-tierkey="found" data-lens="🏠 Home Hobbyist" data-lenskey="home">
+    <div class="fycard-icon">💬</div>
+    <div class="fycard-title">Open WebUI: User-friendly AI Interface for Ollama and OpenAI</div>
+    <div class="fycard-src"><span>GitHub · 2026-04-13</span></div>
+    <div class="fycard-desc">Self-hosted ChatGPT-like interface supporting local and cloud LLMs. Bridges gap between powerful models and accessible UX for non-technical users.</div>
     <div class="tag-row">
       <span class="tag t-lens">🏠 Home Hobbyist</span>
       <span class="tag t-tier t-found">🏗 Foundation</span>
       <span class="tag t-topic">local</span>
     </div>
   </a>
-  <a class="fycard" href="https://github.com/infiniflow/ragflow" target="_blank" rel="noopener noreferrer" data-date="2026-04-13" data-tier="🌱 On Radar" data-tierkey="radar" data-lens="📡 Staying Current" data-lenskey="curr">
-    <div class="fycard-icon">📡</div>
-    <div class="fycard-title">infiniflow/ragflow</div>
-    <div class="fycard-src"><span>GitHub · 2026-04-13</span></div>
-    <div class="fycard-desc">Open-source RAG engine combining retrieval-augmented generation with agentic capabilities. Enables context-aware LLM workflows for document processing and knowledge-heavy applications.</div>
-    <div class="tag-row">
-      <span class="tag t-lens">📡 Staying Current</span>
-      <span class="tag t-tier t-radar">🌱 On Radar</span>
-      <span class="tag t-topic">memory</span><span class="tag t-topic">agent</span>
-    </div>
-  </a>
-  <a class="fycard" href="https://github.com/bytedance/deer-flow" target="_blank" rel="noopener noreferrer" data-date="2026-04-13" data-tier="🌱 On Radar" data-tierkey="radar" data-lens="📡 Staying Current" data-lenskey="curr">
-    <div class="fycard-icon">📡</div>
-    <div class="fycard-title">bytedance/deer-flow</div>
-    <div class="fycard-src"><span>GitHub · 2026-04-13</span></div>
-    <div class="fycard-desc">Long-horizon SuperAgent framework supporting research, coding, and creation tasks with sandboxes, memory, and multi-agent coordination. Represents emerging patterns in hierarchical agentic systems.</div>
-    <div class="tag-row">
-      <span class="tag t-lens">📡 Staying Current</span>
-      <span class="tag t-tier t-radar">🌱 On Radar</span>
-      <span class="tag t-topic">agent</span>
-    </div>
-  </a>
-  <a class="fycard" href="https://www.youtube.com/watch?v=Bh4cQJ5aTUg" target="_blank" rel="noopener noreferrer" data-date="2026-04-12" data-tier="🌱 On Radar" data-tierkey="radar" data-lens="🏠 Home Hobbyist" data-lenskey="home">
-    <div class="fycard-icon">🏠</div>
+  <a class="fycard" href="https://www.youtube.com/watch?v=Bh4cQJ5aTUg" target="_blank" rel="noopener noreferrer" data-date="2026-04-12" data-tier="🔥 Hype Check" data-tierkey="hype" data-lens="🏠 Home Hobbyist" data-lenskey="home">
+    <div class="fycard-icon">🐧</div>
     <div class="fycard-title">CuerdOS Is Not Just Another Distro! (Or Is It?)</div>
     <div class="fycard-src"><span>Dot CSV · 2026-04-12</span><span class="vid-dur">⏱ 16:32</span></div>
-    <div class="fycard-desc">Overview of CuerdOS, a Spanish GNU/Linux distribution emphasizing stability and performance. Niche signal for those exploring alternative operating systems for AI workloads and local development.</div>
+    <div class="fycard-desc">Review of CuerdOS, a Spanish-origin GNU/Linux distro emphasizing stability and efficiency. Niche OS choice potentially suitable for local AI inference environments.</div>
     <div class="tag-row">
       <span class="tag t-lens">🏠 Home Hobbyist</span>
-      <span class="tag t-tier t-radar">🌱 On Radar</span>
+      <span class="tag t-tier t-hype">🔥 Hype Check</span>
       <span class="tag t-topic">local</span>
     </div>
   </a>
-  <a class="fycard" href="https://www.reddit.com/r/ClaudeAI/comments/1sjbsyg/anthropics_claude_mythos_isnt_a_sentient/" target="_blank" rel="noopener noreferrer" data-date="2026-04-12" data-tier="🔥 Hype Check" data-tierkey="hype" data-lens="📡 Staying Current" data-lenskey="curr">
-    <div class="fycard-icon">📡</div>
-    <div class="fycard-title">Anthropic's Claude Mythos isn't a sentient super-hacker, it's a sales pitch</div>
-    <div class="fycard-src"><span>r/ClaudeAI · 2026-04-12</span></div>
-    <div class="fycard-desc">Critical analysis debunking viral claims about Claude's zero-day discovery capabilities. Important signal: hype cycle around agentic AI security claims requires grounded skepticism and evidence review.</div>
+  <a class="fycard" href="https://www.youtube.com/watch?v=d3Qq-rkp_to" target="_blank" rel="noopener noreferrer" data-date="2026-04-10" data-tier="🔥 Hype Check" data-tierkey="hype" data-lens="📡 Staying Current" data-lenskey="curr">
+    <div class="fycard-icon">⚠️</div>
+    <div class="fycard-title">Claude Mythos is too dangerous for public consumption...</div>
+    <div class="fycard-src"><span>Fireship · 2026-04-10</span><span class="vid-dur">⏱ 5:37</span></div>
+    <div class="fycard-desc">Critical commentary on Anthropic's Claude Mythos narrative and perceived overselling of security features. Important reality check amid marketing hype.</div>
     <div class="tag-row">
       <span class="tag t-lens">📡 Staying Current</span>
       <span class="tag t-tier t-hype">🔥 Hype Check</span>
+      <span class="tag t-topic">claude</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://github.com/affaan-m/everything-claude-code" target="_blank" rel="noopener noreferrer" data-date="2026-04-13" data-tier="🌱 On Radar" data-tierkey="radar" data-lens="📡 Staying Current" data-lenskey="curr">
+    <div class="fycard-icon">📚</div>
+    <div class="fycard-title">Everything Claude Code: Agent Harness Performance Optimization</div>
+    <div class="fycard-src"><span>GitHub · 2026-04-13</span></div>
+    <div class="fycard-desc">Resource guide for optimizing Claude Code performance with focus on skills, memory, and security. Emerging community best-practices repository for agentic development.</div>
+    <div class="tag-row">
+      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-tier t-radar">🌱 On Radar</span>
       <span class="tag t-topic">claude</span><span class="tag t-topic">agent</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://www.reddit.com/r/ClaudeAI/comments/1sjqn2e/the_golden_age_is_over/" target="_blank" rel="noopener noreferrer" data-date="2026-04-12" data-tier="🌱 On Radar" data-tierkey="radar" data-lens="📡 Staying Current" data-lenskey="curr">
+    <div class="fycard-icon">📊</div>
+    <div class="fycard-title">The golden age is over — consumer LLM access contracting</div>
+    <div class="fycard-src"><span>r/ClaudeAI · 2026-04-12</span></div>
+    <div class="fycard-desc">Community discussion about increasing costs and subscription fatigue across Claude, ChatGPT, Gemini, and Perplexity. Signals growing pressure toward open-source or niche models.</div>
+    <div class="tag-row">
+      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-tier t-radar">🌱 On Radar</span>
+      <span class="tag t-topic">model</span><span class="tag t-topic">budget</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://www.reddit.com/r/ClaudeAI/comments/1sjbsyg/anthropics_claude_mythos_isnt_a_sentient/" target="_blank" rel="noopener noreferrer" data-date="2026-04-12" data-tier="🌱 On Radar" data-tierkey="radar" data-lens="📡 Staying Current" data-lenskey="curr">
+    <div class="fycard-icon">🔍</div>
+    <div class="fycard-title">Anthropic's Claude Mythos isn't sentient — marketing vs. reality</div>
+    <div class="fycard-src"><span>r/ClaudeAI · 2026-04-12</span></div>
+    <div class="fycard-desc">Critical analysis debunking Anthropic's Claude Mythos hype; claims of thousands of zero-days rest on sample of 198 vulnerabilities. Reality check on vendor narrative.</div>
+    <div class="tag-row">
+      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-tier t-radar">🌱 On Radar</span>
+      <span class="tag t-topic">claude</span>
     </div>
   </a>
 </div>
@@ -360,17 +379,17 @@
 <div class="g3">
   <div class="panel p-pink">
     <div class="plabel">Weekly Themes</div>
-    <div class="theme-wrap"><span class="tpill tp-home"><span class="tpill-dot"></span>Local-First AI Sovereignty</span><span class="tpill tp-agent"><span class="tpill-dot"></span>Agent Tooling Consolidation</span><span class="tpill tp-gis"><span class="tpill-dot"></span>Geospatial AI Integration Maturity</span><span class="tpill tp-infra"><span class="tpill-dot"></span>Open Infrastructure Viability</span><span class="tpill tp-design"><span class="tpill-dot"></span>Hype vs. Reality in Agentic Claims</span></div>
+    <div class="theme-wrap"><span class="tpill tp-econ"><span class="tpill-dot"></span>Local-first AI inference gaining steam as API costs spike</span><span class="tpill tp-agent"><span class="tpill-dot"></span>Claude Code competition heats up; Gemma 4 and Ollama lower barrier to entry</span><span class="tpill tp-gis"><span class="tpill-dot"></span>MCP protocol enabling direct AI-GIS integration; QGIS-Claude bridge validates use case</span><span class="tpill tp-infra"><span class="tpill-dot"></span>Agent orchestration frameworks (LangChain, RAGFlow, n8n) consolidating as standard infrastructure</span><span class="tpill tp-econ"><span class="tpill-dot"></span>Consumer LLM market facing saturation; enthusiasm for free/open-source alternatives rising</span><span class="tpill tp-design"><span class="tpill-dot"></span>Marketing narratives (Claude Mythos) increasingly scrutinized; reality-checking becomes norm</span></div>
     <div class="plabel">Signal Mix</div>
-    <div class="sig"><div class="sig-icon">🎥</div><div class="sig-lbl">Videos</div><div class="sig-bar-bg"><div class="sig-bar" style="width:41%;background:var(--blue);"></div></div><div class="sig-ct">7</div></div><div class="sig"><div class="sig-icon">📦</div><div class="sig-lbl">Repos</div><div class="sig-bar-bg"><div class="sig-bar" style="width:52%;background:var(--purple);"></div></div><div class="sig-ct">9</div></div><div class="sig"><div class="sig-icon">📰</div><div class="sig-lbl">Signals</div><div class="sig-bar-bg"><div class="sig-bar" style="width:5%;background:var(--teal);"></div></div><div class="sig-ct">1</div></div><div class="sig"><div class="sig-icon">🏠</div><div class="sig-lbl">Home picks</div><div class="sig-bar-bg"><div class="sig-bar" style="width:35%;background:var(--yellow);"></div></div><div class="sig-ct">6</div></div><div class="sig"><div class="sig-icon">🗺</div><div class="sig-lbl">GIS picks</div><div class="sig-bar-bg"><div class="sig-bar" style="width:11%;background:var(--green);"></div></div><div class="sig-ct">2</div></div>
+    <div class="sig"><div class="sig-icon">🎥</div><div class="sig-lbl">Videos</div><div class="sig-bar-bg"><div class="sig-bar" style="width:44%;background:var(--blue);"></div></div><div class="sig-ct">8</div></div><div class="sig"><div class="sig-icon">📦</div><div class="sig-lbl">Repos</div><div class="sig-bar-bg"><div class="sig-bar" style="width:44%;background:var(--purple);"></div></div><div class="sig-ct">8</div></div><div class="sig"><div class="sig-icon">📰</div><div class="sig-lbl">Signals</div><div class="sig-bar-bg"><div class="sig-bar" style="width:11%;background:var(--teal);"></div></div><div class="sig-ct">2</div></div><div class="sig"><div class="sig-icon">🏠</div><div class="sig-lbl">Home picks</div><div class="sig-bar-bg"><div class="sig-bar" style="width:33%;background:var(--yellow);"></div></div><div class="sig-ct">6</div></div><div class="sig"><div class="sig-icon">🗺</div><div class="sig-lbl">GIS picks</div><div class="sig-bar-bg"><div class="sig-bar" style="width:11%;background:var(--green);"></div></div><div class="sig-ct">2</div></div>
   </div>
   <div class="panel p-teal">
     <div class="plabel">Model Tracker</div>
-    <div class="model-row"><div><div class="model-name">Gemma 4</div><div class="model-co">Google · 2026-04-12</div></div><span class="model-status ms-tool">TOOL</span></div><div class="model-row"><div><div class="model-name">DeepSeek</div><div class="model-co">DeepSeek · 2026-04-13</div></div><span class="model-status ms-infra">INFRA</span></div><div class="model-row"><div><div class="model-name">Claude (Opus/Sonnet/Haiku)</div><div class="model-co">Anthropic · 2026-04-13</div></div><span class="model-status ms-watch">WATCH</span></div>
+    <div class="model-row"><div><div class="model-name">Gemma 4</div><div class="model-co">Google · 2026-04-12</div></div><span class="model-status ms-tool">TOOL</span></div><div class="model-row"><div><div class="model-name">Claude Code</div><div class="model-co">Anthropic · 2026-04-13</div></div><span class="model-status ms-arch">ARCH</span></div><div class="model-row"><div><div class="model-name">Google Antigravity</div><div class="model-co">Google · 2026-04-13</div></div><span class="model-status ms-watch">WATCH</span></div>
   </div>
   <div class="panel p-yellow">
     <div class="plabel">The Lab — Apply This Week</div>
-    <div class="apply-card"><div class="apply-head"><div class="apply-title">Set up Gemma 4 + Ollama + Open WebUI on your local machine</div><span class="effort e-low">Low effort</span></div><div class="apply-desc">Follow one of the free setup videos to establish a local Claude Code equivalent. Time commitment: 30–60 minutes. Tests home-lab infrastructure readiness.</div></div><div class="apply-card"><div class="apply-head"><div class="apply-title">Install QGIS MCP plugin and test a simple geospatial query with Claude</div><span class="effort e-med">Med effort</span></div><div class="apply-desc">Execute the Geomatica tutorial to connect Claude AI to QGIS. Verify that spatial data queries (buffer, intersect, etc.) work via the Claude integration. Measures GIS + AI bridge maturity.</div></div><div class="apply-card"><div class="apply-head"><div class="apply-title">Prototype a multi-agent RAG pipeline using LangChain + RAGFlow</div><span class="effort e-high">High effort</span></div><div class="apply-desc">Combine LangChain's orchestration with RAGFlow's document processing to build a 2–3 agent system that retrieves and synthesizes spatial data. Tests agent composition and memory patterns.</div></div>
+    <div class="apply-card"><div class="apply-head"><div class="apply-title">Set up local Claude Code alternative using Gemma 4 + Ollama</div><span class="effort e-low">Low effort</span></div><div class="apply-desc">Follow Tech-Practice and WorldofAI tutorials to run Claude Code-style agents locally on MacBook or PC without API keys. Validate cost savings and latency trade-offs.</div></div><div class="apply-card"><div class="apply-head"><div class="apply-title">Install QGIS MCP plugin and connect Claude AI to a simple spatial workflow</div><span class="effort e-med">Med effort</span></div><div class="apply-desc">Replicate the Geomatica Ambiental tutorial to integrate Claude into QGIS. Test on a real geospatial analysis task (e.g., GeoJSON classification, raster inspection).</div></div><div class="apply-card"><div class="apply-head"><div class="apply-title">Build a RAG + agentic pipeline using RAGFlow for GIS data documentation</div><span class="effort e-high">High effort</span></div><div class="apply-desc">Deploy RAGFlow to index spatial metadata and vector tiles, then query via agentic interface. Prototype for automating GIS knowledge retrieval and decision-making.</div></div><div class="apply-card"><div class="apply-head"><div class="apply-title">Compare n8n vs. native automation for FME pipeline orchestration</div><span class="effort e-med">Med effort</span></div><div class="apply-desc">Design a sample n8n workflow that mirrors a typical FME spatial ETL process. Evaluate integration ease, flexibility, and when n8n is preferable to FME scripting.</div></div><div class="apply-card"><div class="apply-head"><div class="apply-title">Audit your AI tool stack against 'golden age is over' economics</div><span class="effort e-low">Low effort</span></div><div class="apply-desc">Tally current subscriptions (Claude, ChatGPT, Gemini, etc.). Calculate monthly spend and ROI. Identify which tasks could migrate to free/local alternatives without losing productivity.</div></div>
   </div>
 </div>
 
