@@ -55,8 +55,8 @@ def build_hub_prompt(data: dict) -> str:
        - t-geoai: GeoAI (LLMs + GIS, computer vision on satellite/aerial imagery, spatial ML)
 
     4. DESCRIPTION:
-       Frame as a direct instruction to Daniel. [Action Verb] + [Specific Feature] + [Payoff].
-       Example: "Swap Gemma 4 via Ollama into Home Assistant — enables free local automation without API latency."
+       Describe what the artifact is and why it matters. Be factual and concise — 1-2 sentences.
+       Do NOT reference Daniel's specific projects. Focus on the artifact itself: what it does, what problem it solves, and why it's notable right now.
 
     OUTPUT JSON SCHEMA:
     {{

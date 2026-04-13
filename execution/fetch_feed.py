@@ -17,6 +17,7 @@ Sources:
 import argparse
 import json
 import os
+import re
 import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -77,6 +78,29 @@ REDDIT_HEADERS = {
 }
 
 # ── YouTube ───────────────────────────────────────────────────────────────────
+
+def _parse_duration(iso: str) -> str:
+    """Convert ISO 8601 duration (PT4M13S) → human string (4:13 / 1:02:03)."""
+    m = re.match(r'PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?', iso or "")
+    if not m:
+        return ""
+    h, mn, s = (int(x) if x else 0 for x in m.groups())
+    if h:
+        return f"{h}:{mn:02d}:{s:02d}"
+    return f"{mn}:{s:02d}"
+
+def _fetch_durations(yt, video_ids: list) -> dict:
+    """Batch-fetch contentDetails durations for up to 50 IDs at a time."""
+    durations = {}
+    for i in range(0, len(video_ids), 50):
+        batch = video_ids[i:i + 50]
+        try:
+            resp = yt.videos().list(part="contentDetails", id=",".join(batch)).execute()
+            for item in resp.get("items", []):
+                durations[item["id"]] = _parse_duration(item["contentDetails"]["duration"])
+        except Exception as e:
+            print(f"  [WARN] Duration fetch: {e}")
+    return durations
 
 def fetch_youtube(days: int, max_videos: int) -> list[dict]:
     api_key = os.getenv("YOUTUBE_API_KEY") or os.getenv("GOOGLE_API_KEY")
@@ -149,8 +173,16 @@ def fetch_youtube(days: int, max_videos: int) -> list[dict]:
             seen.add(v["url"])
             unique.append(v)
 
-    print(f"  YouTube: {len(unique)} videos (capped at {max_videos})")
-    return unique[:max_videos]
+    capped = unique[:max_videos]
+
+    # Batch-fetch durations
+    vid_ids = [v["url"].split("v=")[-1] for v in capped]
+    durations = _fetch_durations(yt, vid_ids)
+    for v in capped:
+        v["duration"] = durations.get(v["url"].split("v=")[-1], "")
+
+    print(f"  YouTube: {len(capped)} videos (capped at {max_videos})")
+    return capped
 
 
 # ── GitHub ────────────────────────────────────────────────────────────────────

@@ -66,11 +66,12 @@ def generate_hub_content(data):
     
     return json.loads(text)
 
-def render_html(data):
+def render_html(data, duration_map=None):
     """
     Renders the AI Discovery Hub dashboard.
     """
     today = datetime.now().strftime("%B %d, %Y")
+    duration_map = duration_map or {}
 
     # ── Compute stats from artifacts ──────────────────────────────────────────
     artifacts = data.get('artifacts', [])
@@ -187,7 +188,8 @@ def render_html(data):
   .fycard:hover {{ border-color:rgba(245,200,66,.35); transform:translateY(-2px); }}
   .fycard-icon {{ font-size:20px; margin-bottom:7px; }}
   .fycard-title {{ font-size:12.5px; font-weight:700; color:var(--text); margin-bottom:3px; line-height:1.3; }}
-  .fycard-src {{ font-size:9.5px; color:var(--text3); font-family:var(--font-mono); margin-bottom:6px; }}
+  .fycard-src {{ font-size:9.5px; color:var(--text3); font-family:var(--font-mono); margin-bottom:6px; display:flex; align-items:center; gap:6px; }}
+  .vid-dur {{ background:rgba(56,201,212,.12); color:var(--teal); border-radius:4px; padding:1px 5px; font-size:9px; font-weight:700; flex-shrink:0; }}
   .fycard-desc {{ font-size:11px; color:var(--text2); line-height:1.5; margin-bottom:8px; flex-grow:1; }}
   .tag-row {{ display:flex; flex-wrap:wrap; gap:5px; }}
   .tag {{ padding:2px 7px; border-radius:4px; font-size:9px; font-weight:700; }}
@@ -308,11 +310,13 @@ def render_html(data):
         lens_key  = "home" if "Home" in art.get('lens','') else "gis" if "GIS" in art.get('lens','') else "curr"
         topics = art.get('topics', [])
         topic_tags = "".join(f'<span class="tag t-topic">{t.replace("t-","")}</span>' for t in topics)
+        dur = duration_map.get(art['url'], '') if art.get('type') == 'video' else ''
+        dur_html = f'<span class="vid-dur">⏱ {dur}</span>' if dur else ''
         html += f"""
   <a class="fycard" href="{art['url']}" target="_blank" rel="noopener noreferrer" data-date="{art['date']}" data-tier="{art['tier']}" data-tierkey="{tier_key}" data-lens="{art['lens']}" data-lenskey="{lens_key}">
     <div class="fycard-icon">{icon}</div>
     <div class="fycard-title">{art['title']}</div>
-    <div class="fycard-src">{art['source']} · {art['date']} · [{art['type'].upper()}]</div>
+    <div class="fycard-src"><span>{art['source']} · {art['date']}</span>{dur_html}</div>
     <div class="fycard-desc">{art['desc']}</div>
     <div class="tag-row">
       <span class="tag t-lens">{art['lens']}</span>
@@ -422,9 +426,12 @@ def main():
     with open(input_path, "r") as f:
         input_data = json.load(f)
 
+    # Build URL → duration lookup from raw fetch data
+    duration_map = {v["url"]: v["duration"] for v in input_data.get("videos", []) if v.get("duration")}
+
     print("Generating Unified Hub Content...")
     content = generate_hub_content(input_data)
-    
+
     # Add generation metadata
     content["metadata"] = {
         "generated_at": datetime.now().isoformat(),
@@ -433,7 +440,7 @@ def main():
     }
 
     print("Rendering HTML...")
-    html = render_html(content)
+    html = render_html(content, duration_map)
     
     today_iso = datetime.now().strftime("%Y-%m-%d")
     output_dir_path = Path(args.output)
