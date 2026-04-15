@@ -60,6 +60,7 @@
   .vid-dur { background:rgba(56,201,212,.12); color:var(--teal); border-radius:4px; padding:1px 5px; font-size:9px; font-weight:700; flex-shrink:0; }
   .fycard-desc { font-size:11px; color:var(--text2); line-height:1.5; margin-bottom:6px; flex-grow:1; }
   .fycard-why { font-size:10px; color:var(--orange); font-style:italic; margin-bottom:8px; line-height:1.4; }
+  .fycard-why.direct { color:var(--teal); }
   .tag-row { display:flex; flex-wrap:wrap; gap:5px; }
   .tag { padding:2px 7px; border-radius:4px; font-size:9px; font-weight:700; }
   .t-lens { background:rgba(255,255,255,0.05); color:var(--text3); }
@@ -131,16 +132,16 @@
 <div class="header">
   <div>
     <div class="h-title">AI Discovery Hub</div>
-    <div class="h-sub">April 15, 2026 &nbsp;·&nbsp; 14 relevant · 6 world signals</div>
+    <div class="h-sub">April 15, 2026 &nbsp;·&nbsp; 15 relevant · 6 world signals</div>
   </div>
 </div>
 
 <div class="stat-row">
-  <div class="sc" onclick="filterTier('all')"><div class="sc-num c-blue">14</div><div class="sc-lbl">Your Stack</div></div>
-  <div class="sc" onclick="filterTier('adopt')"><div class="sc-num c-green">3</div><div class="sc-lbl">✅ Adopt Now</div></div>
+  <div class="sc" onclick="filterTier('all')"><div class="sc-num c-blue">15</div><div class="sc-lbl">Your Stack</div></div>
+  <div class="sc" onclick="filterTier('adopt')"><div class="sc-num c-green">5</div><div class="sc-lbl">✅ Adopt Now</div></div>
   <div class="sc" onclick="filterTier('watch')"><div class="sc-num c-blue">6</div><div class="sc-lbl">👁 Watch Closely</div></div>
   <div class="sc" onclick="filterTier('radar')"><div class="sc-num c-teal">4</div><div class="sc-lbl">🌱 On Radar</div></div>
-  <div class="sc" style="cursor:default"><div class="sc-num c-orange">8</div><div class="sc-lbl">🔀 Adjacent</div></div>
+  <div class="sc" onclick="filterAdjOnly()" style="cursor:pointer;"><div class="sc-num c-orange">6</div><div class="sc-lbl">🔀 Adjacent</div></div>
   <div class="sc" style="cursor:default"><div class="sc-num c-text3">6</div><div class="sc-lbl">🌐 AI World</div></div>
 </div>
 
@@ -170,162 +171,173 @@
 
 <div class="section-header">
   <div class="section-title">Your Stack &amp; Adjacent</div>
-  <span class="section-badge sb-personal">14 signals</span>
+  <span class="section-badge sb-personal">15 signals</span>
   <div class="section-line"></div>
 </div>
 
 <div class="hub-grid" id="hub-grid">
-  <a class="fycard" href="https://www.youtube.com/watch?v=ehg4fhydTgs" target="_blank" rel="noopener noreferrer" data-date="2026-04-14" data-tier="✅ Adopt Now" data-tierkey="adopt" data-lens="📡 Staying Current" data-lenskey="curr">
-    <div class="fycard-icon">🤖</div>
+  <a class="fycard" href="https://www.youtube.com/watch?v=ehg4fhydTgs" target="_blank" rel="noopener noreferrer" data-date="2026-04-14" data-tier="✅ Adopt Now" data-tierkey="adopt" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="false">
+    <div class="fycard-icon">⚙️</div>
     <div class="fycard-title">Claude Code Just Dropped Routines. 24/7 Agents.</div>
     <div class="fycard-src"><span>Nate Herk | AI Automation · 2026-04-14</span><span class="vid-dur">⏱ 16:28</span></div>
-    <div class="fycard-desc">Deep dive into Claude Code Routines—persistent 24/7 agent capabilities that extend your AI automation stack. Direct relevance for building autonomous workflows atop your existing Claude API + TypeScript architecture.</div>
-    <div class="fycard-why">↳ Direct: extends Claude Code capabilities (in your stack) with persistent agent infrastructure for orchestrating multi-step workflows.</div><div class="tag-row">
+    <div class="fycard-desc">Overview of Claude Code Routines — native 24/7 agent capability in Claude ecosystem. Direct relevance to your agent orchestration layer and expansion of Claude API use cases beyond interactive workflows.</div>
+    <div class="fycard-why direct">↳ Direct: Claude Code Routines extends your Claude API stack with persistent agentic scheduling; essential for understanding where your primary LLM provider is moving.</div><div class="tag-row">
       <span class="tag t-lens">📡 Staying Current</span>
       <span class="tag t-tier t-adopt">✅ Adopt Now</span>
       <span class="tag t-topic">claude</span><span class="tag t-topic">agent</span>
     </div>
   </a>
-  <a class="fycard" href="https://www.youtube.com/watch?v=uogzSxOw4LU" target="_blank" rel="noopener noreferrer" data-date="2026-04-13" data-tier="✅ Adopt Now" data-tierkey="adopt" data-lens="📡 Staying Current" data-lenskey="curr">
-    <div class="fycard-icon">📖</div>
+  <a class="fycard" href="https://www.youtube.com/watch?v=uogzSxOw4LU" target="_blank" rel="noopener noreferrer" data-date="2026-04-13" data-tier="✅ Adopt Now" data-tierkey="adopt" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="false">
+    <div class="fycard-icon">🔧</div>
     <div class="fycard-title">The Ultimate Claude Code Guide | MCP, Skills & More</div>
     <div class="fycard-src"><span>Tech With Tim · 2026-04-13</span><span class="vid-dur">⏱ 37:41</span></div>
-    <div class="fycard-desc">Comprehensive guide to Claude Code with MCP (Model Context Protocol) and Skills integration. Essential reference for your Claude Code CLI workflows and integrating external tools into your agent harness architecture.</div>
-    <div class="fycard-why">↳ Direct: covers Claude Code CLI (in your stack), MCP servers, and Skills—all core to your 3-layer orchestration pattern.</div><div class="tag-row">
+    <div class="fycard-desc">Comprehensive guide covering Claude Code architecture, MCP protocol integration, and skill building. Directly maps to your orchestration layer and toolkit expansion strategy.</div>
+    <div class="fycard-why direct">↳ Direct: MCP and Claude Code are core to your agent harness; this guide covers protocol-level integration you need for production workflows.</div><div class="tag-row">
       <span class="tag t-lens">📡 Staying Current</span>
       <span class="tag t-tier t-adopt">✅ Adopt Now</span>
       <span class="tag t-topic">claude</span><span class="tag t-topic">mcp</span>
     </div>
   </a>
-  <a class="fycard" href="https://www.youtube.com/watch?v=U7RKIOb_F2Q" target="_blank" rel="noopener noreferrer" data-date="2026-04-11" data-tier="✅ Adopt Now" data-tierkey="adopt" data-lens="🗺 GIS/FME" data-lenskey="gis">
-    <div class="fycard-icon">🌍</div>
-    <div class="fycard-title">Conecta QGIS con Claude AI usando MCP - Model Context Protocol</div>
-    <div class="fycard-src"><span>Geomatica Ambiental · 2026-04-11</span><span class="vid-dur">⏱ 17:55</span></div>
-    <div class="fycard-desc">Step-by-step integration of QGIS with Claude AI via MCP plugin. Direct editorial fit for 'The Build' pillar—demonstrates AI-augmented geospatial workflows using your core GIS and Claude API stack.</div>
-    <div class="fycard-why">↳ Direct: bridges QGIS (in your stack) with Claude API via MCP—exactly the kind of practical GIS/AI workflow you publish on Globe & Atlas.</div><div class="tag-row">
-      <span class="tag t-lens">🗺 GIS/FME</span>
-      <span class="tag t-tier t-adopt">✅ Adopt Now</span>
-      <span class="tag t-topic">geoai</span><span class="tag t-topic">mcp</span>
-    </div>
-  </a>
-  <a class="fycard adjacent" href="https://www.youtube.com/watch?v=pL1S6bRI2zo" target="_blank" rel="noopener noreferrer" data-date="2026-04-11" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="🗺 GIS/FME" data-lenskey="gis">
-    <div class="fycard-icon">🗺</div>
-    <div class="fycard-title">GeoSpatial File - Read & view on Map with Chrome Extension</div>
-    <div class="fycard-src"><span>Code&Learn AI · 2026-04-11</span><span class="vid-dur">⏱ 0:22</span></div>
-    <div class="fycard-desc">Chrome extension for quick GeoJSON inspection without spinning up Python/QGIS. Light utility but useful for practitioner workflows when rapid geospatial file preview is needed.</div>
-    <div class="fycard-why">↳ Adjacent: eliminates friction in GeoJSON inspection (you handle geospatial data via geopandas/QGIS); this is a convenience replacement for quick file checks.</div><div class="tag-row">
-      <span class="tag t-lens">🗺 GIS/FME</span>
-      <span class="tag t-tier t-watch">👁 Watch Closely</span>
-      <span class="tag t-topic">geoai</span>
-    </div>
-  </a>
-  <a class="fycard adjacent" href="https://github.com/n8n-io/n8n" target="_blank" rel="noopener noreferrer" data-date="2026-04-14" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="📡 Staying Current" data-lenskey="curr">
-    <div class="fycard-icon">⚙️</div>
+  <a class="fycard adjacent" href="https://github.com/n8n-io/n8n" target="_blank" rel="noopener noreferrer" data-date="2026-04-14" data-tier="✅ Adopt Now" data-tierkey="adopt" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="true">
+    <div class="fycard-icon">⚡</div>
     <div class="fycard-title">n8n-io/n8n</div>
     <div class="fycard-src"><span>GitHub · 2026-04-14</span></div>
-    <div class="fycard-desc">Fair-code workflow automation platform (TypeScript-based, 400+ integrations, visual + code hybrid). Adjacent to your FME + Python pipeline stack—offers visual orchestration alternative for data workflows with native AI capabilities.</div>
-    <div class="fycard-why">↳ Adjacent: replaces or extends FME workflows for data integration & orchestration; TypeScript + Python-compatible, supports Claude API natively—could streamline your ETL + AI orchestration layer.</div><div class="tag-row">
+    <div class="fycard-desc">Fair-code workflow automation platform with native AI capabilities, 400+ integrations, and self-host option. Bridges your FME/data pipeline workflows with LLM orchestration.</div>
+    <div class="fycard-why">↳ Adjacent: n8n replaces or significantly enhances your manual Python pipeline orchestration (Streamlit/requests layer); integrates Claude API natively, supports both visual and code-first workflows.</div><div class="tag-row">
       <span class="tag t-lens">📡 Staying Current</span>
-      <span class="tag t-tier t-watch">👁 Watch Closely</span>
+      <span class="tag t-tier t-adopt">✅ Adopt Now</span>
       <span class="tag t-topic">agent</span><span class="tag t-topic">data</span>
     </div>
   </a>
-  <a class="fycard" href="https://github.com/affaan-m/everything-claude-code" target="_blank" rel="noopener noreferrer" data-date="2026-04-15" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="📡 Staying Current" data-lenskey="curr">
-    <div class="fycard-icon">⚡</div>
+  <a class="fycard" href="https://www.youtube.com/watch?v=U7RKIOb_F2Q" target="_blank" rel="noopener noreferrer" data-date="2026-04-11" data-tier="✅ Adopt Now" data-tierkey="adopt" data-lens="🗺 GIS/FME" data-lenskey="gis" data-adj="false">
+    <div class="fycard-icon">🗺️</div>
+    <div class="fycard-title">Conecta QGIS con Claude AI usando MCP - Model Context Protocol</div>
+    <div class="fycard-src"><span>Geomatica Ambiental · 2026-04-11</span><span class="vid-dur">⏱ 17:55</span></div>
+    <div class="fycard-desc">Step-by-step tutorial installing QGIS MCP plugin to connect Claude AI directly into QGIS workflows. Native GIS + LLM integration eliminating manual data handoff.</div>
+    <div class="fycard-why direct">↳ Direct: QGIS + Claude AI via MCP directly extends your GIS/FME stack; demonstrates practical MCP server implementation for spatial analysis tasks you already perform.</div><div class="tag-row">
+      <span class="tag t-lens">🗺 GIS/FME</span>
+      <span class="tag t-tier t-adopt">✅ Adopt Now</span>
+      <span class="tag t-topic">mcp</span><span class="tag t-topic">geoai</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://www.youtube.com/watch?v=_S_7FReK148" target="_blank" rel="noopener noreferrer" data-date="2026-04-11" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="false">
+    <div class="fycard-icon">🤝</div>
+    <div class="fycard-title">Agentic AI & Multi-Agent Systems: Enterprise Guide 2026 | AetherLink</div>
+    <div class="fycard-src"><span>Aetherlink · 2026-04-11</span><span class="vid-dur">⏱ 20:49</span></div>
+    <div class="fycard-desc">Enterprise-scale patterns for multi-agent orchestration, task decomposition, and autonomous workflows. Architecture-level guide for scaling beyond single-agent Claude Code workflows.</div>
+    <div class="fycard-why direct">↳ Direct: Multi-agent patterns directly inform your orchestration layer design; essential for understanding how to structure complex GIS + AI workflows at scale.</div><div class="tag-row">
+      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-tier t-watch">👁 Watch Closely</span>
+      <span class="tag t-topic">agent</span><span class="tag t-topic">claude</span>
+    </div>
+  </a>
+  <a class="fycard adjacent" href="https://github.com/Significant-Gravitas/AutoGPT" target="_blank" rel="noopener noreferrer" data-date="2026-04-15" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="true">
+    <div class="fycard-icon">🤖</div>
+    <div class="fycard-title">Significant-Gravitas/AutoGPT</div>
+    <div class="fycard-src"><span>GitHub · 2026-04-15</span></div>
+    <div class="fycard-desc">Accessible autonomous agent framework in Python. Reference implementation for agent harness patterns applicable to your orchestration layer and skill-based design.</div>
+    <div class="fycard-why">↳ Adjacent: AutoGPT is a foundational agentic framework that informs architectural decisions for multi-agent orchestration; Python-native, can be adapted for spatial workflows.</div><div class="tag-row">
+      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-tier t-watch">👁 Watch Closely</span>
+      <span class="tag t-topic">agent</span><span class="tag t-topic">claude</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://github.com/langchain-ai/langchain" target="_blank" rel="noopener noreferrer" data-date="2026-04-15" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="false">
+    <div class="fycard-icon">🔗</div>
+    <div class="fycard-title">langchain-ai/langchain</div>
+    <div class="fycard-src"><span>GitHub · 2026-04-15</span></div>
+    <div class="fycard-desc">Industry-standard agent engineering platform supporting Anthropic, integrations with 100+ tools, memory/RAG abstractions. Core dependency ecosystem for production agent workflows.</div>
+    <div class="fycard-why direct">↳ Direct: LangChain is adjacent to your Claude API stack; currently the standard framework for orchestrating complex agent workflows with memory, retrieval, and tool chains.</div><div class="tag-row">
+      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-tier t-watch">👁 Watch Closely</span>
+      <span class="tag t-topic">agent</span><span class="tag t-topic">memory</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://github.com/affaan-m/everything-claude-code" target="_blank" rel="noopener noreferrer" data-date="2026-04-15" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="false">
+    <div class="fycard-icon">🎯</div>
     <div class="fycard-title">affaan-m/everything-claude-code</div>
     <div class="fycard-src"><span>GitHub · 2026-04-15</span></div>
-    <div class="fycard-desc">Performance optimization system for Claude Code—covers Skills, instincts, memory, security, research-first development patterns. Directly addresses agent harness optimization for your Claude Code CLI + orchestration stack.</div>
-    <div class="fycard-why">↳ Direct: Claude Code (in your stack) optimization guide; covers memory, skills, and agent patterns essential for scaling your directives/orchestration layer.</div><div class="tag-row">
+    <div class="fycard-desc">Optimization system for Claude Code agent harness covering skills, instincts, memory, security, and research-first development. Deep-dive into production-grade agent patterns.</div>
+    <div class="fycard-why direct">↳ Direct: Directly covers Claude Code optimization and agent harness patterns; community-driven reference for production deployment at scale.</div><div class="tag-row">
       <span class="tag t-lens">📡 Staying Current</span>
       <span class="tag t-tier t-watch">👁 Watch Closely</span>
       <span class="tag t-topic">claude</span><span class="tag t-topic">agent</span>
     </div>
   </a>
-  <a class="fycard adjacent" href="https://github.com/langchain-ai/langchain" target="_blank" rel="noopener noreferrer" data-date="2026-04-15" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="📡 Staying Current" data-lenskey="curr">
-    <div class="fycard-icon">🔗</div>
-    <div class="fycard-title">langchain-ai/langchain</div>
-    <div class="fycard-src"><span>GitHub · 2026-04-15</span></div>
-    <div class="fycard-desc">Industry-standard agent engineering platform (Python/JS, multi-LLM support, Anthropic integration). Adjacent to your stack—could replace or augment your custom orchestration layer with battle-tested agent abstractions.</div>
-    <div class="fycard-why">↳ Adjacent: your custom 3-layer orchestration could benefit from LangChain's agent primitives (runnable chains, tool binding, memory); Python-first, Anthropic-integrated.</div><div class="tag-row">
-      <span class="tag t-lens">📡 Staying Current</span>
-      <span class="tag t-tier t-watch">👁 Watch Closely</span>
-      <span class="tag t-topic">agent</span><span class="tag t-topic">memory</span>
-    </div>
-  </a>
-  <a class="fycard adjacent" href="https://github.com/infiniflow/ragflow" target="_blank" rel="noopener noreferrer" data-date="2026-04-14" data-tier="🌱 On Radar" data-tierkey="radar" data-lens="📡 Staying Current" data-lenskey="curr">
+  <a class="fycard adjacent" href="https://github.com/infiniflow/ragflow" target="_blank" rel="noopener noreferrer" data-date="2026-04-14" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="true">
     <div class="fycard-icon">📚</div>
     <div class="fycard-title">infiniflow/ragflow</div>
     <div class="fycard-src"><span>GitHub · 2026-04-14</span></div>
-    <div class="fycard-desc">RAG + Agent-hybrid engine (Python, open-source). Combines retrieval-augmented generation with agentic workflows—relevant for building knowledge-grounded agent systems on top of geospatial or domain-specific data.</div>
-    <div class="fycard-why">↳ Adjacent: RAG pipelines (memory layer) + agent orchestration converge here; Python-based, could enhance your directives with document-grounded context for GIS/FME workflows.</div><div class="tag-row">
+    <div class="fycard-desc">Open-source RAG + Agent engine fusing retrieval-augmented generation with agentic capabilities. RAG layer for context-aware spatial data retrieval and analysis.</div>
+    <div class="fycard-why">↳ Adjacent: RAGFlow bridges your data pipelines (FME/Sentinel Hub) with LLM context; Python-native RAG engine that can enhance agent memory for GIS/spatial workflows.</div><div class="tag-row">
+      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-tier t-watch">👁 Watch Closely</span>
+      <span class="tag t-topic">agent</span><span class="tag t-topic">memory</span><span class="tag t-topic">geoai</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://www.youtube.com/watch?v=pL1S6bRI2zo" target="_blank" rel="noopener noreferrer" data-date="2026-04-11" data-tier="🌱 On Radar" data-tierkey="radar" data-lens="🗺 GIS/FME" data-lenskey="gis" data-adj="false">
+    <div class="fycard-icon">🌐</div>
+    <div class="fycard-title">GeoSpatial File - Read & view on Map with Chrome Extension</div>
+    <div class="fycard-src"><span>Code&Learn AI · 2026-04-11</span><span class="vid-dur">⏱ 0:22</span></div>
+    <div class="fycard-desc">Chrome extension for rapid GeoJSON/spatial file inspection without spinning up Python/QGIS. Quick-access geospatial utility reducing friction in exploratory workflows.</div>
+    <div class="fycard-why direct">↳ Direct: Reduces friction in your geospatial exploration workflow; complements QGIS/ArcGIS by offering lightweight preview for GeoJSON and spatial formats.</div><div class="tag-row">
+      <span class="tag t-lens">🗺 GIS/FME</span>
+      <span class="tag t-tier t-radar">🌱 On Radar</span>
+      <span class="tag t-topic">geoai</span>
+    </div>
+  </a>
+  <a class="fycard adjacent" href="https://www.youtube.com/watch?v=eAleab2cL3I" target="_blank" rel="noopener noreferrer" data-date="2026-04-12" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="true">
+    <div class="fycard-icon">💾</div>
+    <div class="fycard-title">Gemma 4 + Ollama = FREE Claude Code Setup!</div>
+    <div class="fycard-src"><span>WorldofAI · 2026-04-12</span><span class="vid-dur">⏱ 11:36</span></div>
+    <div class="fycard-desc">Local LLM (Gemma 4) + Ollama as drop-in Claude Code alternative for on-premise or cost-optimized workflows. Explores local inference as viable path for agent harness.</div>
+    <div class="fycard-why">↳ Adjacent: Local LLM orchestration (Ollama + Gemma) offers cost/privacy alternative to Claude API; relevant for understanding inference trade-offs and multi-model strategies.</div><div class="tag-row">
+      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-tier t-watch">👁 Watch Closely</span>
+      <span class="tag t-topic">local</span><span class="tag t-topic">agent</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://www.youtube.com/watch?v=g6ig4BmjHZo" target="_blank" rel="noopener noreferrer" data-date="2026-04-14" data-tier="🌱 On Radar" data-tierkey="radar" data-lens="🗺 GIS/FME" data-lenskey="gis" data-adj="false">
+    <div class="fycard-icon">🎓</div>
+    <div class="fycard-title">Is it worth learning GEOSPATIAL? (Will A.I. Eat Earth Observation?)</div>
+    <div class="fycard-src"><span>The NDS Show · 2026-04-14</span><span class="vid-dur">⏱ 4:30</span></div>
+    <div class="fycard-desc">Expert analysis on AI's role in geospatial intelligence and whether automation replaces human analysts. Career-relevant signal for GIS practitioners transitioning to AI.</div>
+    <div class="fycard-why direct">↳ Direct: Addresses core question of your career transition (GIS → AI); expert perspective on future demand for spatial analysis skills in AI-augmented workflows.</div><div class="tag-row">
+      <span class="tag t-lens">🗺 GIS/FME</span>
+      <span class="tag t-tier t-radar">🌱 On Radar</span>
+      <span class="tag t-topic">geoai</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://www.reddit.com/r/ClaudeAI/comments/1skm9tw/you_can_now_switch_models_midchat/" target="_blank" rel="noopener noreferrer" data-date="2026-04-13" data-tier="✅ Adopt Now" data-tierkey="adopt" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="false">
+    <div class="fycard-icon">🔄</div>
+    <div class="fycard-title">You can now switch models mid-chat</div>
+    <div class="fycard-src"><span>r/ClaudeAI · 2026-04-13</span></div>
+    <div class="fycard-desc">Claude interface now allows switching between Claude models (Sonnet, Haiku) within single conversation. Operational flexibility for cost/latency optimization.</div>
+    <div class="fycard-why direct">↳ Direct: Model switching in Claude API ecosystem directly impacts your workflow cost optimization and latency tuning for orchestration tasks.</div><div class="tag-row">
+      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-tier t-adopt">✅ Adopt Now</span>
+      <span class="tag t-topic">claude</span>
+    </div>
+  </a>
+  <a class="fycard adjacent" href="https://github.com/bytedance/deer-flow" target="_blank" rel="noopener noreferrer" data-date="2026-04-14" data-tier="🌱 On Radar" data-tierkey="radar" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="true">
+    <div class="fycard-icon">🌳</div>
+    <div class="fycard-title">bytedance/deer-flow</div>
+    <div class="fycard-src"><span>GitHub · 2026-04-14</span></div>
+    <div class="fycard-desc">Long-horizon SuperAgent harness with sandboxes, memory, tools, and subagent orchestration for research, coding, creation. Enterprise-grade agentic workflow framework.</div>
+    <div class="fycard-why">↳ Adjacent: Deer-flow demonstrates long-horizon agent patterns (memory, subagents, tool delegation) applicable to complex GIS + data workflows requiring multi-step reasoning.</div><div class="tag-row">
       <span class="tag t-lens">📡 Staying Current</span>
       <span class="tag t-tier t-radar">🌱 On Radar</span>
       <span class="tag t-topic">agent</span><span class="tag t-topic">memory</span>
     </div>
   </a>
-  <a class="fycard adjacent" href="https://github.com/open-webui/open-webui" target="_blank" rel="noopener noreferrer" data-date="2026-04-14" data-tier="🌱 On Radar" data-tierkey="radar" data-lens="🏠 Home Hobbyist" data-lenskey="home">
-    <div class="fycard-icon">💬</div>
-    <div class="fycard-title">open-webui/open-webui</div>
-    <div class="fycard-src"><span>GitHub · 2026-04-14</span></div>
-    <div class="fycard-desc">Self-hosted LLM interface (Python, multi-model support via Ollama/OpenAI API). Useful for testing local or Claude API models in a familiar chat UI; minimal stack overhead.</div>
-    <div class="fycard-why">↳ Adjacent: replaces or extends your CLI-based Claude API interactions; Python-based, supports local inference (Ollama) and cloud APIs—useful for iterating on prompts before production.</div><div class="tag-row">
-      <span class="tag t-lens">🏠 Home Hobbyist</span>
-      <span class="tag t-tier t-radar">🌱 On Radar</span>
-      <span class="tag t-topic">local</span>
-    </div>
-  </a>
-  <a class="fycard adjacent" href="https://github.com/Significant-Gravitas/AutoGPT" target="_blank" rel="noopener noreferrer" data-date="2026-04-15" data-tier="🌱 On Radar" data-tierkey="radar" data-lens="📡 Staying Current" data-lenskey="curr">
-    <div class="fycard-icon">🚀</div>
-    <div class="fycard-title">Significant-Gravitas/AutoGPT</div>
-    <div class="fycard-src"><span>GitHub · 2026-04-15</span></div>
-    <div class="fycard-desc">Accessible autonomous AI agent framework (Python, agentic-first design). Pioneering open-source agent system—relevant for understanding agent architecture patterns and benchmarking your own 3-layer orchestration design.</div>
-    <div class="fycard-why">↳ Adjacent: foundational autonomous agent architecture (Python); study for design patterns in your custom orchestration layer; complementary to Claude Code Routines.</div><div class="tag-row">
-      <span class="tag t-lens">📡 Staying Current</span>
-      <span class="tag t-tier t-radar">🌱 On Radar</span>
-      <span class="tag t-topic">agent</span>
-    </div>
-  </a>
-  <a class="fycard" href="https://www.youtube.com/watch?v=g6ig4BmjHZo" target="_blank" rel="noopener noreferrer" data-date="2026-04-14" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="🗺 GIS/FME" data-lenskey="gis">
-    <div class="fycard-icon">🎯</div>
-    <div class="fycard-title">Is it worth learning GEOSPATIAL? (Will A.I. Eat Earth Observation?)</div>
-    <div class="fycard-src"><span>The NDS Show · 2026-04-14</span><span class="vid-dur">⏱ 4:30</span></div>
-    <div class="fycard-desc">Expert discussion on AI readiness in geospatial intelligence and human analyst displacement. Relevant for 'Industry Lens' + 'Career Navigator' pillars—directly addresses the signal vs. noise question around AI in GIS.</div>
-    <div class="fycard-why">↳ Direct: GIS/geospatial expert perspective on AI adoption; perfect editorial fit for your Industry Lens pillar and reassessing FME + geospatial careers in the age of AI.</div><div class="tag-row">
-      <span class="tag t-lens">🗺 GIS/FME</span>
-      <span class="tag t-tier t-watch">👁 Watch Closely</span>
-      <span class="tag t-topic">geoai</span>
-    </div>
-  </a>
-  <a class="fycard adjacent" href="https://www.youtube.com/watch?v=eAleab2cL3I" target="_blank" rel="noopener noreferrer" data-date="2026-04-12" data-tier="🌱 On Radar" data-tierkey="radar" data-lens="🏠 Home Hobbyist" data-lenskey="home">
-    <div class="fycard-icon">💾</div>
-    <div class="fycard-title">Gemma 4 + Ollama = FREE Claude Code Setup!</div>
-    <div class="fycard-src"><span>WorldofAI · 2026-04-12</span><span class="vid-dur">⏱ 11:36</span></div>
-    <div class="fycard-desc">Setup guide for local inference (Ollama + Gemma 4) as a cost-free alternative to Claude API. Relevant for home projects and understanding local LLM trade-offs vs. cloud API performance.</div>
-    <div class="fycard-why">↳ Adjacent: local inference (Ollama, Gemma) as a cost-conscious alternative to your Claude API stack; useful for prototyping before committing to paid inference.</div><div class="tag-row">
-      <span class="tag t-lens">🏠 Home Hobbyist</span>
-      <span class="tag t-tier t-radar">🌱 On Radar</span>
-      <span class="tag t-topic">local</span>
-    </div>
-  </a>
-  <a class="fycard" href="https://www.reddit.com/r/ClaudeAI/comments/1skm9tw/you_can_now_switch_models_midchat/" target="_blank" rel="noopener noreferrer" data-date="2026-04-13" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="📡 Staying Current" data-lenskey="curr">
-    <div class="fycard-icon">🔀</div>
-    <div class="fycard-title">You can now switch models mid-chat</div>
-    <div class="fycard-src"><span>r/ClaudeAI · 2026-04-13</span></div>
-    <div class="fycard-desc">Claude API platform now supports mid-conversation model switching—useful UX improvement for cost optimization and capability balancing (Haiku ↔ Sonnet).</div>
-    <div class="fycard-why">↳ Direct: Claude API (in your stack) feature enabling dynamic model selection—useful for your cost-aware orchestration patterns (Haiku for light tasks, Sonnet for heavy reasoning).</div><div class="tag-row">
-      <span class="tag t-lens">📡 Staying Current</span>
-      <span class="tag t-tier t-watch">👁 Watch Closely</span>
-      <span class="tag t-topic">claude</span>
-    </div>
-  </a>
-  <a class="fycard adjacent" href="https://www.reddit.com/r/LocalLLaMA/comments/1sl6931/247_headless_ai_server_on_xiaomi_12_pro/" target="_blank" rel="noopener noreferrer" data-date="2026-04-14" data-tier="🔥 Hype Check" data-tierkey="hype" data-lens="🏠 Home Hobbyist" data-lenskey="home">
+  <a class="fycard adjacent" href="https://www.reddit.com/r/LocalLLaMA/comments/1sl6931/247_headless_ai_server_on_xiaomi_12_pro/" target="_blank" rel="noopener noreferrer" data-date="2026-04-14" data-tier="🌱 On Radar" data-tierkey="radar" data-lens="🏠 Home Hobbyist" data-lenskey="home" data-adj="true">
     <div class="fycard-icon">📱</div>
     <div class="fycard-title">24/7 Headless AI Server on Xiaomi 12 Pro (Snapdragon 8 Gen 1 + Ollama/Gemma4)</div>
     <div class="fycard-src"><span>r/LocalLLaMA · 2026-04-14</span></div>
-    <div class="fycard-desc">Practitioner deployed local LLM server (Ollama/Gemma4) on mobile hardware for 24/7 inference—demonstrates edge AI feasibility for geospatial or data processing workloads.</div>
-    <div class="fycard-why">↳ Adjacent: local inference (Ollama, your stack neighbor) at scale; interesting pattern for edge-based geospatial AI or always-on data pipeline components.</div><div class="tag-row">
+    <div class="fycard-desc">DIY local LLM inference server built on mobile hardware using LineageOS + Ollama + Gemma4, achieving 24/7 headless operation with ~9GB RAM.</div>
+    <div class="fycard-why">↳ Adjacent: Demonstrates practical local inference infrastructure outside cloud APIs; relevant to understanding edge deployment and cost models for agent orchestration.</div><div class="tag-row">
       <span class="tag t-lens">🏠 Home Hobbyist</span>
-      <span class="tag t-tier t-hype">🔥 Hype Check</span>
+      <span class="tag t-tier t-radar">🌱 On Radar</span>
       <span class="tag t-topic">local</span>
     </div>
   </a>
@@ -338,23 +350,23 @@
 </div>
 
 <div class="world-list">
-<a class="world-row" href="https://www.youtube.com/watch?v=_S_7FReK148" target="_blank" rel="noopener noreferrer"><span class="world-icon">🏢</span><span class="world-title">Agentic AI & Multi-Agent Systems: Enterprise Guide 2026 | AetherLink</span><span class="world-src">Aetherlink · 2026-04-11</span><span class="world-desc">Enterprise-focused overview of agentic AI architectures and multi-agent orchestration patterns for 2026. Contextualizes agent landscape and production deployment strategies.</span></a><a class="world-row" href="https://github.com/lobehub/lobehub" target="_blank" rel="noopener noreferrer"><span class="world-icon">🤝</span><span class="world-title">lobehub/lobehub</span><span class="world-src">GitHub · 2026-04-15</span><span class="world-desc">Agent collaboration and multi-agent harness platform (TypeScript/React, agent teams). Represents modern agent UX/orchestration frontier—useful reference for multi-agent design patterns.</span></a><a class="world-row" href="https://github.com/bytedance/deer-flow" target="_blank" rel="noopener noreferrer"><span class="world-icon">🔬</span><span class="world-title">bytedance/deer-flow</span><span class="world-src">GitHub · 2026-04-14</span><span class="world-desc">Long-horizon SuperAgent framework from ByteDance (Python, research + coding + creation). Advanced agentic architecture with sandboxes, memory, and subagents—represents production-grade agent composition patterns.</span></a><a class="world-row" href="https://www.reddit.com/r/singularity/comments/1skxzk3/for_the_first_time_in_war_drones_ground_robotic/" target="_blank" rel="noopener noreferrer"><span class="world-icon">🚁</span><span class="world-title">For The First Time In War, Drones & Ground Robotic Systems Seized Enemy positions Without A Single Soldier</span><span class="world-src">r/singularity · 2026-04-13</span><span class="world-desc">Military AI autonomy milestone—autonomous drone and robotic systems operated without direct human control in combat.</span></a><a class="world-row" href="https://www.reddit.com/r/artificial/comments/1sjvbfw/nyc_hospitals_will_stop_sharing_patients_private/" target="_blank" rel="noopener noreferrer"><span class="world-icon">🏥</span><span class="world-title">NYC hospitals will stop sharing patients' private health data with Palantir</span><span class="world-src">r/artificial · 2026-04-12</span><span class="world-desc">Privacy regulation pushback: NYC hospitals halt data-sharing agreements with Palantir AI platform—reflects growing institutional resistance to opaque AI data practices.</span></a><a class="world-row" href="https://www.reddit.com/r/singularity/comments/1skyvw8/my_manager_watching_how_i_work_after_hitting_the/" target="_blank" rel="noopener noreferrer"><span class="world-icon">😅</span><span class="world-title">My manager watching how I work after hitting the Claude usage limit</span><span class="world-src">r/singularity · 2026-04-13</span><span class="world-desc">Humorous signal of Claude API dependency in professional workflows—highlights the productivity cliff when rate-limited and the psychological shift in developer expectations.</span></a>
+<a class="world-row" href="https://www.reddit.com/r/singularity/comments/1skxzk3/for_the_first_time_in_war_drones_ground_robotic/" target="_blank" rel="noopener noreferrer"><span class="world-icon">🚁</span><span class="world-title">For The First Time In War, Drones & Ground Robotic Systems Seized Enemy positions Without A Single Soldier</span><span class="world-src">r/singularity · 2026-04-13</span><span class="world-desc">Autonomous drones and robotic systems executed military objectives without human operator involvement, marking shift in defense autonomy landscape.</span></a><a class="world-row" href="https://www.reddit.com/r/artificial/comments/1sjvbfw/nyc_hospitals_will_stop_sharing_patients_private/" target="_blank" rel="noopener noreferrer"><span class="world-icon">🔒</span><span class="world-title">NYC hospitals will stop sharing patients' private health data with Palantir</span><span class="world-src">r/artificial · 2026-04-12</span><span class="world-desc">Major U.S. hospital system terminates data sharing agreement with Palantir following privacy concerns and regulatory pressure over patient data governance.</span></a><a class="world-row" href="https://www.reddit.com/r/LocalLLaMA/comments/1skt002/please_stop_using_ai_for_posts_and_showcasing/" target="_blank" rel="noopener noreferrer"><span class="world-icon">⚠️</span><span class="world-title">Please stop using AI for posts and showcasing your completely vibe coded projects</span><span class="world-src">r/LocalLLaMA · 2026-04-13</span><span class="world-desc">Community pushback against AI-generated project showcases and documentation, advocating for transparency and human-validated technical content.</span></a><a class="world-row" href="https://www.reddit.com/r/singularity/comments/1skyvw8/my_manager_watching_how_i_work_after_hitting_the/" target="_blank" rel="noopener noreferrer"><span class="world-icon">😅</span><span class="world-title">My manager watching how I work after hitting the Claude usage limit</span><span class="world-src">r/singularity · 2026-04-13</span><span class="world-desc">Humorous sentiment about productivity drop when Claude API rate limits enforced, highlighting dependency on LLM-augmented workflows in professional settings.</span></a><a class="world-row" href="https://www.reddit.com/r/singularity/comments/1skq764/nasa_unveils_an_ambitious_20_billion_plan_to/" target="_blank" rel="noopener noreferrer"><span class="world-icon">🌙</span><span class="world-title">NASA unveils an ambitious $20 billion plan to build a lunar base near the Moon's south pole</span><span class="world-src">r/singularity · 2026-04-13</span><span class="world-desc">NASA announces major funding and technical roadmap for sustained lunar south pole base development as part of Artemis program.</span></a><a class="world-row" href="https://www.reddit.com/r/ClaudeAI/comments/1sl82vq/just_say_the_word/" target="_blank" rel="noopener noreferrer"><span class="world-icon">👍</span><span class="world-title">Just say the word…</span><span class="world-src">r/ClaudeAI · 2026-04-14</span><span class="world-desc">Community sentiment post celebrating Claude AI's accessibility and ease of use for task completion.</span></a>
 </div>
 
 <div class="g3">
   <div class="panel p-pink">
     <div class="plabel">Weekly Themes</div>
-    <div class="theme-wrap"><span class="tpill tp-curr"><span class="tpill-dot"></span>Claude Code Maturity & Routines (24/7 Agents)</span><span class="tpill tp-agent"><span class="tpill-dot"></span>Agent Orchestration Architectures Converging (LangChain, RAGFlow, n8n)</span><span class="tpill tp-gis"><span class="tpill-dot"></span>GeoAI Integration Accelerating (QGIS + MCP, Earth Observation + AI Readiness)</span><span class="tpill tp-home"><span class="tpill-dot"></span>Local Inference Trade-offs (Ollama/Gemma vs. Claude API Cost/Capability)</span><span class="tpill tp-infra"><span class="tpill-dot"></span>MCP Protocol Ecosystem Expanding (Claude Code, QGIS, Geospatial Tools)</span></div>
+    <div class="theme-wrap"><span class="tpill tp-curr"><span class="tpill-dot"></span>Claude Code + Routines: Agent orchestration moves native</span><span class="tpill tp-agent"><span class="tpill-dot"></span>MCP Protocol: Standardization enabling QGIS-Claude integration and toolkit expansion</span><span class="tpill tp-agent"><span class="tpill-dot"></span>Multi-agent patterns: Enterprise architectures for long-horizon workflows with memory</span><span class="tpill tp-gis"><span class="tpill-dot"></span>GeoAI acceleration: QGIS/Claude integration, spatial AI legitimacy in enterprise</span><span class="tpill tp-infra"><span class="tpill-dot"></span>Local LLM infrastructure: Ollama + Gemma viable for cost/privacy optimization</span><span class="tpill tp-agent"><span class="tpill-dot"></span>RAG + Agentic synthesis: Knowledge retrieval + autonomous task execution converging</span></div>
     <div class="plabel">Signal Mix (Your Stack)</div>
-    <div class="sig"><div class="sig-icon">🎥</div><div class="sig-lbl">Videos</div><div class="sig-bar-bg"><div class="sig-bar" style="width:42%;background:var(--blue);"></div></div><div class="sig-ct">6</div></div><div class="sig"><div class="sig-icon">📦</div><div class="sig-lbl">Repos</div><div class="sig-bar-bg"><div class="sig-bar" style="width:42%;background:var(--purple);"></div></div><div class="sig-ct">6</div></div><div class="sig"><div class="sig-icon">📰</div><div class="sig-lbl">Signals</div><div class="sig-bar-bg"><div class="sig-bar" style="width:14%;background:var(--teal);"></div></div><div class="sig-ct">2</div></div><div class="sig"><div class="sig-icon">🔀</div><div class="sig-lbl">Adjacent</div><div class="sig-bar-bg"><div class="sig-bar" style="width:57%;background:var(--orange);"></div></div><div class="sig-ct">8</div></div><div class="sig"><div class="sig-icon">🗺</div><div class="sig-lbl">GIS picks</div><div class="sig-bar-bg"><div class="sig-bar" style="width:21%;background:var(--green);"></div></div><div class="sig-ct">3</div></div>
+    <div class="sig"><div class="sig-icon">🎥</div><div class="sig-lbl">Videos</div><div class="sig-bar-bg"><div class="sig-bar" style="width:46%;background:var(--blue);"></div></div><div class="sig-ct">7</div></div><div class="sig"><div class="sig-icon">📦</div><div class="sig-lbl">Repos</div><div class="sig-bar-bg"><div class="sig-bar" style="width:40%;background:var(--purple);"></div></div><div class="sig-ct">6</div></div><div class="sig"><div class="sig-icon">📰</div><div class="sig-lbl">Signals</div><div class="sig-bar-bg"><div class="sig-bar" style="width:13%;background:var(--teal);"></div></div><div class="sig-ct">2</div></div><div class="sig"><div class="sig-icon">🔀</div><div class="sig-lbl">Adjacent</div><div class="sig-bar-bg"><div class="sig-bar" style="width:40%;background:var(--orange);"></div></div><div class="sig-ct">6</div></div><div class="sig"><div class="sig-icon">🗺</div><div class="sig-lbl">GIS picks</div><div class="sig-bar-bg"><div class="sig-bar" style="width:20%;background:var(--green);"></div></div><div class="sig-ct">3</div></div>
   </div>
   <div class="panel p-teal">
     <div class="plabel">Model Tracker</div>
-    <div class="model-row"><div><div class="model-name">Claude Sonnet 4.6</div><div class="model-co">Anthropic · 2026-04</div></div><span class="model-status ms-arch">ARCH</span></div><div class="model-row"><div><div class="model-name">Claude Haiku 4.5</div><div class="model-co">Anthropic · 2026-04</div></div><span class="model-status ms-arch">ARCH</span></div><div class="model-row"><div><div class="model-name">Gemma 4</div><div class="model-co">Google · 2026-04</div></div><span class="model-status ms-tool">TOOL</span></div><div class="model-row"><div><div class="model-name">Claude Code Routines (24/7 Agent Infrastructure)</div><div class="model-co">Anthropic · 2026-04</div></div><span class="model-status ms-watch">DESIGN</span></div>
+    <div class="model-row"><div><div class="model-name">Claude Sonnet 4.6</div><div class="model-co">Anthropic · 2026-04-14</div></div><span class="model-status ms-tool">TOOL</span></div><div class="model-row"><div><div class="model-name">Claude Haiku 4.5</div><div class="model-co">Anthropic · 2026-04-14</div></div><span class="model-status ms-tool">TOOL</span></div><div class="model-row"><div><div class="model-name">Gemma 4</div><div class="model-co">Google · 2026-04-12</div></div><span class="model-status ms-new">NEW</span></div><div class="model-row"><div><div class="model-name">Claude Code Routines</div><div class="model-co">Anthropic · 2026-04-14</div></div><span class="model-status ms-arch">ARCH</span></div>
   </div>
   <div class="panel p-yellow">
     <div class="plabel">The Lab — Apply This Week</div>
-    <div class="apply-card"><div class="apply-head"><div class="apply-title">Build a QGIS + Claude MCP Workflow for Geospatial Analysis</div><span class="effort e-med">Med effort</span></div><div class="apply-desc">Replicate the Geomatica Ambiental setup: install QGIS MCP plugin, connect to Claude API, and automate a simple geospatial query (e.g., area analysis, buffer operations). Tests your integration of GIS tools with Claude directives. (Videos: QGIS + MCP, Claude Code Guide)</div></div><div class="apply-card"><div class="apply-head"><div class="apply-title">Prototype Cost-Aware Model Switching in Your Agent Orchestration</div><span class="effort e-med">Med effort</span></div><div class="apply-desc">Implement mid-conversation model switching (Haiku ↔ Sonnet) in your 3-layer orchestration. Use Haiku for light directives (routing, pre-filtering), Sonnet for reasoning layers. Measure token savings and latency trade-offs. (Videos: Claude Code Routines; Signal: Model Switching)</div></div><div class="apply-card"><div class="apply-head"><div class="apply-title">Evaluate n8n or LangChain as FME Replacement for One Data Pipeline</div><span class="effort e-high">High effort</span></div><div class="apply-desc">Pick a current FME workflow and migrate it to either n8n (visual + TypeScript) or LangChain (Python agent abstractions). Document friction, learning curve, and whether it reduces ETL complexity. Publish findings on Tool Critic pillar. (Repos: n8n, LangChain)</div></div>
+    <div class="apply-card"><div class="apply-head"><div class="apply-title">QGIS + Claude Integration via MCP</div><span class="effort e-med">Med effort</span></div><div class="apply-desc">Follow the Geomatica Ambiental tutorial to install QGIS MCP plugin and execute a simple spatial query (e.g., buffer operation on GeoJSON) with Claude AI providing analysis. Document the workflow and performance vs. manual QGIS.</div></div><div class="apply-card"><div class="apply-head"><div class="apply-title">Multi-model Claude workflow in production</div><span class="effort e-med">Med effort</span></div><div class="apply-desc">Build a small n8n workflow that switches between Claude Sonnet (complex reasoning) and Haiku (fast summaries) based on task type. Test cost/latency trade-offs using your existing data pipelines or sample geospatial queries.</div></div><div class="apply-card"><div class="apply-head"><div class="apply-title">Evaluate RAGFlow for spatial data retrieval</div><span class="effort e-high">High effort</span></div><div class="apply-desc">Prototype RAGFlow as context layer for a multi-step GIS workflow: ingest Sentinel Hub imagery metadata, vector boundaries, and analysis reports; test agent ability to retrieve and synthesize relevant context for landscape change detection or site suitability analysis.</div></div>
   </div>
 </div>
 
@@ -372,10 +384,24 @@
     document.querySelectorAll('#hub-grid .fycard').forEach(card => {
       const lk = card.dataset.lenskey || '';
       const tk = card.dataset.tierkey || '';
-      const lensOk = currentLens === 'all' || lk === currentLens;
+      const lensOk = currentLens === 'all'
+        ? true
+        : currentLens === 'adj'
+          ? card.dataset.adj === 'true'
+          : lk === currentLens;
       const tierOk = currentTier === 'all' || tk === currentTier;
       card.classList.toggle('hidden', !(lensOk && tierOk));
     });
+  }
+
+  function filterAdjOnly() {
+    currentLens = 'adj';
+    currentTier = 'all';
+    ['all','home','curr','gis'].forEach(id => document.getElementById('f-' + id).classList.remove('active'));
+    ['all','adopt','watch','hype','found','radar'].forEach(id => document.getElementById('t-' + id).classList.remove('active'));
+    document.getElementById('f-all').classList.add('active');
+    document.getElementById('t-all').classList.add('active');
+    applyFilters();
   }
 
   function filterHub(lens) {

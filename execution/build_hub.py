@@ -207,6 +207,7 @@ def render_html(data, duration_map=None):
   .vid-dur {{ background:rgba(56,201,212,.12); color:var(--teal); border-radius:4px; padding:1px 5px; font-size:9px; font-weight:700; flex-shrink:0; }}
   .fycard-desc {{ font-size:11px; color:var(--text2); line-height:1.5; margin-bottom:6px; flex-grow:1; }}
   .fycard-why {{ font-size:10px; color:var(--orange); font-style:italic; margin-bottom:8px; line-height:1.4; }}
+  .fycard-why.direct {{ color:var(--teal); }}
   .tag-row {{ display:flex; flex-wrap:wrap; gap:5px; }}
   .tag {{ padding:2px 7px; border-radius:4px; font-size:9px; font-weight:700; }}
   .t-lens {{ background:rgba(255,255,255,0.05); color:var(--text3); }}
@@ -287,7 +288,7 @@ def render_html(data, duration_map=None):
   <div class="sc" onclick="filterTier('adopt')"><div class="sc-num c-green">{n_adopt}</div><div class="sc-lbl">✅ Adopt Now</div></div>
   <div class="sc" onclick="filterTier('watch')"><div class="sc-num c-blue">{n_watch}</div><div class="sc-lbl">👁 Watch Closely</div></div>
   <div class="sc" onclick="filterTier('radar')"><div class="sc-num c-teal">{n_radar}</div><div class="sc-lbl">🌱 On Radar</div></div>
-  <div class="sc" style="cursor:default"><div class="sc-num c-orange">{n_adjacent}</div><div class="sc-lbl">🔀 Adjacent</div></div>
+  <div class="sc" onclick="filterAdjOnly()" style="cursor:pointer;"><div class="sc-num c-orange">{n_adjacent}</div><div class="sc-lbl">🔀 Adjacent</div></div>
   <div class="sc" style="cursor:default"><div class="sc-num c-text3">{n_world}</div><div class="sc-lbl">🌐 AI World</div></div>
 </div>
 
@@ -336,8 +337,9 @@ def render_html(data, duration_map=None):
         why        = art.get('relevance_why', '')
         is_adj     = why.lower().startswith('adjacent')
         adj_class  = ' adjacent' if is_adj else ''
-        why_html   = f'<div class="fycard-why">↳ {why}</div>' if why else ''
-        html += f"""  <a class="fycard{adj_class}" href="{art['url']}" target="_blank" rel="noopener noreferrer" data-date="{art['date']}" data-tier="{art['tier']}" data-tierkey="{tier_key}" data-lens="{art['lens']}" data-lenskey="{lens_key}">
+        why_cls    = 'fycard-why' if is_adj else 'fycard-why direct'
+        why_html   = f'<div class="{why_cls}">↳ {why}</div>' if why else ''
+        html += f"""  <a class="fycard{adj_class}" href="{art['url']}" target="_blank" rel="noopener noreferrer" data-date="{art['date']}" data-tier="{art['tier']}" data-tierkey="{tier_key}" data-lens="{art['lens']}" data-lenskey="{lens_key}" data-adj="{'true' if is_adj else 'false'}">
     <div class="fycard-icon">{icon}</div>
     <div class="fycard-title">{art['title']}</div>
     <div class="fycard-src"><span>{art['source']} · {art['date']}</span>{dur_html}</div>
@@ -393,10 +395,24 @@ def render_html(data, duration_map=None):
     document.querySelectorAll('#hub-grid .fycard').forEach(card => {{
       const lk = card.dataset.lenskey || '';
       const tk = card.dataset.tierkey || '';
-      const lensOk = currentLens === 'all' || lk === currentLens;
+      const lensOk = currentLens === 'all'
+        ? true
+        : currentLens === 'adj'
+          ? card.dataset.adj === 'true'
+          : lk === currentLens;
       const tierOk = currentTier === 'all' || tk === currentTier;
       card.classList.toggle('hidden', !(lensOk && tierOk));
     }});
+  }}
+
+  function filterAdjOnly() {{
+    currentLens = 'adj';
+    currentTier = 'all';
+    ['all','home','curr','gis'].forEach(id => document.getElementById('f-' + id).classList.remove('active'));
+    ['all','adopt','watch','hype','found','radar'].forEach(id => document.getElementById('t-' + id).classList.remove('active'));
+    document.getElementById('f-all').classList.add('active');
+    document.getElementById('t-all').classList.add('active');
+    applyFilters();
   }}
 
   function filterHub(lens) {{
