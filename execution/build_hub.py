@@ -68,32 +68,36 @@ def generate_hub_content(data):
 
 def render_html(data, duration_map=None):
     """
-    Renders the AI Discovery Hub dashboard.
+    Renders the AI Discovery Hub dashboard with two sections:
+    - Primary: personally relevant items (direct stack + adjacent)
+    - Secondary: AI world at large (awareness only, compact list)
     """
     today = datetime.now().strftime("%B %d, %Y")
     duration_map = duration_map or {}
 
-    # ── Compute stats from artifacts ──────────────────────────────────────────
-    artifacts = data.get('artifacts', [])
-    n_total  = len(artifacts)
-    n_adopt  = sum(1 for a in artifacts if 'Adopt'  in a['tier'])
-    n_watch  = sum(1 for a in artifacts if 'Watch'  in a['tier'])
-    n_hype   = sum(1 for a in artifacts if 'Hype'   in a['tier'])
-    n_found  = sum(1 for a in artifacts if 'Found'  in a['tier'] or 'Foundation' in a['tier'])
-    n_radar  = sum(1 for a in artifacts if 'Radar'  in a['tier'])
-    n_home   = sum(1 for a in artifacts if 'Home'   in a.get('lens', ''))
-    n_curr   = sum(1 for a in artifacts if 'Current' in a.get('lens', '') or 'Staying' in a.get('lens', ''))
-    n_gis    = sum(1 for a in artifacts if 'GIS'    in a.get('lens', ''))
-    n_video  = sum(1 for a in artifacts if a.get('type') == 'video')
-    n_repo   = sum(1 for a in artifacts if a.get('type') == 'repo')
-    n_signal = sum(1 for a in artifacts if a.get('type') == 'signal')
+    artifacts  = data.get('artifacts', [])
+    personal   = [a for a in artifacts if a.get('relevance') == 'personal']
+    world      = [a for a in artifacts if a.get('relevance') != 'personal']
+    n_personal = len(personal)
+    n_world    = len(world)
+    n_adopt    = sum(1 for a in personal if 'Adopt'  in a['tier'])
+    n_watch    = sum(1 for a in personal if 'Watch'  in a['tier'])
+    n_radar    = sum(1 for a in personal if 'Radar'  in a['tier'])
+    n_adjacent = sum(1 for a in personal if a.get('relevance_why','').lower().startswith('adjacent'))
+    n_gis      = sum(1 for a in personal if 'GIS'    in a.get('lens',''))
+    n_video    = sum(1 for a in personal if a.get('type') == 'video')
+    n_repo     = sum(1 for a in personal if a.get('type') == 'repo')
+    n_signal   = sum(1 for a in personal if a.get('type') == 'signal')
 
-    def pct(n): return f"{int(n/n_total*100)}%" if n_total else "0%"
+    def pct(n, total=None):
+        t = total if total is not None else n_personal
+        return f"{int(n/t*100)}%" if t else "0%"
 
-    # ── Pre-render sidebar panels ─────────────────────────────────────────────
-    themes_html = "".join([f'<span class="tpill tp-{t.get("type","curr")}"><span class="tpill-dot"></span>{t["label"]}</span>' for t in data.get('themes', [])])
+    themes_html = "".join([
+        f'<span class="tpill tp-{t.get("type","curr")}"><span class="tpill-dot"></span>{t["label"]}</span>'
+        for t in data.get('themes', [])
+    ])
 
-    # Relevance bars (type breakdown)
     bars_html = (
         f'<div class="sig"><div class="sig-icon">🎥</div><div class="sig-lbl">Videos</div>'
         f'<div class="sig-bar-bg"><div class="sig-bar" style="width:{pct(n_video)};background:var(--blue);"></div></div>'
@@ -104,9 +108,9 @@ def render_html(data, duration_map=None):
         f'<div class="sig"><div class="sig-icon">📰</div><div class="sig-lbl">Signals</div>'
         f'<div class="sig-bar-bg"><div class="sig-bar" style="width:{pct(n_signal)};background:var(--teal);"></div></div>'
         f'<div class="sig-ct">{n_signal}</div></div>'
-        f'<div class="sig"><div class="sig-icon">🏠</div><div class="sig-lbl">Home picks</div>'
-        f'<div class="sig-bar-bg"><div class="sig-bar" style="width:{pct(n_home)};background:var(--yellow);"></div></div>'
-        f'<div class="sig-ct">{n_home}</div></div>'
+        f'<div class="sig"><div class="sig-icon">🔀</div><div class="sig-lbl">Adjacent</div>'
+        f'<div class="sig-bar-bg"><div class="sig-bar" style="width:{pct(n_adjacent)};background:var(--orange);"></div></div>'
+        f'<div class="sig-ct">{n_adjacent}</div></div>'
         f'<div class="sig"><div class="sig-icon">🗺</div><div class="sig-lbl">GIS picks</div>'
         f'<div class="sig-bar-bg"><div class="sig-bar" style="width:{pct(n_gis)};background:var(--green);"></div></div>'
         f'<div class="sig-ct">{n_gis}</div></div>'
@@ -131,6 +135,16 @@ def render_html(data, duration_map=None):
         for ex in data.get('exercises', [])
     ])
 
+    world_rows_html = "".join([
+        f'<a class="world-row" href="{a["url"]}" target="_blank" rel="noopener noreferrer">'
+        f'<span class="world-icon">{a.get("icon","📦")}</span>'
+        f'<span class="world-title">{a["title"]}</span>'
+        f'<span class="world-src">{a["source"]} · {a["date"]}</span>'
+        f'<span class="world-desc">{a["desc"]}</span>'
+        f'</a>'
+        for a in world
+    ])
+
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -150,35 +164,28 @@ def render_html(data, duration_map=None):
   }}
   * {{ margin:0; padding:0; box-sizing:border-box; }}
   body {{ background:var(--bg); color:var(--text); font-family:var(--font-sans); padding:26px 28px; line-height:1.5; }}
-
-  /* ── Header ── */
   .header {{ display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; padding-bottom:20px; border-bottom:1px solid var(--border); }}
   .h-title {{ font-size:24px; font-weight:900; letter-spacing:-.5px; background:linear-gradient(120deg,#fff 0%,#8e9ab8 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }}
   .h-sub {{ font-size:12px; color:var(--text3); font-family:var(--font-mono); margin-top:3px; }}
-  
-  /* ── Stat row ── */
-  .stat-row {{ display:grid; grid-template-columns:repeat(7,1fr); gap:10px; margin-bottom:14px; }}
-  .sc {{ background:var(--bg2); border:1px solid var(--border); border-radius:11px; padding:13px 14px; text-align:center; transition:.15s; }}
+  .stat-row {{ display:grid; grid-template-columns:repeat(6,1fr); gap:10px; margin-bottom:14px; }}
+  .sc {{ background:var(--bg2); border:1px solid var(--border); border-radius:11px; padding:13px 14px; text-align:center; transition:.15s; cursor:pointer; }}
   .sc:hover {{ border-color:var(--border2); background:var(--bg3); }}
   .sc-num {{ font-size:28px; font-weight:900; line-height:1; margin-bottom:3px; }}
   .sc-lbl {{ font-size:10px; color:var(--text3); font-weight:500; }}
   .c-blue {{ color:var(--blue); }} .c-green {{ color:var(--green); }} .c-orange {{ color:var(--orange); }}
-  .c-yellow {{ color:var(--yellow); }} .c-teal {{ color:var(--teal); }} .c-pink {{ color:var(--pink); }}
-
-  /* ── Controls ── */
+  .c-yellow {{ color:var(--yellow); }} .c-teal {{ color:var(--teal); }} .c-pink {{ color:var(--pink); }} .c-text3 {{ color:var(--text3); }}
+  .section-header {{ display:flex; align-items:center; gap:10px; margin:20px 0 12px; }}
+  .section-title {{ font-size:13px; font-weight:800; color:var(--text); }}
+  .section-badge {{ font-size:10px; font-weight:700; padding:3px 9px; border-radius:20px; font-family:var(--font-mono); }}
+  .sb-personal {{ background:rgba(91,138,247,.12); color:var(--blue); border:1px solid rgba(91,138,247,.3); }}
+  .sb-world {{ background:rgba(88,103,142,.12); color:var(--text3); border:1px solid rgba(88,103,142,.3); }}
+  .section-line {{ flex:1; height:1px; background:var(--border); }}
   .controls {{ margin-bottom:16px; display:flex; flex-direction:column; gap:8px; }}
   .sort-row {{ display:flex; gap:8px; align-items:center; }}
   .filter-row {{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }}
   .row-lbl {{ font-size:9px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:var(--text3); font-family:var(--font-mono); width:38px; flex-shrink:0; }}
   .sort-btn, .filter-btn {{ font-size:11px; font-weight:700; padding:4px 12px; border-radius:6px; border:1px solid var(--border); background:var(--bg2); color:var(--text3); cursor:pointer; transition:.2s; position:relative; }}
-  .filter-btn[data-tip]:hover::after {{
-    content:attr(data-tip);
-    position:absolute; bottom:calc(100% + 7px); left:50%; transform:translateX(-50%);
-    background:var(--bg4); border:1px solid var(--border2); color:var(--text2);
-    font-size:10.5px; font-weight:400; line-height:1.45; padding:7px 11px; border-radius:7px;
-    white-space:nowrap; pointer-events:none; z-index:200; font-family:var(--font-sans);
-    box-shadow:0 4px 16px rgba(0,0,0,.4);
-  }}
+  .filter-btn[data-tip]:hover::after {{ content:attr(data-tip); position:absolute; bottom:calc(100% + 7px); left:50%; transform:translateX(-50%); background:var(--bg4); border:1px solid var(--border2); color:var(--text2); font-size:10.5px; font-weight:400; line-height:1.45; padding:7px 11px; border-radius:7px; white-space:nowrap; pointer-events:none; z-index:200; font-family:var(--font-sans); box-shadow:0 4px 16px rgba(0,0,0,.4); }}
   .sort-btn.active {{ border-color:var(--blue); color:var(--text); background:rgba(91,138,247,.1); }}
   .filter-btn.active {{ border-color:var(--text3); color:var(--text); background:rgba(255,255,255,.05); }}
   .filter-btn.f-home.active {{ border-color:var(--yellow); color:var(--yellow); background:rgba(245,200,66,.1); }}
@@ -188,17 +195,18 @@ def render_html(data, duration_map=None):
   .filter-btn.fb-watch.active {{ border-color:var(--blue); color:var(--blue); background:rgba(91,138,247,.1); }}
   .filter-btn.fb-hype.active  {{ border-color:var(--pink); color:var(--pink); background:rgba(240,93,154,.1); }}
   .filter-btn.fb-found.active {{ border-color:var(--yellow); color:var(--yellow); background:rgba(245,200,66,.1); }}
-  .filter-btn.fb-radar.active {{ border-color:var(--teal);   color:var(--teal);   background:rgba(56,201,212,.1); }}
-
-  /* ── Artifact Cards ── */
-  .hub-grid {{ display:grid; grid-template-columns:repeat(4,1fr); gap:11px; transition:all .4s ease; }}
-  .fycard {{ background:rgba(255,255,255,.033); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:13px; display:flex; flex-direction:column; text-decoration:none; color:inherit; transition:border-color .2s, transform .2s, opacity .2s; }}
+  .filter-btn.fb-radar.active {{ border-color:var(--teal); color:var(--teal); background:rgba(56,201,212,.1); }}
+  .hub-grid {{ display:grid; grid-template-columns:repeat(4,1fr); gap:11px; }}
+  .fycard {{ background:rgba(255,255,255,.033); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:13px; display:flex; flex-direction:column; text-decoration:none; color:inherit; transition:border-color .2s, transform .2s; }}
   .fycard:hover {{ border-color:rgba(245,200,66,.35); transform:translateY(-2px); }}
+  .fycard.adjacent {{ border-color:rgba(249,124,60,.18); }}
+  .fycard.adjacent:hover {{ border-color:rgba(249,124,60,.55); }}
   .fycard-icon {{ font-size:20px; margin-bottom:7px; }}
   .fycard-title {{ font-size:12.5px; font-weight:700; color:var(--text); margin-bottom:3px; line-height:1.3; }}
   .fycard-src {{ font-size:9.5px; color:var(--text3); font-family:var(--font-mono); margin-bottom:6px; display:flex; align-items:center; gap:6px; }}
   .vid-dur {{ background:rgba(56,201,212,.12); color:var(--teal); border-radius:4px; padding:1px 5px; font-size:9px; font-weight:700; flex-shrink:0; }}
-  .fycard-desc {{ font-size:11px; color:var(--text2); line-height:1.5; margin-bottom:8px; flex-grow:1; }}
+  .fycard-desc {{ font-size:11px; color:var(--text2); line-height:1.5; margin-bottom:6px; flex-grow:1; }}
+  .fycard-why {{ font-size:10px; color:var(--orange); font-style:italic; margin-bottom:8px; line-height:1.4; }}
   .tag-row {{ display:flex; flex-wrap:wrap; gap:5px; }}
   .tag {{ padding:2px 7px; border-radius:4px; font-size:9px; font-weight:700; }}
   .t-lens {{ background:rgba(255,255,255,0.05); color:var(--text3); }}
@@ -207,11 +215,17 @@ def render_html(data, duration_map=None):
   .t-watch {{ color:var(--blue); border-color:rgba(91,138,247,.3); }}
   .t-hype  {{ color:var(--pink); border-color:rgba(240,93,154,.3); }}
   .t-found {{ color:var(--yellow); border-color:rgba(245,200,66,.3); }}
-  .t-radar {{ color:var(--teal);   border-color:rgba(56,201,212,.3); }}
+  .t-radar {{ color:var(--teal); border-color:rgba(56,201,212,.3); }}
   .t-topic {{ background:rgba(124,92,252,.08); color:var(--purple); border:1px solid rgba(124,92,252,.2); }}
   .fycard.hidden {{ display:none; }}
-
-  /* ── Bottom panels ── */
+  .world-list {{ display:flex; flex-direction:column; border:1px solid var(--border); border-radius:10px; overflow:hidden; }}
+  .world-row {{ display:grid; grid-template-columns:24px 1fr 150px 2fr; gap:12px; align-items:center; padding:9px 14px; text-decoration:none; color:inherit; border-bottom:1px solid var(--border); transition:background .15s; }}
+  .world-row:last-child {{ border-bottom:none; }}
+  .world-row:hover {{ background:var(--bg2); }}
+  .world-icon {{ font-size:13px; text-align:center; }}
+  .world-title {{ font-size:11.5px; font-weight:600; color:var(--text2); line-height:1.3; }}
+  .world-src {{ font-size:9.5px; color:var(--text3); font-family:var(--font-mono); }}
+  .world-desc {{ font-size:10.5px; color:var(--text3); line-height:1.4; }}
   .p-pink::before  {{ background:linear-gradient(90deg,var(--pink),var(--purple)); }}
   .p-teal::before  {{ background:linear-gradient(90deg,var(--teal),var(--cyan)); }}
   .p-yellow::before {{ background:linear-gradient(90deg,var(--yellow),var(--orange)); }}
@@ -251,36 +265,30 @@ def render_html(data, duration_map=None):
   .e-med  {{ background:rgba(245,200,66,.12); color:var(--yellow); }}
   .e-high {{ background:rgba(249,124,60,.12); color:var(--orange); }}
   .apply-desc {{ font-size:10.5px; color:var(--text2); line-height:1.5; }}
-
-  /* ── Panels ── */
   .panel {{ background:var(--bg2); border:1px solid var(--border); border-radius:13px; padding:18px 20px; position:relative; overflow:hidden; }}
   .panel::before {{ content:''; position:absolute; top:0; left:0; right:0; height:2px; }}
   .p-blue::before {{ background:linear-gradient(90deg,var(--blue),var(--purple)); }}
   .plabel {{ font-size:10px; font-weight:700; letter-spacing:1.1px; text-transform:uppercase; color:var(--text3); margin-bottom:11px; }}
-
-  /* ── Layout ── */
-  .g21 {{ display:grid; grid-template-columns:2fr 1fr; gap:12px; margin-top:12px; }}
   .g3 {{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-top:12px; }}
-
   .footer {{ margin-top:20px; padding-top:14px; border-top:1px solid var(--border); font-size:10px; color:var(--text3); font-family:var(--font-mono); display:flex; justify-content:space-between; }}
 </style>
 </head>
 <body>
+
 <div class="header">
   <div>
     <div class="h-title">AI Discovery Hub</div>
-    <div class="h-sub">{today} &nbsp;·&nbsp; {n_total} signals processed</div>
+    <div class="h-sub">{today} &nbsp;·&nbsp; {n_personal} relevant · {n_world} world signals</div>
   </div>
 </div>
 
 <div class="stat-row">
-  <div class="sc" onclick="filterTier('all');filterHub('all')" style="cursor:pointer"><div class="sc-num c-blue">{n_total}</div><div class="sc-lbl">Total Signals</div></div>
-  <div class="sc" onclick="filterTier('adopt')" style="cursor:pointer"><div class="sc-num c-green">{n_adopt}</div><div class="sc-lbl">✅ Adopt Now</div></div>
-  <div class="sc" onclick="filterTier('watch')" style="cursor:pointer"><div class="sc-num c-blue">{n_watch}</div><div class="sc-lbl">👁 Watch Closely</div></div>
-  <div class="sc" onclick="filterTier('hype')" style="cursor:pointer"><div class="sc-num c-pink">{n_hype}</div><div class="sc-lbl">🔥 Hype Check</div></div>
-  <div class="sc" onclick="filterTier('radar')" style="cursor:pointer"><div class="sc-num c-teal">{n_radar}</div><div class="sc-lbl">🌱 On Radar</div></div>
-  <div class="sc" onclick="filterHub('home')" style="cursor:pointer"><div class="sc-num c-yellow">{n_home}</div><div class="sc-lbl">🏠 Home Picks</div></div>
-  <div class="sc" onclick="filterHub('gis')" style="cursor:pointer"><div class="sc-num c-green">{n_gis}</div><div class="sc-lbl">🗺 GIS Picks</div></div>
+  <div class="sc" onclick="filterTier('all')"><div class="sc-num c-blue">{n_personal}</div><div class="sc-lbl">Your Stack</div></div>
+  <div class="sc" onclick="filterTier('adopt')"><div class="sc-num c-green">{n_adopt}</div><div class="sc-lbl">✅ Adopt Now</div></div>
+  <div class="sc" onclick="filterTier('watch')"><div class="sc-num c-blue">{n_watch}</div><div class="sc-lbl">👁 Watch Closely</div></div>
+  <div class="sc" onclick="filterTier('radar')"><div class="sc-num c-teal">{n_radar}</div><div class="sc-lbl">🌱 On Radar</div></div>
+  <div class="sc" style="cursor:default"><div class="sc-num c-orange">{n_adjacent}</div><div class="sc-lbl">🔀 Adjacent</div></div>
+  <div class="sc" style="cursor:default"><div class="sc-num c-text3">{n_world}</div><div class="sc-lbl">🌐 AI World</div></div>
 </div>
 
 <div class="controls">
@@ -293,54 +301,72 @@ def render_html(data, duration_map=None):
     <span class="row-lbl">LENS</span>
     <button class="filter-btn active" id="f-all" onclick="filterHub('all')">All</button>
     <button class="filter-btn f-home" id="f-home" onclick="filterHub('home')" data-tip="Personal projects, home automation, local tools, budgeting">🏠 Home</button>
-    <button class="filter-btn f-curr" id="f-curr" onclick="filterHub('curr')" data-tip="AI model releases, industry news, tooling updates, research">📡 Current</button>
-    <button class="filter-btn f-gis"  id="f-gis"  onclick="filterHub('gis')"  data-tip="Geospatial AI, satellite imagery, FME/QGIS, spatial data pipelines">🗺 GIS/FME</button>
+    <button class="filter-btn f-curr" id="f-curr" onclick="filterHub('curr')" data-tip="Claude API, model releases, AI industry, agent tooling">📡 Current</button>
+    <button class="filter-btn f-gis"  id="f-gis"  onclick="filterHub('gis')"  data-tip="Geospatial AI, FME, Sentinel Hub, QGIS, spatial data">🗺 GIS/FME</button>
   </div>
   <div class="filter-row">
     <span class="row-lbl">TIER</span>
     <button class="filter-btn active" id="t-all" onclick="filterTier('all')">All</button>
-    <button class="filter-btn fb-adopt" id="t-adopt" onclick="filterTier('adopt')" data-tip="High ROI — ready to use today, clear practical value">✅ Adopt Now</button>
-    <button class="filter-btn fb-watch" id="t-watch" onclick="filterTier('watch')" data-tip="Important signal — worth evaluating soon, not quite ready to act">👁 Watch Closely</button>
-    <button class="filter-btn fb-hype"  id="t-hype"  onclick="filterTier('hype')"  data-tip="Viral or contested — interesting but possibly noise, verify before acting">🔥 Hype Check</button>
-    <button class="filter-btn fb-found" id="t-found" onclick="filterTier('found')" data-tip="Core infrastructure or concept — foundational knowledge worth understanding">🏗 Foundation</button>
-    <button class="filter-btn fb-radar" id="t-radar" onclick="filterTier('radar')" data-tip="Early traction or niche signal — not proven yet, but watch if it gains momentum">🌱 On Radar</button>
+    <button class="filter-btn fb-adopt" id="t-adopt" onclick="filterTier('adopt')" data-tip="High ROI — ready to use in your projects today">✅ Adopt Now</button>
+    <button class="filter-btn fb-watch" id="t-watch" onclick="filterTier('watch')" data-tip="Important signal — evaluate soon">👁 Watch Closely</button>
+    <button class="filter-btn fb-hype"  id="t-hype"  onclick="filterTier('hype')"  data-tip="Viral or contested — verify before acting">🔥 Hype Check</button>
+    <button class="filter-btn fb-found" id="t-found" onclick="filterTier('found')" data-tip="Core infrastructure or concept worth understanding">🏗 Foundation</button>
+    <button class="filter-btn fb-radar" id="t-radar" onclick="filterTier('radar')" data-tip="Early traction — not proven yet, but watch it">🌱 On Radar</button>
   </div>
+</div>
+
+<div class="section-header">
+  <div class="section-title">Your Stack &amp; Adjacent</div>
+  <span class="section-badge sb-personal">{n_personal} signals</span>
+  <div class="section-line"></div>
 </div>
 
 <div class="hub-grid" id="hub-grid">
 """
-    
-    # Render cards
-    for art in data['artifacts']:
-        icon = art.get('icon', '📦')
-        tier_key  = "adopt" if "Adopt" in art['tier'] else "watch" if "Watch" in art['tier'] else "hype" if "Hype" in art['tier'] else "radar" if "Radar" in art['tier'] else "found"
+
+    for art in personal:
+        icon       = art.get('icon', '📦')
+        tier_key   = "adopt" if "Adopt" in art['tier'] else "watch" if "Watch" in art['tier'] else "hype" if "Hype" in art['tier'] else "radar" if "Radar" in art['tier'] else "found"
         tier_class = f"t-{tier_key}"
-        lens_key  = "home" if "Home" in art.get('lens','') else "gis" if "GIS" in art.get('lens','') else "curr"
-        topics = art.get('topics', [])
+        lens_key   = "home" if "Home" in art.get('lens','') else "gis" if "GIS" in art.get('lens','') else "curr"
+        topics     = art.get('topics', [])
         topic_tags = "".join(f'<span class="tag t-topic">{t.replace("t-","")}</span>' for t in topics)
-        dur = duration_map.get(art['url'], '') if art.get('type') == 'video' else ''
-        dur_html = f'<span class="vid-dur">⏱ {dur}</span>' if dur else ''
-        html += f"""
-  <a class="fycard" href="{art['url']}" target="_blank" rel="noopener noreferrer" data-date="{art['date']}" data-tier="{art['tier']}" data-tierkey="{tier_key}" data-lens="{art['lens']}" data-lenskey="{lens_key}">
+        dur        = duration_map.get(art['url'], '') if art.get('type') == 'video' else ''
+        dur_html   = f'<span class="vid-dur">⏱ {dur}</span>' if dur else ''
+        why        = art.get('relevance_why', '')
+        is_adj     = why.lower().startswith('adjacent')
+        adj_class  = ' adjacent' if is_adj else ''
+        why_html   = f'<div class="fycard-why">↳ {why}</div>' if why else ''
+        html += f"""  <a class="fycard{adj_class}" href="{art['url']}" target="_blank" rel="noopener noreferrer" data-date="{art['date']}" data-tier="{art['tier']}" data-tierkey="{tier_key}" data-lens="{art['lens']}" data-lenskey="{lens_key}">
     <div class="fycard-icon">{icon}</div>
     <div class="fycard-title">{art['title']}</div>
     <div class="fycard-src"><span>{art['source']} · {art['date']}</span>{dur_html}</div>
     <div class="fycard-desc">{art['desc']}</div>
-    <div class="tag-row">
+    {why_html}<div class="tag-row">
       <span class="tag t-lens">{art['lens']}</span>
       <span class="tag t-tier {tier_class}">{art['tier']}</span>
       {topic_tags}
     </div>
-  </a>"""
+  </a>
+"""
 
-    html += f"""
+    html += f"""</div>
+
+<div class="section-header" style="margin-top:28px;">
+  <div class="section-title">AI World at Large</div>
+  <span class="section-badge sb-world">{n_world} signals · awareness only</span>
+  <div class="section-line"></div>
+</div>
+
+<div class="world-list">
+{world_rows_html}
 </div>
 
 <div class="g3">
   <div class="panel p-pink">
     <div class="plabel">Weekly Themes</div>
     <div class="theme-wrap">{themes_html}</div>
-    <div class="plabel">Signal Mix</div>
+    <div class="plabel">Signal Mix (Your Stack)</div>
     {bars_html}
   </div>
   <div class="panel p-teal">
@@ -354,7 +380,7 @@ def render_html(data, duration_map=None):
 </div>
 
 <div class="footer">
-  <div>powered by {data['metadata']['model']} · hub-v1</div>
+  <div>powered by {data['metadata']['model']} · hub-v2</div>
   <div>{today}</div>
 </div>
 
@@ -391,24 +417,20 @@ def render_html(data, duration_map=None):
     currentSort = method;
     const grid = document.getElementById('hub-grid');
     const cards = Array.from(grid.children);
-
     document.getElementById('sort-tier').classList.toggle('active', method === 'tier');
     document.getElementById('sort-date').classList.toggle('active', method === 'date');
-
-    const getTierVal = (tierStr) => {{
-      if (!tierStr) return 5;
-      const s = tierStr.toLowerCase();
+    const getTierVal = t => {{
+      if (!t) return 5;
+      const s = t.toLowerCase();
       if (s.includes('adopt')) return 1;
       if (s.includes('watch')) return 2;
       if (s.includes('hype'))  return 3;
       if (s.includes('found')) return 4;
       return 5;
     }};
-
     cards.sort((a, b) => method === 'date'
       ? new Date(b.dataset.date) - new Date(a.dataset.date)
       : getTierVal(a.dataset.tier) - getTierVal(b.dataset.tier));
-
     grid.innerHTML = '';
     cards.forEach(card => grid.appendChild(card));
     applyFilters();

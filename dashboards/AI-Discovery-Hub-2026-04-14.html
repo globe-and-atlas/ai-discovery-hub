@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Discovery Hub — April 14, 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080b12; --bg2: #0e1220; --bg3: #151c2e; --bg4: #1d2540;
+    --border: #252e4a; --border2: #36416a; --text: #e6eaf4;
+    --text2: #8e9ab8; --text3: #58678e; --blue: #5b8af7;
+    --purple: #7c5cfc; --green: #34d89a; --orange: #f97c3c;
+    --pink: #f05d9a; --yellow: #f5c842; --teal: #38c9d4; --cyan: #4fd9f5;
+    --font-sans: 'Inter', -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:var(--font-sans); padding:26px 28px; line-height:1.5; }
+
+  /* ── Header ── */
+  .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; padding-bottom:20px; border-bottom:1px solid var(--border); }
+  .h-title { font-size:24px; font-weight:900; letter-spacing:-.5px; background:linear-gradient(120deg,#fff 0%,#8e9ab8 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  .h-sub { font-size:12px; color:var(--text3); font-family:var(--font-mono); margin-top:3px; }
+  
+  /* ── Stat row ── */
+  .stat-row { display:grid; grid-template-columns:repeat(7,1fr); gap:10px; margin-bottom:14px; }
+  .sc { background:var(--bg2); border:1px solid var(--border); border-radius:11px; padding:13px 14px; text-align:center; transition:.15s; }
+  .sc:hover { border-color:var(--border2); background:var(--bg3); }
+  .sc-num { font-size:28px; font-weight:900; line-height:1; margin-bottom:3px; }
+  .sc-lbl { font-size:10px; color:var(--text3); font-weight:500; }
+  .c-blue { color:var(--blue); } .c-green { color:var(--green); } .c-orange { color:var(--orange); }
+  .c-yellow { color:var(--yellow); } .c-teal { color:var(--teal); } .c-pink { color:var(--pink); }
+
+  /* ── Controls ── */
+  .controls { margin-bottom:16px; display:flex; flex-direction:column; gap:8px; }
+  .sort-row { display:flex; gap:8px; align-items:center; }
+  .filter-row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .row-lbl { font-size:9px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:var(--text3); font-family:var(--font-mono); width:38px; flex-shrink:0; }
+  .sort-btn, .filter-btn { font-size:11px; font-weight:700; padding:4px 12px; border-radius:6px; border:1px solid var(--border); background:var(--bg2); color:var(--text3); cursor:pointer; transition:.2s; position:relative; }
+  .filter-btn[data-tip]:hover::after {
+    content:attr(data-tip);
+    position:absolute; bottom:calc(100% + 7px); left:50%; transform:translateX(-50%);
+    background:var(--bg4); border:1px solid var(--border2); color:var(--text2);
+    font-size:10.5px; font-weight:400; line-height:1.45; padding:7px 11px; border-radius:7px;
+    white-space:nowrap; pointer-events:none; z-index:200; font-family:var(--font-sans);
+    box-shadow:0 4px 16px rgba(0,0,0,.4);
+  }
+  .sort-btn.active { border-color:var(--blue); color:var(--text); background:rgba(91,138,247,.1); }
+  .filter-btn.active { border-color:var(--text3); color:var(--text); background:rgba(255,255,255,.05); }
+  .filter-btn.f-home.active { border-color:var(--yellow); color:var(--yellow); background:rgba(245,200,66,.1); }
+  .filter-btn.f-curr.active { border-color:var(--blue); color:var(--blue); background:rgba(91,138,247,.1); }
+  .filter-btn.f-gis.active  { border-color:var(--green); color:var(--green); background:rgba(52,216,154,.1); }
+  .filter-btn.fb-adopt.active { border-color:var(--green); color:var(--green); background:rgba(52,216,154,.1); }
+  .filter-btn.fb-watch.active { border-color:var(--blue); color:var(--blue); background:rgba(91,138,247,.1); }
+  .filter-btn.fb-hype.active  { border-color:var(--pink); color:var(--pink); background:rgba(240,93,154,.1); }
+  .filter-btn.fb-found.active { border-color:var(--yellow); color:var(--yellow); background:rgba(245,200,66,.1); }
+  .filter-btn.fb-radar.active { border-color:var(--teal);   color:var(--teal);   background:rgba(56,201,212,.1); }
+
+  /* ── Artifact Cards ── */
+  .hub-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:11px; transition:all .4s ease; }
+  .fycard { background:rgba(255,255,255,.033); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:13px; display:flex; flex-direction:column; text-decoration:none; color:inherit; transition:border-color .2s, transform .2s, opacity .2s; }
+  .fycard:hover { border-color:rgba(245,200,66,.35); transform:translateY(-2px); }
+  .fycard-icon { font-size:20px; margin-bottom:7px; }
+  .fycard-title { font-size:12.5px; font-weight:700; color:var(--text); margin-bottom:3px; line-height:1.3; }
+  .fycard-src { font-size:9.5px; color:var(--text3); font-family:var(--font-mono); margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+  .vid-dur { background:rgba(56,201,212,.12); color:var(--teal); border-radius:4px; padding:1px 5px; font-size:9px; font-weight:700; flex-shrink:0; }
+  .fycard-desc { font-size:11px; color:var(--text2); line-height:1.5; margin-bottom:8px; flex-grow:1; }
+  .tag-row { display:flex; flex-wrap:wrap; gap:5px; }
+  .tag { padding:2px 7px; border-radius:4px; font-size:9px; font-weight:700; }
+  .t-lens { background:rgba(255,255,255,0.05); color:var(--text3); }
+  .t-tier { border:1px solid transparent; }
+  .t-adopt { color:var(--green); border-color:rgba(52,216,154,.3); }
+  .t-watch { color:var(--blue); border-color:rgba(91,138,247,.3); }
+  .t-hype  { color:var(--pink); border-color:rgba(240,93,154,.3); }
+  .t-found { color:var(--yellow); border-color:rgba(245,200,66,.3); }
+  .t-radar { color:var(--teal);   border-color:rgba(56,201,212,.3); }
+  .t-topic { background:rgba(124,92,252,.08); color:var(--purple); border:1px solid rgba(124,92,252,.2); }
+  .fycard.hidden { display:none; }
+
+  /* ── Bottom panels ── */
+  .p-pink::before  { background:linear-gradient(90deg,var(--pink),var(--purple)); }
+  .p-teal::before  { background:linear-gradient(90deg,var(--teal),var(--cyan)); }
+  .p-yellow::before { background:linear-gradient(90deg,var(--yellow),var(--orange)); }
+  .tpill { display:flex; align-items:center; gap:5px; padding:5px 11px; border-radius:20px; font-size:11px; font-weight:600; border:1px solid; margin-bottom:5px; }
+  .tpill-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+  .theme-wrap { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; }
+  .tp-curr  { background:rgba(91,138,247,.07);  color:var(--blue);   border-color:rgba(91,138,247,.25);  } .tp-curr .tpill-dot  { background:var(--blue); }
+  .tp-home  { background:rgba(245,200,66,.07);  color:var(--yellow); border-color:rgba(245,200,66,.25);  } .tp-home .tpill-dot  { background:var(--yellow); }
+  .tp-agent { background:rgba(249,124,60,.07);  color:var(--orange); border-color:rgba(249,124,60,.25);  } .tp-agent .tpill-dot { background:var(--orange); }
+  .tp-model { background:rgba(124,92,252,.07);  color:var(--purple); border-color:rgba(124,92,252,.25);  } .tp-model .tpill-dot { background:var(--purple); }
+  .tp-infra { background:rgba(56,201,212,.07);  color:var(--teal);   border-color:rgba(56,201,212,.25);  } .tp-infra .tpill-dot { background:var(--teal); }
+  .tp-econ  { background:rgba(240,93,154,.07);  color:var(--pink);   border-color:rgba(240,93,154,.25);  } .tp-econ .tpill-dot  { background:var(--pink); }
+  .tp-gis   { background:rgba(52,216,154,.07);  color:var(--green);  border-color:rgba(52,216,154,.25);  } .tp-gis .tpill-dot   { background:var(--green); }
+  .tp-design { background:rgba(56,201,212,.07); color:var(--cyan);   border-color:rgba(56,201,212,.25);  } .tp-design .tpill-dot { background:var(--cyan); }
+  .sig { display:flex; align-items:center; gap:9px; margin-bottom:8px; }
+  .sig-icon { font-size:13px; width:18px; flex-shrink:0; text-align:center; }
+  .sig-lbl { font-size:11px; color:var(--text2); flex:1; }
+  .sig-bar-bg { width:80px; height:5px; background:var(--bg4); border-radius:3px; flex-shrink:0; overflow:hidden; }
+  .sig-bar { height:100%; border-radius:3px; }
+  .sig-ct { font-size:10px; font-family:var(--font-mono); color:var(--text3); width:14px; text-align:right; }
+  .model-row { display:flex; align-items:center; justify-content:space-between; padding:7px 0; border-bottom:1px solid var(--border); }
+  .model-row:last-child { border-bottom:none; }
+  .model-name { font-size:12px; font-weight:700; color:var(--text); }
+  .model-co { font-size:10px; color:var(--text3); font-family:var(--font-mono); }
+  .model-status { font-size:9px; font-weight:700; padding:3px 8px; border-radius:20px; }
+  .ms-new  { background:rgba(52,216,154,.12); color:var(--green); }
+  .ms-watch { background:rgba(91,138,247,.12); color:var(--blue); }
+  .ms-arch { background:rgba(124,92,252,.12); color:var(--purple); }
+  .ms-tool { background:rgba(249,124,60,.12); color:var(--orange); }
+  .ms-infra { background:rgba(56,201,212,.12); color:var(--teal); }
+  .apply-card { background:var(--bg3); border:1px solid var(--border); border-radius:9px; padding:12px 14px; margin-bottom:9px; }
+  .apply-card:last-child { margin-bottom:0; }
+  .apply-head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:5px; }
+  .apply-title { font-size:12px; font-weight:700; color:var(--text); flex:1; line-height:1.3; }
+  .effort { font-size:8.5px; font-weight:700; padding:2px 6px; border-radius:5px; margin-left:8px; flex-shrink:0; white-space:nowrap; }
+  .e-low  { background:rgba(52,216,154,.12); color:var(--green); }
+  .e-med  { background:rgba(245,200,66,.12); color:var(--yellow); }
+  .e-high { background:rgba(249,124,60,.12); color:var(--orange); }
+  .apply-desc { font-size:10.5px; color:var(--text2); line-height:1.5; }
+
+  /* ── Panels ── */
+  .panel { background:var(--bg2); border:1px solid var(--border); border-radius:13px; padding:18px 20px; position:relative; overflow:hidden; }
+  .panel::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; }
+  .p-blue::before { background:linear-gradient(90deg,var(--blue),var(--purple)); }
+  .plabel { font-size:10px; font-weight:700; letter-spacing:1.1px; text-transform:uppercase; color:var(--text3); margin-bottom:11px; }
+
+  /* ── Layout ── */
+  .g21 { display:grid; grid-template-columns:2fr 1fr; gap:12px; margin-top:12px; }
+  .g3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-top:12px; }
+
+  .footer { margin-top:20px; padding-top:14px; border-top:1px solid var(--border); font-size:10px; color:var(--text3); font-family:var(--font-mono); display:flex; justify-content:space-between; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <div class="h-title">AI Discovery Hub</div>
+    <div class="h-sub">April 14, 2026 &nbsp;·&nbsp; 17 signals processed</div>
+  </div>
+</div>
+
+<div class="stat-row">
+  <div class="sc" onclick="filterTier('all');filterHub('all')" style="cursor:pointer"><div class="sc-num c-blue">17</div><div class="sc-lbl">Total Signals</div></div>
+  <div class="sc" onclick="filterTier('adopt')" style="cursor:pointer"><div class="sc-num c-green">5</div><div class="sc-lbl">✅ Adopt Now</div></div>
+  <div class="sc" onclick="filterTier('watch')" style="cursor:pointer"><div class="sc-num c-blue">5</div><div class="sc-lbl">👁 Watch Closely</div></div>
+  <div class="sc" onclick="filterTier('hype')" style="cursor:pointer"><div class="sc-num c-pink">2</div><div class="sc-lbl">🔥 Hype Check</div></div>
+  <div class="sc" onclick="filterTier('radar')" style="cursor:pointer"><div class="sc-num c-teal">3</div><div class="sc-lbl">🌱 On Radar</div></div>
+  <div class="sc" onclick="filterHub('home')" style="cursor:pointer"><div class="sc-num c-yellow">6</div><div class="sc-lbl">🏠 Home Picks</div></div>
+  <div class="sc" onclick="filterHub('gis')" style="cursor:pointer"><div class="sc-num c-green">3</div><div class="sc-lbl">🗺 GIS Picks</div></div>
+</div>
+
+<div class="controls">
+  <div class="sort-row">
+    <span class="row-lbl">SORT</span>
+    <button class="sort-btn active" id="sort-tier" onclick="sortHub('tier')">By Tier Priority</button>
+    <button class="sort-btn" id="sort-date" onclick="sortHub('date')">By Recency</button>
+  </div>
+  <div class="filter-row">
+    <span class="row-lbl">LENS</span>
+    <button class="filter-btn active" id="f-all" onclick="filterHub('all')">All</button>
+    <button class="filter-btn f-home" id="f-home" onclick="filterHub('home')" data-tip="Personal projects, home automation, local tools, budgeting">🏠 Home</button>
+    <button class="filter-btn f-curr" id="f-curr" onclick="filterHub('curr')" data-tip="AI model releases, industry news, tooling updates, research">📡 Current</button>
+    <button class="filter-btn f-gis"  id="f-gis"  onclick="filterHub('gis')"  data-tip="Geospatial AI, satellite imagery, FME/QGIS, spatial data pipelines">🗺 GIS/FME</button>
+  </div>
+  <div class="filter-row">
+    <span class="row-lbl">TIER</span>
+    <button class="filter-btn active" id="t-all" onclick="filterTier('all')">All</button>
+    <button class="filter-btn fb-adopt" id="t-adopt" onclick="filterTier('adopt')" data-tip="High ROI — ready to use today, clear practical value">✅ Adopt Now</button>
+    <button class="filter-btn fb-watch" id="t-watch" onclick="filterTier('watch')" data-tip="Important signal — worth evaluating soon, not quite ready to act">👁 Watch Closely</button>
+    <button class="filter-btn fb-hype"  id="t-hype"  onclick="filterTier('hype')"  data-tip="Viral or contested — interesting but possibly noise, verify before acting">🔥 Hype Check</button>
+    <button class="filter-btn fb-found" id="t-found" onclick="filterTier('found')" data-tip="Core infrastructure or concept — foundational knowledge worth understanding">🏗 Foundation</button>
+    <button class="filter-btn fb-radar" id="t-radar" onclick="filterTier('radar')" data-tip="Early traction or niche signal — not proven yet, but watch if it gains momentum">🌱 On Radar</button>
+  </div>
+</div>
+
+<div class="hub-grid" id="hub-grid">
+
+  <a class="fycard" href="https://www.youtube.com/watch?v=ehg4fhydTgs" target="_blank" rel="noopener noreferrer" data-date="2026-04-14" data-tier="✅ Adopt Now" data-tierkey="adopt" data-lens="🏠 Home Hobbyist" data-lenskey="home">
+    <div class="fycard-icon">🤖</div>
+    <div class="fycard-title">Claude Code Just Dropped Routines. 24/7 Agents.</div>
+    <div class="fycard-src"><span>Nate Herk | AI Automation · 2026-04-14</span><span class="vid-dur">⏱ 16:28</span></div>
+    <div class="fycard-desc">Technical walkthrough of Claude Code's new Routines feature, enabling persistent autonomous agents that can run on schedules. Directly applicable to workflow automation and Budget Tracker enhancement.</div>
+    <div class="tag-row">
+      <span class="tag t-lens">🏠 Home Hobbyist</span>
+      <span class="tag t-tier t-adopt">✅ Adopt Now</span>
+      <span class="tag t-topic">claude</span><span class="tag t-topic">agent</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://www.youtube.com/watch?v=uogzSxOw4LU" target="_blank" rel="noopener noreferrer" data-date="2026-04-13" data-tier="✅ Adopt Now" data-tierkey="adopt" data-lens="📡 Staying Current" data-lenskey="curr">
+    <div class="fycard-icon">📚</div>
+    <div class="fycard-title">The Ultimate Claude Code Guide | MCP, Skills & More</div>
+    <div class="fycard-src"><span>Tech With Tim · 2026-04-13</span><span class="vid-dur">⏱ 37:41</span></div>
+    <div class="fycard-desc">Comprehensive guide covering Claude Code architecture, Model Context Protocol (MCP) integration, and skill-building patterns. Essential foundation for building agentic AI systems.</div>
+    <div class="tag-row">
+      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-tier t-adopt">✅ Adopt Now</span>
+      <span class="tag t-topic">claude</span><span class="tag t-topic">mcp</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://github.com/n8n-io/n8n" target="_blank" rel="noopener noreferrer" data-date="2026-04-14" data-tier="✅ Adopt Now" data-tierkey="adopt" data-lens="🏠 Home Hobbyist" data-lenskey="home">
+    <div class="fycard-icon">⚙️</div>
+    <div class="fycard-title">n8n-io/n8n</div>
+    <div class="fycard-src"><span>GitHub · 2026-04-14</span></div>
+    <div class="fycard-desc">Fair-code workflow automation platform with 400+ integrations and native AI capabilities. Self-hosted option with visual and code-based workflows; ideal for data pipeline orchestration and personal automation.</div>
+    <div class="tag-row">
+      <span class="tag t-lens">🏠 Home Hobbyist</span>
+      <span class="tag t-tier t-adopt">✅ Adopt Now</span>
+      <span class="tag t-topic">agent</span><span class="tag t-topic">data</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://www.youtube.com/watch?v=U7RKIOb_F2Q" target="_blank" rel="noopener noreferrer" data-date="2026-04-11" data-tier="✅ Adopt Now" data-tierkey="adopt" data-lens="🗺 GIS/FME" data-lenskey="gis">
+    <div class="fycard-icon">🗺️</div>
+    <div class="fycard-title">Connect QGIS with Claude AI using MCP - Model Context Protocol</div>
+    <div class="fycard-src"><span>Geomatica Ambiental · 2026-04-11</span><span class="vid-dur">⏱ 17:55</span></div>
+    <div class="fycard-desc">Step-by-step tutorial for integrating Claude AI into QGIS via MCP plugin, enabling AI-assisted geospatial analysis and scripting directly within the GIS environment.</div>
+    <div class="tag-row">
+      <span class="tag t-lens">🗺 GIS/FME</span>
+      <span class="tag t-tier t-adopt">✅ Adopt Now</span>
+      <span class="tag t-topic">mcp</span><span class="tag t-topic">geoai</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://github.com/Significant-Gravitas/AutoGPT" target="_blank" rel="noopener noreferrer" data-date="2026-04-15" data-tier="✅ Adopt Now" data-tierkey="adopt" data-lens="📡 Staying Current" data-lenskey="curr">
+    <div class="fycard-icon">🏗️</div>
+    <div class="fycard-title">Significant-Gravitas/AutoGPT</div>
+    <div class="fycard-src"><span>GitHub · 2026-04-15</span></div>
+    <div class="fycard-desc">Foundational autonomous agent framework providing accessible patterns for building self-directed AI systems. 183k+ stars reflects community validation of agentic architecture patterns.</div>
+    <div class="tag-row">
+      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-tier t-adopt">✅ Adopt Now</span>
+      <span class="tag t-topic">agent</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://www.reddit.com/r/ClaudeAI/comments/1skm9tw/you_can_now_switch_models_midchat/" target="_blank" rel="noopener noreferrer" data-date="2026-04-13" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="📡 Staying Current" data-lenskey="curr">
+    <div class="fycard-icon">🔄</div>
+    <div class="fycard-title">You can now switch models mid-chat</div>
+    <div class="fycard-src"><span>r/ClaudeAI · 2026-04-13</span></div>
+    <div class="fycard-desc">Claude platform now supports model switching within single conversations, improving workflow flexibility for users prototyping across different model capabilities.</div>
+    <div class="tag-row">
+      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-tier t-watch">👁 Watch Closely</span>
+      <span class="tag t-topic">claude</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://www.youtube.com/watch?v=eAleab2cL3I" target="_blank" rel="noopener noreferrer" data-date="2026-04-12" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="🏠 Home Hobbyist" data-lenskey="home">
+    <div class="fycard-icon">💰</div>
+    <div class="fycard-title">Gemma 4 + Ollama = FREE Claude Code Setup!</div>
+    <div class="fycard-src"><span>WorldofAI · 2026-04-12</span><span class="vid-dur">⏱ 11:36</span></div>
+    <div class="fycard-desc">Demonstrates running Claude Code-compatible agentic workflows locally using Ollama and Gemma 4, eliminating API costs for home hobbyists and local AI servers.</div>
+    <div class="tag-row">
+      <span class="tag t-lens">🏠 Home Hobbyist</span>
+      <span class="tag t-tier t-watch">👁 Watch Closely</span>
+      <span class="tag t-topic">local</span><span class="tag t-topic">claude</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://github.com/langchain-ai/langchain" target="_blank" rel="noopener noreferrer" data-date="2026-04-15" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="📡 Staying Current" data-lenskey="curr">
+    <div class="fycard-icon">🔗</div>
+    <div class="fycard-title">langchain-ai/langchain</div>
+    <div class="fycard-src"><span>GitHub · 2026-04-15</span></div>
+    <div class="fycard-desc">Agent engineering platform providing abstractions for building LLM-powered applications with memory, retrieval, and tool-use patterns. Industry standard for agentic AI development.</div>
+    <div class="tag-row">
+      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-tier t-watch">👁 Watch Closely</span>
+      <span class="tag t-topic">agent</span><span class="tag t-topic">memory</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://www.youtube.com/watch?v=_S_7FReK148" target="_blank" rel="noopener noreferrer" data-date="2026-04-11" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="📡 Staying Current" data-lenskey="curr">
+    <div class="fycard-icon">🏢</div>
+    <div class="fycard-title">Agentic AI & Multi-Agent Systems: Enterprise Guide 2026 | AetherLink</div>
+    <div class="fycard-src"><span>Aetherlink · 2026-04-11</span><span class="vid-dur">⏱ 20:49</span></div>
+    <div class="fycard-desc">Enterprise-focused guide to multi-agent systems covering orchestration patterns, workflow design, and production deployment considerations for autonomous agent networks.</div>
+    <div class="tag-row">
+      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-tier t-watch">👁 Watch Closely</span>
+      <span class="tag t-topic">agent</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://github.com/open-webui/open-webui" target="_blank" rel="noopener noreferrer" data-date="2026-04-14" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="🏠 Home Hobbyist" data-lenskey="home">
+    <div class="fycard-icon">🖥️</div>
+    <div class="fycard-title">open-webui/open-webui</div>
+    <div class="fycard-src"><span>GitHub · 2026-04-14</span></div>
+    <div class="fycard-desc">User-friendly web interface for local LLM deployment (Ollama, OpenAI API). 130k+ stars indicates strong adoption for self-hosted AI frontends with minimal DevOps.</div>
+    <div class="tag-row">
+      <span class="tag t-lens">🏠 Home Hobbyist</span>
+      <span class="tag t-tier t-watch">👁 Watch Closely</span>
+      <span class="tag t-topic">local</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://www.youtube.com/watch?v=g6ig4BmjHZo" target="_blank" rel="noopener noreferrer" data-date="2026-04-14" data-tier="🔥 Hype Check" data-tierkey="hype" data-lens="🗺 GIS/FME" data-lenskey="gis">
+    <div class="fycard-icon">⚖️</div>
+    <div class="fycard-title">Is it worth learning GEOSPATIAL? (Will A.I. Eat Earth Observation?)</div>
+    <div class="fycard-src"><span>The NDS Show · 2026-04-14</span><span class="vid-dur">⏱ 4:30</span></div>
+    <div class="fycard-desc">Expert discussion on AI's role in geospatial intelligence and whether human analysts remain essential. Critical perspective on FME/GIS professional futures amid AI disruption.</div>
+    <div class="tag-row">
+      <span class="tag t-lens">🗺 GIS/FME</span>
+      <span class="tag t-tier t-hype">🔥 Hype Check</span>
+      <span class="tag t-topic">geoai</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://www.youtube.com/watch?v=pL1S6bRI2zo" target="_blank" rel="noopener noreferrer" data-date="2026-04-11" data-tier="🔥 Hype Check" data-tierkey="hype" data-lens="🗺 GIS/FME" data-lenskey="gis">
+    <div class="fycard-icon">🔧</div>
+    <div class="fycard-title">GeoSpatial File - Read & view on Map with Chrome Extension</div>
+    <div class="fycard-src"><span>Code&Learn AI · 2026-04-11</span><span class="vid-dur">⏱ 0:22</span></div>
+    <div class="fycard-desc">Quick demo of Chrome extension enabling direct GeoJSON visualization without spawning QGIS or Python scripts. Convenience tool for rapid geospatial inspection workflows.</div>
+    <div class="tag-row">
+      <span class="tag t-lens">🗺 GIS/FME</span>
+      <span class="tag t-tier t-hype">🔥 Hype Check</span>
+      <span class="tag t-topic">geoai</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://github.com/ollama/ollama" target="_blank" rel="noopener noreferrer" data-date="2026-04-15" data-tier="🏗 Foundation" data-tierkey="found" data-lens="🏠 Home Hobbyist" data-lenskey="home">
+    <div class="fycard-icon">🦙</div>
+    <div class="fycard-title">ollama/ollama</div>
+    <div class="fycard-src"><span>GitHub · 2026-04-15</span></div>
+    <div class="fycard-desc">Simple local LLM runtime supporting Gemma, DeepSeek, and other open models. 169k stars reflects critical infrastructure role for on-device AI without cloud dependency.</div>
+    <div class="tag-row">
+      <span class="tag t-lens">🏠 Home Hobbyist</span>
+      <span class="tag t-tier t-found">🏗 Foundation</span>
+      <span class="tag t-topic">local</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://github.com/affaan-m/everything-claude-code" target="_blank" rel="noopener noreferrer" data-date="2026-04-15" data-tier="🏗 Foundation" data-tierkey="found" data-lens="📡 Staying Current" data-lenskey="curr">
+    <div class="fycard-icon">📖</div>
+    <div class="fycard-title">affaan-m/everything-claude-code</div>
+    <div class="fycard-src"><span>GitHub · 2026-04-15</span></div>
+    <div class="fycard-desc">Comprehensive resource library for optimizing Claude Code agent performance, covering skills, memory patterns, and security. Emerging best-practices compendium for agentic development.</div>
+    <div class="tag-row">
+      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-tier t-found">🏗 Foundation</span>
+      <span class="tag t-topic">claude</span><span class="tag t-topic">agent</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://www.reddit.com/r/LocalLLaMA/comments/1sl6931/247_headless_ai_server_on_xiaomi_12_pro/" target="_blank" rel="noopener noreferrer" data-date="2026-04-14" data-tier="🌱 On Radar" data-tierkey="radar" data-lens="🏠 Home Hobbyist" data-lenskey="home">
+    <div class="fycard-icon">📱</div>
+    <div class="fycard-title">24/7 Headless AI Server on Xiaomi 12 Pro (Snapdragon 8 Gen 1 + Ollama/Gemma4)</div>
+    <div class="fycard-src"><span>r/LocalLLaMA · 2026-04-14</span></div>
+    <div class="fycard-desc">Proof-of-concept running persistent local LLM inference on mobile hardware after OS optimization. Signals viability of smartphone-based AI compute for always-on Home Assistant automation.</div>
+    <div class="tag-row">
+      <span class="tag t-lens">🏠 Home Hobbyist</span>
+      <span class="tag t-tier t-radar">🌱 On Radar</span>
+      <span class="tag t-topic">local</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://github.com/infiniflow/ragflow" target="_blank" rel="noopener noreferrer" data-date="2026-04-14" data-tier="🌱 On Radar" data-tierkey="radar" data-lens="📡 Staying Current" data-lenskey="curr">
+    <div class="fycard-icon">🧠</div>
+    <div class="fycard-title">infiniflow/ragflow</div>
+    <div class="fycard-src"><span>GitHub · 2026-04-14</span></div>
+    <div class="fycard-desc">RAG + Agent synthesis framework combining retrieval-augmented generation with agentic workflows. Emerging pattern for stateful, knowledge-aware autonomous systems with 78k stars.</div>
+    <div class="tag-row">
+      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-tier t-radar">🌱 On Radar</span>
+      <span class="tag t-topic">agent</span><span class="tag t-topic">memory</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://www.reddit.com/r/artificial/comments/1sjvbfw/nyc_hospitals_will_stop_sharing_patients_private/" target="_blank" rel="noopener noreferrer" data-date="2026-04-12" data-tier="🌱 On Radar" data-tierkey="radar" data-lens="📡 Staying Current" data-lenskey="curr">
+    <div class="fycard-icon">⚖️</div>
+    <div class="fycard-title">NYC hospitals will stop sharing patients' private health data with Palantir</div>
+    <div class="fycard-src"><span>r/artificial · 2026-04-12</span></div>
+    <div class="fycard-desc">Policy shift halting health data sharing with Palantir reflects growing institutional friction around AI data practices. Signal of regulatory and reputational pressure on enterprise AI deployments.</div>
+    <div class="tag-row">
+      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-tier t-radar">🌱 On Radar</span>
+      
+    </div>
+  </a>
+</div>
+
+<div class="g3">
+  <div class="panel p-pink">
+    <div class="plabel">Weekly Themes</div>
+    <div class="theme-wrap"><span class="tpill tp-agent"><span class="tpill-dot"></span>Claude Code Ecosystem Maturation</span><span class="tpill tp-infra"><span class="tpill-dot"></span>Local AI Infrastructure Accessibility</span><span class="tpill tp-gis"><span class="tpill-dot"></span>GIS + AI Integration Tooling</span><span class="tpill tp-agent"><span class="tpill-dot"></span>Multi-Agent Orchestration Patterns</span><span class="tpill tp-home"><span class="tpill-dot"></span>Home Automation & Persistent Agents</span><span class="tpill tp-econ"><span class="tpill-dot"></span>AI Data Governance & Privacy Concerns</span></div>
+    <div class="plabel">Signal Mix</div>
+    <div class="sig"><div class="sig-icon">🎥</div><div class="sig-lbl">Videos</div><div class="sig-bar-bg"><div class="sig-bar" style="width:41%;background:var(--blue);"></div></div><div class="sig-ct">7</div></div><div class="sig"><div class="sig-icon">📦</div><div class="sig-lbl">Repos</div><div class="sig-bar-bg"><div class="sig-bar" style="width:41%;background:var(--purple);"></div></div><div class="sig-ct">7</div></div><div class="sig"><div class="sig-icon">📰</div><div class="sig-lbl">Signals</div><div class="sig-bar-bg"><div class="sig-bar" style="width:17%;background:var(--teal);"></div></div><div class="sig-ct">3</div></div><div class="sig"><div class="sig-icon">🏠</div><div class="sig-lbl">Home picks</div><div class="sig-bar-bg"><div class="sig-bar" style="width:35%;background:var(--yellow);"></div></div><div class="sig-ct">6</div></div><div class="sig"><div class="sig-icon">🗺</div><div class="sig-lbl">GIS picks</div><div class="sig-bar-bg"><div class="sig-bar" style="width:17%;background:var(--green);"></div></div><div class="sig-ct">3</div></div>
+  </div>
+  <div class="panel p-teal">
+    <div class="plabel">Model Tracker</div>
+    <div class="model-row"><div><div class="model-name">Claude Code (Routines)</div><div class="model-co">Anthropic · 2026-04-14</div></div><span class="model-status ms-tool">TOOL</span></div><div class="model-row"><div><div class="model-name">Gemma 4</div><div class="model-co">Google · 2026-04-12</div></div><span class="model-status ms-new">NEW</span></div><div class="model-row"><div><div class="model-name">DeepSeek / Qwen (Ollama Support)</div><div class="model-co">DeepSeek / Alibaba · 2026-04-15</div></div><span class="model-status ms-infra">INFRA</span></div>
+  </div>
+  <div class="panel p-yellow">
+    <div class="plabel">The Lab — Apply This Week</div>
+    <div class="apply-card"><div class="apply-head"><div class="apply-title">Deploy Claude Code Routine for Budget Tracker automation</div><span class="effort e-med">Med effort</span></div><div class="apply-desc">Build a 24/7 Claude Code Routine that periodically syncs and categorizes transactions from Bank APIs into Budget Tracker. Test MCP server integration for data validation.</div></div><div class="apply-card"><div class="apply-head"><div class="apply-title">Set up local Ollama + Open WebUI Home Server</div><span class="effort e-low">Low effort</span></div><div class="apply-desc">Spin up local LLM inference stack on Home Assistant hardware. Benchmark Gemma 4 performance and compare costs vs. Claude API for routine queries.</div></div><div class="apply-card"><div class="apply-head"><div class="apply-title">Connect QGIS + Claude via MCP for Sentinel Explorer workflow</div><span class="effort e-med">Med effort</span></div><div class="apply-desc">Install QGIS MCP plugin and prototype AI-assisted analysis pipeline: load Sentinel imagery → Claude interprets spectral indices → generates insights. Document reproducible workflow.</div></div><div class="apply-card"><div class="apply-head"><div class="apply-title">Research n8n + LangChain multi-agent orchestration pattern</div><span class="effort e-high">High effort</span></div><div class="apply-desc">Design a data pipeline where n8n orchestrates sub-agents (data validation, transformation, enrichment) using LangChain. Explore for AI Discovery Hub dashboard automation.</div></div><div class="apply-card"><div class="apply-head"><div class="apply-title">Write Globe & Atlas column: 'AI Discovery Hub for FME Professionals'</div><span class="effort e-med">Med effort</span></div><div class="apply-desc">Synthesize Claude Code + MCP + RAGFlow learnings into accessible guide showing how GIS teams can adopt agentic AI without vendor lock-in. Target FME practitioners.</div></div>
+  </div>
+</div>
+
+<div class="footer">
+  <div>powered by claude-haiku-4-5-20251001 · hub-v1</div>
+  <div>April 14, 2026</div>
+</div>
+
+<script>
+  let currentLens = 'all';
+  let currentTier = 'all';
+  let currentSort = 'tier';
+
+  function applyFilters() {
+    document.querySelectorAll('#hub-grid .fycard').forEach(card => {
+      const lk = card.dataset.lenskey || '';
+      const tk = card.dataset.tierkey || '';
+      const lensOk = currentLens === 'all' || lk === currentLens;
+      const tierOk = currentTier === 'all' || tk === currentTier;
+      card.classList.toggle('hidden', !(lensOk && tierOk));
+    });
+  }
+
+  function filterHub(lens) {
+    currentLens = lens;
+    ['all','home','curr','gis'].forEach(id => document.getElementById('f-' + id).classList.remove('active'));
+    document.getElementById('f-' + lens).classList.add('active');
+    applyFilters();
+  }
+
+  function filterTier(tier) {
+    currentTier = tier;
+    ['all','adopt','watch','hype','found','radar'].forEach(id => document.getElementById('t-' + id).classList.remove('active'));
+    document.getElementById('t-' + tier).classList.add('active');
+    applyFilters();
+  }
+
+  function sortHub(method) {
+    currentSort = method;
+    const grid = document.getElementById('hub-grid');
+    const cards = Array.from(grid.children);
+
+    document.getElementById('sort-tier').classList.toggle('active', method === 'tier');
+    document.getElementById('sort-date').classList.toggle('active', method === 'date');
+
+    const getTierVal = (tierStr) => {
+      if (!tierStr) return 5;
+      const s = tierStr.toLowerCase();
+      if (s.includes('adopt')) return 1;
+      if (s.includes('watch')) return 2;
+      if (s.includes('hype'))  return 3;
+      if (s.includes('found')) return 4;
+      return 5;
+    };
+
+    cards.sort((a, b) => method === 'date'
+      ? new Date(b.dataset.date) - new Date(a.dataset.date)
+      : getTierVal(a.dataset.tier) - getTierVal(b.dataset.tier));
+
+    grid.innerHTML = '';
+    cards.forEach(card => grid.appendChild(card));
+    applyFilters();
+  }
+
+  document.addEventListener('DOMContentLoaded', () => sortHub('tier'));
+</script>
+</body>
+</html>
