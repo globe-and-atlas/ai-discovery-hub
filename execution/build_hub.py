@@ -6,7 +6,6 @@ from datetime import datetime
 from pathlib import Path
 from dotenv import load_dotenv
 import anthropic
-import google.generativeai as genai
 
 # Load environment variables
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -22,6 +21,7 @@ def get_client():
     if provider == "anthropic":
         return anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
     elif provider == "gemini":
+        import google.generativeai as genai
         genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
         return genai.GenerativeModel(os.getenv("HUB_MODEL", "gemini-1.5-pro"))
     raise ValueError(f"Provider {provider} not implemented yet.")
@@ -51,6 +51,7 @@ def generate_hub_content(data):
         )
         text = response.content[0].text
     elif provider == "gemini":
+        import google.generativeai as genai
         genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
         model = genai.GenerativeModel(model_name)
         response = model.generate_content(prompt)
@@ -126,13 +127,23 @@ def render_html(data, duration_map=None):
     ])
 
     effort_cls = {'low': 'e-low', 'med': 'e-med', 'high': 'e-high'}
-    lab_html = "".join([
+    exercises  = data.get('exercises', [])
+    n_exercises = len(exercises)
+    lab_count_note = (
+        f'<div style="font-size:9.5px;color:var(--text3);margin-bottom:10px;font-style:italic;">'
+        f'{n_exercises} item{"s" if n_exercises != 1 else ""} · one per ✅ Adopt Now artifact</div>'
+        if n_exercises <= 3 else
+        f'<div style="font-size:9.5px;color:var(--text3);margin-bottom:10px;font-style:italic;">'
+        f'{n_exercises} items · one per ✅ Adopt Now artifact</div>'
+    )
+    lab_html = lab_count_note + "".join([
         f'<div class="apply-card">'
         f'<div class="apply-head"><div class="apply-title">{ex["title"]}</div>'
         f'<span class="effort {effort_cls.get(ex["effort"], "e-med")}">{ex["effort"].title()} effort</span></div>'
         f'<div class="apply-desc">{ex["desc"]}</div>'
+        f'<div style="margin-top:10px;font-size:9.5px;color:var(--text3);font-family:var(--font-mono);">❯ python3 execution/expand_lab.py --item {i}</div>'
         f'</div>'
-        for ex in data.get('exercises', [])
+        for i, ex in enumerate(exercises, start=1)
     ])
 
     world_rows_html = "".join([
@@ -484,6 +495,9 @@ def main():
         "model": DEFAULT_MODEL,
         "provider": DEFAULT_PROVIDER
     }
+
+    output_json_path = PROJECT_ROOT / "data" / "hub-output.json"
+    output_json_path.write_text(json.dumps(content, indent=2), encoding="utf-8")
 
     print("Rendering HTML...")
     html = render_html(content, duration_map)

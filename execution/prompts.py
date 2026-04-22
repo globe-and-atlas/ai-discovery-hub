@@ -109,7 +109,7 @@ OUTPUT JSON SCHEMA:
   ],
   "themes": [ {{ "label": str, "type": "curr|home|agent|model|infra|econ|gis|design" }} ],
   "model_tracker": [ {{ "name": str, "company": str, "date": str, "status": "new|watch|arch|tool|infra|design" }} ],
-  "exercises": [ {{ "title": str, "effort": "low|med|high", "desc": str }} ]
+  "exercises": [ {{ "title": str, "effort": "low|med|high", "desc": str, "source_artifact": str }} ]
 }}
 
 CONSTRAINTS:
@@ -118,7 +118,7 @@ CONSTRAINTS:
 - Personal mix: at least 4 videos, 4 repos, 2 signals.
 - At least 3 personal items must be "adjacent" (not direct stack match) — each must have a specific relevance_why.
 - At least 3 items must be "🌱 On Radar" tier.
-- exercises: 3 items, all referencing personal-relevance artifacts only.
+- exercises: EVERY artifact with tier "✅ Adopt Now" MUST have a corresponding exercise entry (one-to-one). If there are fewer than 3 Adopt Now artifacts, add extra exercises from Watch Closely artifacts to reach 3 total. All exercises must reference personal-relevance artifacts only. The source_artifact field must match the title of the artifact it corresponds to.
 - Sort order: personal items first (by tier: Adopt → Watch → Hype → Foundation → Radar), then world items.
 - ALL output must be in English. Translate any non-English titles or summaries.
 - Output ONLY valid JSON. No markdown fences.
