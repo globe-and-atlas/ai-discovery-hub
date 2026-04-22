@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import json
 import argparse
@@ -67,7 +68,156 @@ def generate_hub_content(data):
     
     return json.loads(text)
 
-def render_html(data, duration_map=None):
+def _slugify(text):
+    return re.sub(r'[\W_]+', '-', text.lower()).strip('-')
+
+def _render_curriculum_page(title, md_content):
+    """Render a full standalone HTML page for a curriculum."""
+    body = _md_to_html(md_content)
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{title} — Lab Tutorial</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {{
+    --bg: #080b12; --bg2: #0e1220; --bg3: #151c2e; --bg4: #1d2540;
+    --border: #252e4a; --border2: #36416a; --text: #e6eaf4;
+    --text2: #8e9ab8; --text3: #58678e; --blue: #5b8af7;
+    --green: #34d89a; --orange: #f97c3c; --yellow: #f5c842;
+    --teal: #38c9d4; --cyan: #4fd9f5; --purple: #7c5cfc;
+    --font-sans: 'Inter', -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }}
+  * {{ margin:0; padding:0; box-sizing:border-box; }}
+  body {{ background:var(--bg); color:var(--text); font-family:var(--font-sans); line-height:1.7; }}
+  .page {{ max-width:780px; margin:0 auto; padding:48px 32px 80px; }}
+  .back {{ margin-bottom:32px; }}
+  .back a {{ font-size:12px; font-family:var(--font-mono); color:var(--text3); text-decoration:none; border:1px solid var(--border); padding:6px 14px; border-radius:6px; transition:.15s; }}
+  .back a:hover {{ color:var(--blue); border-color:var(--blue); }}
+  .page-title {{ font-size:26px; font-weight:900; letter-spacing:-.4px; color:var(--text); margin-bottom:10px; line-height:1.25; }}
+  .page-meta {{ font-size:11px; font-family:var(--font-mono); color:var(--text3); margin-bottom:40px; padding-bottom:24px; border-bottom:1px solid var(--border); }}
+  h2.cur-h2 {{ font-size:19px; font-weight:800; color:var(--text); margin:40px 0 10px; padding-bottom:6px; border-bottom:1px solid var(--border); }}
+  h3.cur-h3 {{ font-size:15px; font-weight:700; color:var(--text2); margin:28px 0 8px; }}
+  h4.cur-h4 {{ font-size:12.5px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.6px; margin:20px 0 6px; }}
+  p.cur-p {{ font-size:14px; color:var(--text2); margin-bottom:12px; }}
+  ul.cur-list {{ font-size:14px; color:var(--text2); margin:8px 0 14px 20px; }}
+  ul.cur-list li {{ margin-bottom:6px; line-height:1.6; }}
+  ul.cur-ol {{ list-style:decimal; }}
+  pre {{ background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:18px 20px; margin:14px 0 20px; overflow-x:auto; }}
+  pre code {{ font-family:var(--font-mono); font-size:12px; color:var(--green); white-space:pre; line-height:1.6; }}
+  code.cur-inline {{ font-family:var(--font-mono); font-size:12px; background:var(--bg4); color:var(--cyan); padding:2px 6px; border-radius:4px; }}
+  strong {{ color:var(--text); font-weight:700; }}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="back"><a href="../latest.html">← Back to Hub</a></div>
+  <div class="page-title">{title}</div>
+  <div class="page-meta">AI Discovery Hub · Lab Tutorial</div>
+  {body}
+</div>
+</body>
+</html>"""
+
+
+def _build_curriculum_pages(exercises, output_dir):
+    """Generate a standalone HTML page for each exercise that has a matching curriculum .md.
+    Returns dict of {exercise_title: relative_url_from_dashboards_dir}."""
+    cur_dir = PROJECT_ROOT / "curriculums"
+    pages_dir = output_dir / "curricula"
+    pages_dir.mkdir(exist_ok=True)
+    links = {}
+    if not cur_dir.exists():
+        return links
+    for ex in exercises:
+        slug = _slugify(ex['title'])
+        matches = sorted(cur_dir.glob(f"*-{slug}.md"), reverse=True)
+        if not matches:
+            continue
+        md = matches[0].read_text(encoding="utf-8")
+        html = _render_curriculum_page(ex['title'], md)
+        page_path = pages_dir / f"{slug}.html"
+        page_path.write_text(html, encoding="utf-8")
+        links[ex['title']] = f"curricula/{slug}.html"
+    return links
+
+def _md_to_html(md):
+    """Minimal markdown → HTML for curriculum display."""
+    lines = md.split('\n')
+    html_parts = []
+    in_code = False
+    in_list = False
+    code_buf = []
+
+    for line in lines:
+        # Fenced code blocks
+        if line.startswith('```'):
+            if in_code:
+                html_parts.append('<pre><code>' + '\n'.join(code_buf) + '</code></pre>')
+                code_buf = []
+                in_code = False
+            else:
+                if in_list:
+                    html_parts.append('</ul>')
+                    in_list = False
+                in_code = True
+            continue
+        if in_code:
+            code_buf.append(line.replace('<', '&lt;').replace('>', '&gt;'))
+            continue
+
+        # Headings
+        if line.startswith('### '):
+            if in_list: html_parts.append('</ul>'); in_list = False
+            html_parts.append(f'<h4 class="cur-h4">{line[4:].strip()}</h4>')
+        elif line.startswith('## '):
+            if in_list: html_parts.append('</ul>'); in_list = False
+            html_parts.append(f'<h3 class="cur-h3">{line[3:].strip()}</h3>')
+        elif line.startswith('# '):
+            if in_list: html_parts.append('</ul>'); in_list = False
+            html_parts.append(f'<h2 class="cur-h2">{line[2:].strip()}</h2>')
+        # List items
+        elif re.match(r'^[-*]\s', line):
+            if not in_list:
+                html_parts.append('<ul class="cur-list">')
+                in_list = True
+            item = line[2:].strip()
+            item = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', item)
+            item = re.sub(r'`(.+?)`', r'<code class="cur-inline">\1</code>', item)
+            html_parts.append(f'<li>{item}</li>')
+        elif re.match(r'^\d+\.\s', line):
+            if not in_list:
+                html_parts.append('<ul class="cur-list cur-ol">')
+                in_list = True
+            item = re.sub(r'^\d+\.\s', '', line).strip()
+            item = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', item)
+            item = re.sub(r'`(.+?)`', r'<code class="cur-inline">\1</code>', item)
+            html_parts.append(f'<li>{item}</li>')
+        # Blank line
+        elif line.strip() == '':
+            if in_list:
+                html_parts.append('</ul>')
+                in_list = False
+        # Paragraph
+        else:
+            if in_list:
+                html_parts.append('</ul>')
+                in_list = False
+            p = line.strip()
+            p = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', p)
+            p = re.sub(r'`(.+?)`', r'<code class="cur-inline">\1</code>', p)
+            if p:
+                html_parts.append(f'<p class="cur-p">{p}</p>')
+
+    if in_list:
+        html_parts.append('</ul>')
+    return '\n'.join(html_parts)
+
+
+def render_html(data, duration_map=None, curriculum_links=None, stack_profile="", user_context=""):
     """
     Renders the AI Discovery Hub dashboard with two sections:
     - Primary: personally relevant items (direct stack + adjacent)
@@ -75,6 +225,7 @@ def render_html(data, duration_map=None):
     """
     today = datetime.now().strftime("%B %d, %Y")
     duration_map = duration_map or {}
+    curriculum_links = curriculum_links or {}
 
     artifacts  = data.get('artifacts', [])
     personal   = [a for a in artifacts if a.get('relevance') == 'personal']
@@ -136,15 +287,24 @@ def render_html(data, duration_map=None):
         f'<div style="font-size:9.5px;color:var(--text3);margin-bottom:10px;font-style:italic;">'
         f'{n_exercises} items · one per ✅ Adopt Now artifact</div>'
     )
-    lab_html = lab_count_note + "".join([
-        f'<div class="apply-card">'
-        f'<div class="apply-head"><div class="apply-title">{ex["title"]}</div>'
-        f'<span class="effort {effort_cls.get(ex["effort"], "e-med")}">{ex["effort"].title()} effort</span></div>'
-        f'<div class="apply-desc">{ex["desc"]}</div>'
-        f'<div style="margin-top:10px;font-size:9.5px;color:var(--text3);font-family:var(--font-mono);">❯ python3 execution/expand_lab.py --item {i}</div>'
-        f'</div>'
-        for i, ex in enumerate(exercises, start=1)
-    ])
+    def _lab_card(i, ex):
+        link = curriculum_links.get(ex['title'])
+        guide_block = (
+            f'<a href="{link}" target="_blank" class="cur-link">📖 View tutorial →</a>'
+        ) if link else (
+            f'<div style="margin-top:10px;font-size:9.5px;color:var(--text3);font-family:var(--font-mono);">'
+            f'❯ python3 execution/expand_lab.py --item {i}</div>'
+        )
+        return (
+            f'<div class="apply-card">'
+            f'<div class="apply-head"><div class="apply-title">{ex["title"]}</div>'
+            f'<span class="effort {effort_cls.get(ex["effort"], "e-med")}">{ex["effort"].title()} effort</span></div>'
+            f'<div class="apply-desc">{ex["desc"]}</div>'
+            f'{guide_block}'
+            f'</div>'
+        )
+
+    lab_html = lab_count_note + "".join([_lab_card(i, ex) for i, ex in enumerate(exercises, start=1)])
 
     world_rows_html = "".join([
         f'<a class="world-row" href="{a["url"]}" target="_blank" rel="noopener noreferrer">'
@@ -283,6 +443,13 @@ def render_html(data, duration_map=None):
   .plabel {{ font-size:10px; font-weight:700; letter-spacing:1.1px; text-transform:uppercase; color:var(--text3); margin-bottom:11px; }}
   .g3 {{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-top:12px; }}
   .footer {{ margin-top:20px; padding-top:14px; border-top:1px solid var(--border); font-size:10px; color:var(--text3); font-family:var(--font-mono); display:flex; justify-content:space-between; }}
+  .cur-link {{ display:inline-block; margin-top:10px; font-size:10px; font-weight:700; font-family:var(--font-mono); color:var(--blue); text-decoration:none; border:1px solid rgba(91,138,247,.3); padding:4px 10px; border-radius:5px; transition:.15s; }}
+  .cur-link:hover {{ background:rgba(91,138,247,.1); border-color:var(--blue); }}
+  .system-context {{ margin-top:40px; padding:24px; background:var(--bg2); border:1px solid var(--border); border-radius:13px; font-size:11px; }}
+  .sc-title {{ font-size:14px; font-weight:800; color:var(--text); margin-bottom:16px; letter-spacing:-0.2px; }}
+  .sc-grid {{ display:grid; grid-template-columns:1fr 1fr; gap:24px; }}
+  .sc-col-label {{ font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text3); margin-bottom:10px; letter-spacing:0.5px; }}
+  .sc-col pre {{ white-space:pre-wrap; color:var(--text2); font-family:var(--font-mono); line-height:1.6; font-size:10.5px; }}
 </style>
 </head>
 <body>
@@ -397,6 +564,20 @@ def render_html(data, duration_map=None):
   <div>{today}</div>
 </div>
 
+<div class="system-context">
+  <div class="sc-title">Intelligence Profile & Curation Criteria</div>
+  <div class="sc-grid">
+    <div class="sc-col">
+      <div class="sc-col-label">Direct Stack & Adjacent</div>
+      <pre>{stack_profile}</pre>
+    </div>
+    <div class="sc-col">
+      <div class="sc-col-label">User Context & Editorial Pillars</div>
+      <pre>{user_context}</pre>
+    </div>
+  </div>
+</div>
+
 <script>
   let currentLens = 'all';
   let currentTier = 'all';
@@ -473,44 +654,61 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", type=str, default="data/hub-input.json", help="Path to unified input data")
     parser.add_argument("--output", type=str, default="dashboards", help="Output directory")
+    parser.add_argument("--render-only", action="store_true", help="Skip LLM call; re-render from existing hub-output.json")
     args = parser.parse_args()
 
-    input_path = PROJECT_ROOT / args.input
-    if not input_path.exists():
-        print(f"Error: Input file {input_path} not found.")
-        sys.exit(1)
-
-    with open(input_path, "r") as f:
-        input_data = json.load(f)
-
-    # Build URL → duration lookup from raw fetch data
-    duration_map = {v["url"]: v["duration"] for v in input_data.get("videos", []) if v.get("duration")}
-
-    print("Generating Unified Hub Content...")
-    content = generate_hub_content(input_data)
-
-    # Add generation metadata
-    content["metadata"] = {
-        "generated_at": datetime.now().isoformat(),
-        "model": DEFAULT_MODEL,
-        "provider": DEFAULT_PROVIDER
-    }
-
     output_json_path = PROJECT_ROOT / "data" / "hub-output.json"
-    output_json_path.write_text(json.dumps(content, indent=2), encoding="utf-8")
-
-    print("Rendering HTML...")
-    html = render_html(content, duration_map)
-    
-    today_iso = datetime.now().strftime("%Y-%m-%d")
     output_dir_path = Path(args.output)
+
+    if args.render_only:
+        if not output_json_path.exists():
+            print(f"Error: {output_json_path} not found. Run without --render-only first.")
+            sys.exit(1)
+        content = json.loads(output_json_path.read_text(encoding="utf-8"))
+        # Rebuild duration_map from hub-input if available
+        input_path = PROJECT_ROOT / args.input
+        duration_map = {}
+        if input_path.exists():
+            raw = json.loads(input_path.read_text(encoding="utf-8"))
+            duration_map = {v["url"]: v["duration"] for v in raw.get("videos", []) if v.get("duration")}
+        print("Rendering HTML (cached content)...")
+    else:
+        input_path = PROJECT_ROOT / args.input
+        if not input_path.exists():
+            print(f"Error: Input file {input_path} not found.")
+            sys.exit(1)
+        with open(input_path, "r") as f:
+            input_data = json.load(f)
+
+        duration_map = {v["url"]: v["duration"] for v in input_data.get("videos", []) if v.get("duration")}
+
+        print("Generating Unified Hub Content...")
+        content = generate_hub_content(input_data)
+        content["metadata"] = {
+            "generated_at": datetime.now().isoformat(),
+            "model": DEFAULT_MODEL,
+            "provider": DEFAULT_PROVIDER
+        }
+        output_json_path.write_text(json.dumps(content, indent=2), encoding="utf-8")
+        print("Rendering HTML...")
+
+    curriculum_links = _build_curriculum_pages(content.get("exercises", []), output_dir_path)
+    if curriculum_links:
+        print(f"  Curriculum pages: {len(curriculum_links)} linked")
+
+    # Get keywords context for dashboard footer
+    sys.path.insert(0, str(Path(__file__).parent))
+    from prompts import STACK_PROFILE, USER_CONTEXT
+
+    html = render_html(content, duration_map, curriculum_links, STACK_PROFILE, USER_CONTEXT)
+
+    today_iso = datetime.now().strftime("%Y-%m-%d")
     output_path = output_dir_path / f"AI-Discovery-Hub-{today_iso}.html"
     output_path.write_text(html, encoding="utf-8")
-    
-    # Also create latest.html
+
     latest_path = output_dir_path / "latest.html"
     latest_path.write_text(html, encoding="utf-8")
-    
+
     print(f"Dashboard created: {output_path}")
     print(f"Latest dashboard updated: {latest_path}")
 
