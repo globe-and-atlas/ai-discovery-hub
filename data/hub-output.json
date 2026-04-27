@@ -1,0 +1,112 @@
+{
+  "themes": [
+    {
+      "type": "curr",
+      "label": "Claude Code vs Cursor: The battle for the agentic IDE heats up with new Cursor 3 release."
+    },
+    {
+      "type": "model",
+      "label": "Claude Opus 4.7 sets a new ceiling for reasoning and long-context performance."
+    },
+    {
+      "type": "infra",
+      "label": "Managed agent toolkits from Anthropic signal shift toward production-grade agent infrastructure."
+    }
+  ],
+  "artifacts": [
+    {
+      "type": "video",
+      "title": "The debugging wars: Cursor 3 takes aim at Claude Code’s agentic edge",
+      "source": "The New Stack",
+      "date": "2026-04-26",
+      "url": "https://thenewstack.io/cursors-agents-window-vs-claude-code/",
+      "desc": "Analysis of the latest agent features in Cursor 3 vs Claude Code, specifically around terminal-native vs editor-native debugging.",
+      "relevance": "personal",
+      "relevance_why": "Direct: Daniel uses Claude Code; Cursor 3 is a direct competitor for his agentic coding workflow.",
+      "tier": "✅ Adopt Now",
+      "lens": "📡 Staying Current",
+      "topics": ["t-claude", "t-agent"]
+    },
+    {
+      "type": "repo",
+      "title": "awesome-ai-agents-2026",
+      "source": "GitHub / caramaschiHG",
+      "date": "2026-04-27",
+      "url": "https://github.com/caramaschiHG/awesome-ai-agents-2026",
+      "desc": "Curated list of frameworks and tools for the 2026 agent ecosystem.",
+      "relevance": "personal",
+      "relevance_why": "Direct: Central reference for his AI mastery project and Globe & Atlas content.",
+      "tier": "✅ Adopt Now",
+      "lens": "📡 Staying Current",
+      "topics": ["t-agent"]
+    },
+    {
+      "type": "signal",
+      "title": "Claude Opus 4.7 Released",
+      "source": "Anthropic",
+      "date": "2026-04-24",
+      "url": "https://www.anthropic.com/news/claude-opus-4-7",
+      "desc": "Significant upgrade to the Opus model family with massive performance gains in coding and reasoning.",
+      "relevance": "personal",
+      "relevance_why": "Direct: Primary model family in Daniel's stack.",
+      "tier": "✅ Adopt Now",
+      "lens": "📡 Staying Current",
+      "topics": ["t-claude", "t-model"]
+    },
+    {
+      "type": "repo",
+      "title": "claude-managed-agents",
+      "source": "GitHub / anthropic",
+      "date": "2026-04-23",
+      "url": "https://github.com/anthropic/claude-managed-agents",
+      "desc": "Anthropic's official toolkit for scaling agents in production.",
+      "relevance": "personal",
+      "relevance_why": "Direct: Official infra for his primary LLM provider.",
+      "tier": "👁 Watch Closely",
+      "lens": "📡 Staying Current",
+      "topics": ["t-claude", "t-infra"]
+    },
+    {
+      "type": "signal",
+      "title": "Maths vs machine learning publishing venues [D]",
+      "source": "r/MachineLearning",
+      "date": "2026-04-27",
+      "url": "https://www.reddit.com/r/MachineLearning/comments/1sx0bnx/maths_vs_machine_learning_publishing_venues_d/",
+      "desc": "Academic debate on research publishing trends in 2026.",
+      "relevance": "world",
+      "source_type": "reddit",
+      "icon": "🌍"
+    }
+  ],
+  "exercises": [
+    {
+      "title": "Benchmark Claude Code vs Cursor 3 on a complex GIS script",
+      "effort": "med",
+      "desc": "Use both tools to refactor a legacy FME Python script. Compare speed, context accuracy, and 'instinct' for geospatial libraries."
+    },
+    {
+      "title": "Migrate your main agentic workflow to Claude Opus 4.7",
+      "effort": "low",
+      "desc": "Update your environment variables and test the new reasoning capabilities on your most complex directives."
+    }
+  ],
+  "model_tracker": [
+    {
+      "name": "Claude Opus 4.7",
+      "company": "Anthropic",
+      "date": "2026-04-24",
+      "status": "new"
+    },
+    {
+      "name": "Gemini 2.0 Ultra",
+      "company": "Google",
+      "date": "2026-04-20",
+      "status": "watch"
+    }
+  ],
+  "metadata": {
+    "generated_at": "2026-04-27T15:03:00Z",
+    "model": "claude-3-5-sonnet-latest",
+    "provider": "anthropic"
+  }
+}

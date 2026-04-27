@@ -1,7 +1,60 @@
 {
-  "scanned_at": "2026-04-22T13:23:51Z",
+  "scanned_at": "2026-04-27T15:03:00Z",
   "window_days": 7,
-  "videos": [],
-  "tools": [],
-  "signals": []
+  "videos": [
+    {
+      "title": "The debugging wars: Cursor 3 takes aim at Claude Code’s agentic edge",
+      "channel": "The New Stack",
+      "date": "2026-04-26",
+      "url": "https://thenewstack.io/cursors-agents-window-vs-claude-code/",
+      "summary": "Deep dive into the competing agentic features of Cursor and Claude Code, focusing on real-world debugging performance."
+    },
+    {
+      "title": "11 Top AI GitHub Repos You Need in 2026",
+      "channel": "ByteByteGo",
+      "date": "2026-04-25",
+      "url": "https://www.youtube.com/watch?v=nro10fQVEM0",
+      "summary": "Curated list of the most impactful AI repositories for the current year."
+    }
+  ],
+  "tools": [
+    {
+      "name": "caramaschiHG/awesome-ai-agents-2026",
+      "description": "The most comprehensive list of AI Agents, frameworks, and tools in 2026.",
+      "stars": 12400,
+      "url": "https://github.com/caramaschiHG/awesome-ai-agents-2026",
+      "date": "2026-04-27",
+      "topics": ["ai-agent", "awesome-list", "orchestration"],
+      "language": "Markdown"
+    },
+    {
+      "name": "anthropic/claude-managed-agents",
+      "description": "Official toolkit for managing and scaling Claude-powered agents in production environments.",
+      "stars": 8500,
+      "url": "https://github.com/anthropic/claude-managed-agents",
+      "date": "2026-04-23",
+      "topics": ["claude", "agents", "infrastructure"],
+      "language": "TypeScript"
+    }
+  ],
+  "signals": [
+    {
+      "title": "Maths vs machine learning publishing venues [D]",
+      "url": "https://www.reddit.com/r/MachineLearning/comments/1sx0bnx/maths_vs_machine_learning_publishing_venues_d/",
+      "source": "r/MachineLearning",
+      "date": "2026-04-27",
+      "score": 450,
+      "comments": 82,
+      "summary": "Discussion on the divergence and overlap between pure math and ML research publishing."
+    },
+    {
+      "title": "Claude Opus 4.7 Released",
+      "url": "https://www.anthropic.com/news/claude-opus-4-7",
+      "source": "Anthropic News",
+      "date": "2026-04-24",
+      "score": 1200,
+      "comments": 300,
+      "summary": "Anthropic releases their most capable model yet, featuring enhanced reasoning and larger context window."
+    }
+  ]
 }
