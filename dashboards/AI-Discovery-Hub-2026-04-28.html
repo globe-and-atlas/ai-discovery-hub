@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Discovery Hub — April 28, 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080b12; --bg2: #0e1220; --bg3: #151c2e; --bg4: #1d2540;
+    --border: #252e4a; --border2: #36416a; --text: #e6eaf4;
+    --text2: #8e9ab8; --text3: #58678e; --blue: #5b8af7;
+    --purple: #7c5cfc; --green: #34d89a; --orange: #f97c3c;
+    --pink: #f05d9a; --yellow: #f5c842; --teal: #38c9d4; --cyan: #4fd9f5;
+    --font-sans: 'Inter', -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:var(--font-sans); padding:26px 28px; line-height:1.5; }
+  .header { display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; padding-bottom:20px; border-bottom:1px solid var(--border); }
+  .h-title { font-size:24px; font-weight:900; letter-spacing:-.5px; background:linear-gradient(120deg,#fff 0%,#8e9ab8 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  .h-sub { font-size:12px; color:var(--text3); font-family:var(--font-mono); margin-top:3px; }
+  .stat-row { display:grid; grid-template-columns:repeat(6,1fr); gap:10px; margin-bottom:14px; }
+  .sc { background:var(--bg2); border:1px solid var(--border); border-radius:11px; padding:13px 14px; text-align:center; transition:.15s; cursor:pointer; }
+  .sc:hover { border-color:var(--border2); background:var(--bg3); }
+  .sc-num { font-size:28px; font-weight:900; line-height:1; margin-bottom:3px; }
+  .sc-lbl { font-size:10px; color:var(--text3); font-weight:500; }
+  .c-blue { color:var(--blue); } .c-green { color:var(--green); } .c-orange { color:var(--orange); }
+  .c-yellow { color:var(--yellow); } .c-teal { color:var(--teal); } .c-pink { color:var(--pink); } .c-text3 { color:var(--text3); }
+  .section-header { display:flex; align-items:center; gap:10px; margin:20px 0 12px; }
+  .section-title { font-size:13px; font-weight:800; color:var(--text); }
+  .section-badge { font-size:10px; font-weight:700; padding:3px 9px; border-radius:20px; font-family:var(--font-mono); }
+  .sb-personal { background:rgba(91,138,247,.12); color:var(--blue); border:1px solid rgba(91,138,247,.3); }
+  .sb-world { background:rgba(88,103,142,.12); color:var(--text3); border:1px solid rgba(88,103,142,.3); }
+  .section-line { flex:1; height:1px; background:var(--border); }
+  .controls { margin-bottom:16px; display:flex; flex-direction:column; gap:8px; }
+  .sort-row { display:flex; gap:8px; align-items:center; }
+  .filter-row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .row-lbl { font-size:9px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:var(--text3); font-family:var(--font-mono); width:38px; flex-shrink:0; }
+  .sort-btn, .filter-btn { font-size:11px; font-weight:700; padding:4px 12px; border-radius:6px; border:1px solid var(--border); background:var(--bg2); color:var(--text3); cursor:pointer; transition:.2s; position:relative; }
+  .filter-btn[data-tip]:hover::after { content:attr(data-tip); position:absolute; bottom:calc(100% + 7px); left:50%; transform:translateX(-50%); background:var(--bg4); border:1px solid var(--border2); color:var(--text2); font-size:10.5px; font-weight:400; line-height:1.45; padding:7px 11px; border-radius:7px; white-space:nowrap; pointer-events:none; z-index:200; font-family:var(--font-sans); box-shadow:0 4px 16px rgba(0,0,0,.4); }
+  .sort-btn.active { border-color:var(--blue); color:var(--text); background:rgba(91,138,247,.1); }
+  .filter-btn.active { border-color:var(--text3); color:var(--text); background:rgba(255,255,255,.05); }
+  .filter-btn.f-home.active { border-color:var(--yellow); color:var(--yellow); background:rgba(245,200,66,.1); }
+  .filter-btn.f-curr.active { border-color:var(--blue); color:var(--blue); background:rgba(91,138,247,.1); }
+  .filter-btn.f-gis.active  { border-color:var(--green); color:var(--green); background:rgba(52,216,154,.1); }
+  .filter-btn.fb-adopt.active { border-color:var(--green); color:var(--green); background:rgba(52,216,154,.1); }
+  .filter-btn.fb-watch.active { border-color:var(--blue); color:var(--blue); background:rgba(91,138,247,.1); }
+  .filter-btn.fb-hype.active  { border-color:var(--pink); color:var(--pink); background:rgba(240,93,154,.1); }
+  .filter-btn.fb-found.active { border-color:var(--yellow); color:var(--yellow); background:rgba(245,200,66,.1); }
+  .filter-btn.fb-radar.active { border-color:var(--teal); color:var(--teal); background:rgba(56,201,212,.1); }
+  .hub-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:11px; }
+  .fycard { background:rgba(255,255,255,.033); border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:13px; display:flex; flex-direction:column; text-decoration:none; color:inherit; transition:border-color .2s, transform .2s; }
+  .fycard:hover { border-color:rgba(245,200,66,.35); transform:translateY(-2px); }
+  .fycard.adjacent { border-color:rgba(249,124,60,.18); }
+  .fycard.adjacent:hover { border-color:rgba(249,124,60,.55); }
+  .fycard-icon { font-size:20px; margin-bottom:7px; }
+  .fycard-title { font-size:12.5px; font-weight:700; color:var(--text); margin-bottom:3px; line-height:1.3; }
+  .fycard-src { font-size:9.5px; color:var(--text3); font-family:var(--font-mono); margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+  .vid-dur { background:rgba(56,201,212,.12); color:var(--teal); border-radius:4px; padding:1px 5px; font-size:9px; font-weight:700; flex-shrink:0; }
+  .fycard-desc { font-size:11px; color:var(--text2); line-height:1.5; margin-bottom:6px; flex-grow:1; }
+  .fycard-why { font-size:10px; color:var(--orange); font-style:italic; margin-bottom:8px; line-height:1.4; }
+  .fycard-why.direct { color:var(--teal); }
+  .tag-row { display:flex; flex-wrap:wrap; gap:5px; }
+  .tag { padding:2px 7px; border-radius:4px; font-size:9px; font-weight:700; }
+  .t-lens { background:rgba(255,255,255,0.05); color:var(--text3); }
+  .t-tier { border:1px solid transparent; }
+  .t-adopt { color:var(--green); border-color:rgba(52,216,154,.3); }
+  .t-watch { color:var(--blue); border-color:rgba(91,138,247,.3); }
+  .t-hype  { color:var(--pink); border-color:rgba(240,93,154,.3); }
+  .t-found { color:var(--yellow); border-color:rgba(245,200,66,.3); }
+  .t-radar { color:var(--teal); border-color:rgba(56,201,212,.3); }
+  .t-topic { background:rgba(124,92,252,.08); color:var(--purple); border:1px solid rgba(124,92,252,.2); }
+  [class*="t-topic"][data-topic="t-claude"]  { background:rgba(249,124,60,.08); color:var(--orange); border-color:rgba(249,124,60,.25); }
+  [class*="t-topic"][data-topic="t-openai"]  { background:rgba(52,216,154,.08); color:var(--green);  border-color:rgba(52,216,154,.25); }
+  [class*="t-topic"][data-topic="t-gemini"]  { background:rgba(91,138,247,.08); color:var(--blue);   border-color:rgba(91,138,247,.25); }
+  [class*="t-topic"][data-topic="t-esri"]    { background:rgba(56,201,212,.08); color:var(--teal);   border-color:rgba(56,201,212,.25); }
+  [class*="t-topic"][data-topic="t-satellite"]{ background:rgba(79,217,245,.08); color:var(--cyan);  border-color:rgba(79,217,245,.25); }
+  [class*="t-topic"][data-topic="t-drone"]   { background:rgba(245,200,66,.08); color:var(--yellow); border-color:rgba(245,200,66,.25); }
+  [class*="t-topic"][data-topic="t-thermal"] { background:rgba(240,93,154,.08); color:var(--pink);   border-color:rgba(240,93,154,.25); }
+  .fycard.hidden { display:none; }
+  .world-list { display:flex; flex-direction:column; border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+  .world-row { display:grid; grid-template-columns:24px 1fr 150px 2fr; gap:12px; align-items:center; padding:9px 14px; text-decoration:none; color:inherit; border-bottom:1px solid var(--border); transition:background .15s; }
+  .world-row:last-child { border-bottom:none; }
+  .world-row:hover { background:var(--bg2); }
+  .world-icon { font-size:13px; text-align:center; }
+  .world-title { font-size:11.5px; font-weight:600; color:var(--text2); line-height:1.3; }
+  .world-src { font-size:9.5px; color:var(--text3); font-family:var(--font-mono); }
+  .world-desc { font-size:10.5px; color:var(--text3); line-height:1.4; }
+  .p-pink::before  { background:linear-gradient(90deg,var(--pink),var(--purple)); }
+  .p-teal::before  { background:linear-gradient(90deg,var(--teal),var(--cyan)); }
+  .p-yellow::before { background:linear-gradient(90deg,var(--yellow),var(--orange)); }
+  .tpill { display:flex; align-items:center; gap:5px; padding:5px 11px; border-radius:20px; font-size:11px; font-weight:600; border:1px solid; margin-bottom:5px; }
+  .tpill-dot { width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+  .theme-wrap { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; }
+  .tp-curr  { background:rgba(91,138,247,.07);  color:var(--blue);   border-color:rgba(91,138,247,.25);  } .tp-curr .tpill-dot  { background:var(--blue); }
+  .tp-home  { background:rgba(245,200,66,.07);  color:var(--yellow); border-color:rgba(245,200,66,.25);  } .tp-home .tpill-dot  { background:var(--yellow); }
+  .tp-agent { background:rgba(249,124,60,.07);  color:var(--orange); border-color:rgba(249,124,60,.25);  } .tp-agent .tpill-dot { background:var(--orange); }
+  .tp-model { background:rgba(124,92,252,.07);  color:var(--purple); border-color:rgba(124,92,252,.25);  } .tp-model .tpill-dot { background:var(--purple); }
+  .tp-infra { background:rgba(56,201,212,.07);  color:var(--teal);   border-color:rgba(56,201,212,.25);  } .tp-infra .tpill-dot { background:var(--teal); }
+  .tp-econ  { background:rgba(240,93,154,.07);  color:var(--pink);   border-color:rgba(240,93,154,.25);  } .tp-econ .tpill-dot  { background:var(--pink); }
+  .tp-gis   { background:rgba(52,216,154,.07);  color:var(--green);  border-color:rgba(52,216,154,.25);  } .tp-gis .tpill-dot   { background:var(--green); }
+  .tp-design { background:rgba(56,201,212,.07); color:var(--cyan);   border-color:rgba(56,201,212,.25);  } .tp-design .tpill-dot { background:var(--cyan); }
+  .sig { display:flex; align-items:center; gap:9px; margin-bottom:8px; }
+  .sig-icon { font-size:13px; width:18px; flex-shrink:0; text-align:center; }
+  .sig-lbl { font-size:11px; color:var(--text2); flex:1; }
+  .sig-bar-bg { width:80px; height:5px; background:var(--bg4); border-radius:3px; flex-shrink:0; overflow:hidden; }
+  .sig-bar { height:100%; border-radius:3px; }
+  .sig-ct { font-size:10px; font-family:var(--font-mono); color:var(--text3); width:14px; text-align:right; }
+  .model-row { display:flex; align-items:center; justify-content:space-between; padding:7px 0; border-bottom:1px solid var(--border); }
+  .model-row:last-child { border-bottom:none; }
+  .model-name { font-size:12px; font-weight:700; color:var(--text); }
+  .model-co { font-size:10px; color:var(--text3); font-family:var(--font-mono); }
+  .model-status { font-size:9px; font-weight:700; padding:3px 8px; border-radius:20px; }
+  .ms-new  { background:rgba(52,216,154,.12); color:var(--green); }
+  .ms-watch { background:rgba(91,138,247,.12); color:var(--blue); }
+  .ms-arch { background:rgba(124,92,252,.12); color:var(--purple); }
+  .ms-tool { background:rgba(249,124,60,.12); color:var(--orange); }
+  .ms-infra { background:rgba(56,201,212,.12); color:var(--teal); }
+  .apply-card { background:var(--bg3); border:1px solid var(--border); border-radius:9px; padding:12px 14px; margin-bottom:9px; }
+  .apply-card:last-child { margin-bottom:0; }
+  .apply-head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:5px; }
+  .apply-title { font-size:12px; font-weight:700; color:var(--text); flex:1; line-height:1.3; }
+  .effort { font-size:8.5px; font-weight:700; padding:2px 6px; border-radius:5px; margin-left:8px; flex-shrink:0; white-space:nowrap; }
+  .e-low  { background:rgba(52,216,154,.12); color:var(--green); }
+  .e-med  { background:rgba(245,200,66,.12); color:var(--yellow); }
+  .e-high { background:rgba(249,124,60,.12); color:var(--orange); }
+  .apply-desc { font-size:10.5px; color:var(--text2); line-height:1.5; }
+  .panel { background:var(--bg2); border:1px solid var(--border); border-radius:13px; padding:18px 20px; position:relative; overflow:hidden; }
+  .panel::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; }
+  .p-blue::before { background:linear-gradient(90deg,var(--blue),var(--purple)); }
+  .plabel { font-size:10px; font-weight:700; letter-spacing:1.1px; text-transform:uppercase; color:var(--text3); margin-bottom:11px; }
+  .g3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-top:12px; }
+  .footer { margin-top:20px; padding-top:14px; border-top:1px solid var(--border); font-size:10px; color:var(--text3); font-family:var(--font-mono); display:flex; justify-content:space-between; }
+  .cur-link { display:inline-block; margin-top:10px; font-size:10px; font-weight:700; font-family:var(--font-mono); color:var(--blue); text-decoration:none; border:1px solid rgba(91,138,247,.3); padding:4px 10px; border-radius:5px; transition:.15s; }
+  .cur-link:hover { background:rgba(91,138,247,.1); border-color:var(--blue); }
+  .system-context { margin-top:40px; padding:24px; background:var(--bg2); border:1px solid var(--border); border-radius:13px; font-size:11px; }
+  .sc-title { font-size:14px; font-weight:800; color:var(--text); margin-bottom:16px; letter-spacing:-0.2px; }
+  .sc-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  .sc-col-label { font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text3); margin-bottom:10px; letter-spacing:0.5px; }
+  .sc-col pre { white-space:pre-wrap; color:var(--text2); font-family:var(--font-mono); line-height:1.6; font-size:10.5px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="h-title">AI Discovery Hub</div>
+    <div class="h-sub">April 28, 2026 &nbsp;·&nbsp; 16 relevant · 4 world signals</div>
+  </div>
+</div>
+
+<div class="stat-row">
+  <div class="sc" onclick="filterTier('all')"><div class="sc-num c-blue">16</div><div class="sc-lbl">Your Stack</div></div>
+  <div class="sc" onclick="filterTier('adopt')"><div class="sc-num c-green">3</div><div class="sc-lbl">✅ Adopt Now</div></div>
+  <div class="sc" onclick="filterTier('watch')"><div class="sc-num c-blue">6</div><div class="sc-lbl">👁 Watch Closely</div></div>
+  <div class="sc" onclick="filterTier('radar')"><div class="sc-num c-teal">3</div><div class="sc-lbl">🌱 On Radar</div></div>
+  <div class="sc" onclick="filterAdjOnly()" style="cursor:pointer;"><div class="sc-num c-orange">9</div><div class="sc-lbl">🔀 Adjacent</div></div>
+  <div class="sc" style="cursor:default"><div class="sc-num c-text3">4</div><div class="sc-lbl">🌐 AI World</div></div>
+</div>
+
+<div class="controls">
+  <div class="sort-row">
+    <span class="row-lbl">SORT</span>
+    <button class="sort-btn active" id="sort-tier" onclick="sortHub('tier')">By Tier Priority</button>
+    <button class="sort-btn" id="sort-date" onclick="sortHub('date')">By Recency</button>
+  </div>
+  <div class="filter-row">
+    <span class="row-lbl">LENS</span>
+    <button class="filter-btn active" id="f-all" onclick="filterHub('all')">All</button>
+    <button class="filter-btn f-home" id="f-home" onclick="filterHub('home')" data-tip="Personal projects, home automation, local tools, budgeting">🏠 Home</button>
+    <button class="filter-btn f-curr" id="f-curr" onclick="filterHub('curr')" data-tip="Claude, ChatGPT, Gemini, model releases, AI industry, agent tooling">📡 Current</button>
+    <button class="filter-btn f-gis"  id="f-gis"  onclick="filterHub('gis')"  data-tip="Geospatial AI, FME, Esri/ArcGIS, Sentinel Hub, QGIS, satellite/drone/thermal imagery">🗺 GIS/FME</button>
+  </div>
+  <div class="filter-row">
+    <span class="row-lbl">TIER</span>
+    <button class="filter-btn active" id="t-all" onclick="filterTier('all')">All</button>
+    <button class="filter-btn fb-adopt" id="t-adopt" onclick="filterTier('adopt')" data-tip="High ROI — ready to use in your projects today">✅ Adopt Now</button>
+    <button class="filter-btn fb-watch" id="t-watch" onclick="filterTier('watch')" data-tip="Important signal — evaluate soon">👁 Watch Closely</button>
+    <button class="filter-btn fb-hype"  id="t-hype"  onclick="filterTier('hype')"  data-tip="Viral or contested — verify before acting">🔥 Hype Check</button>
+    <button class="filter-btn fb-found" id="t-found" onclick="filterTier('found')" data-tip="Core infrastructure or concept worth understanding">🏗 Foundation</button>
+    <button class="filter-btn fb-radar" id="t-radar" onclick="filterTier('radar')" data-tip="Early traction — not proven yet, but watch it">🌱 On Radar</button>
+  </div>
+</div>
+
+<div class="section-header">
+  <div class="section-title">Your Stack &amp; Adjacent</div>
+  <span class="section-badge sb-personal">16 signals</span>
+  <div class="section-line"></div>
+</div>
+
+<div class="hub-grid" id="hub-grid">
+  <a class="fycard" href="https://github.com/affaan-m/everything-claude-code" target="_blank" rel="noopener noreferrer" data-date="2026-04-29" data-tier="✅ Adopt Now" data-tierkey="adopt" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="false">
+    <div class="fycard-icon">🤖</div>
+    <div class="fycard-title">everything-claude-code: Agent Harness Performance Optimization for Claude Code</div>
+    <div class="fycard-src"><span>GitHub – affaan-m/everything-claude-code · 2026-04-29</span></div>
+    <div class="fycard-desc">A plugin system for Claude Code that adds skills, memory, instincts, and security layers to coding sessions — directly extends Daniel's Claude Code CLI workflow with persistent context and optimized agent execution.</div>
+    <div class="fycard-why direct">↳ Direct: extends Claude Code CLI which is in Daniel's dev tools stack, adding memory and performance optimization to his existing agentic coding sessions.</div><div class="tag-row">
+      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-tier t-adopt">✅ Adopt Now</span>
+      <span class="tag t-topic" data-topic="t-claude">claude</span><span class="tag t-topic" data-topic="t-agent">agent</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://github.com/thedotmack/claude-mem" target="_blank" rel="noopener noreferrer" data-date="2026-04-28" data-tier="✅ Adopt Now" data-tierkey="adopt" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="false">
+    <div class="fycard-icon">🧠</div>
+    <div class="fycard-title">claude-mem: Automatic Session Memory Plugin for Claude Code</div>
+    <div class="fycard-src"><span>GitHub – thedotmack/claude-mem · 2026-04-28</span></div>
+    <div class="fycard-desc">A Claude Code plugin that captures session history, compresses it with Claude's agent SDK, and injects relevant context back into future sessions — solving the context-loss problem Daniel faces across multi-session GIS pipeline builds.</div>
+    <div class="fycard-why direct">↳ Direct: integrates with Claude Code CLI (direct stack) and Anthropic SDK, adding persistent memory that directly improves continuity across Daniel's long FME/Python build sessions.</div><div class="tag-row">
+      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-tier t-adopt">✅ Adopt Now</span>
+      <span class="tag t-topic" data-topic="t-claude">claude</span><span class="tag t-topic" data-topic="t-memory">memory</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://www.youtube.com/watch?v=KBKOin4-iko" target="_blank" rel="noopener noreferrer" data-date="2026-04-29" data-tier="✅ Adopt Now" data-tierkey="adopt" data-lens="🗺 GIS/FME" data-lenskey="gis" data-adj="false">
+    <div class="fycard-icon">🗺️</div>
+    <div class="fycard-title">QGIS OpenGeoAgent Plugin Sneak Peek</div>
+    <div class="fycard-src"><span>Open Geospatial Solutions · 2026-04-29</span><span class="vid-dur">⏱ 0:53</span></div>
+    <div class="fycard-desc">A preview of a forthcoming QGIS plugin that enables natural language geospatial analysis and visualization — directly relevant to Daniel's QGIS stack and his Globe & Atlas editorial pillar on AI-augmented GIS workflows.</div>
+    <div class="fycard-why direct">↳ Direct: targets QGIS which is in Daniel's stack; demonstrates LLM-to-GIS integration pattern directly applicable to The Build and Tool Critic editorial pillars.</div><div class="tag-row">
+      <span class="tag t-lens">🗺 GIS/FME</span>
+      <span class="tag t-tier t-adopt">✅ Adopt Now</span>
+      <span class="tag t-topic" data-topic="t-geoai">geoai</span><span class="tag t-topic" data-topic="t-agent">agent</span>
+    </div>
+  </a>
+  <a class="fycard adjacent" href="https://github.com/google-gemini/gemini-cli" target="_blank" rel="noopener noreferrer" data-date="2026-04-29" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="true">
+    <div class="fycard-icon">💻</div>
+    <div class="fycard-title">gemini-cli: Google Gemini Terminal Agent</div>
+    <div class="fycard-src"><span>GitHub – google-gemini/gemini-cli · 2026-04-29</span></div>
+    <div class="fycard-desc">Google's open-source terminal AI agent built in TypeScript that brings Gemini directly into the CLI — a direct competitor to Claude Code CLI that Daniel uses daily, worth evaluating as an alternative or complement for geospatial scripting tasks.</div>
+    <div class="fycard-why">↳ Adjacent: competes directly with Claude Code CLI in Daniel's dev tools stack; TypeScript aligns with his frontend stack and Gemini competes with Claude API he monitors.</div><div class="tag-row">
+      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-tier t-watch">👁 Watch Closely</span>
+      <span class="tag t-topic" data-topic="t-gemini">gemini</span><span class="tag t-topic" data-topic="t-agent">agent</span>
+    </div>
+  </a>
+  <a class="fycard adjacent" href="https://github.com/n8n-io/n8n" target="_blank" rel="noopener noreferrer" data-date="2026-04-29" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="🗺 GIS/FME" data-lenskey="gis" data-adj="true">
+    <div class="fycard-icon">⚙️</div>
+    <div class="fycard-title">n8n: Fair-Code Workflow Automation with Native AI Capabilities</div>
+    <div class="fycard-src"><span>GitHub – n8n-io/n8n · 2026-04-29</span></div>
+    <div class="fycard-desc">A 186K-star TypeScript workflow automation platform with 400+ integrations and native AI agent support — adjacent to FME as a lightweight automation layer that could orchestrate Daniel's REST API pipelines and AI-augmented data flows.</div>
+    <div class="fycard-why">↳ Adjacent: replaces or complements FME for non-spatial ETL orchestration; TypeScript aligns with his stack and its AI-native workflow design is relevant to his 3-layer agent architecture.</div><div class="tag-row">
+      <span class="tag t-lens">🗺 GIS/FME</span>
+      <span class="tag t-tier t-watch">👁 Watch Closely</span>
+      <span class="tag t-topic" data-topic="t-fme">fme</span><span class="tag t-topic" data-topic="t-agent">agent</span>
+    </div>
+  </a>
+  <a class="fycard adjacent" href="https://github.com/langgenius/dify" target="_blank" rel="noopener noreferrer" data-date="2026-04-29" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="true">
+    <div class="fycard-icon">🏭</div>
+    <div class="fycard-title">Dify: Production-Ready Agentic Workflow Development Platform</div>
+    <div class="fycard-src"><span>GitHub – langgenius/dify · 2026-04-29</span></div>
+    <div class="fycard-desc">A 139K-star TypeScript/Python platform for building and deploying agentic workflows in production — relevant to Daniel's orchestration layer architecture and his Claude API integrations for GIS-facing AI tools.</div>
+    <div class="fycard-why">↳ Adjacent: directly addresses Daniel's orchestration layer needs; supports Claude API and Python backend, making it a candidate replacement for custom agent scaffolding in his projects.</div><div class="tag-row">
+      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-tier t-watch">👁 Watch Closely</span>
+      <span class="tag t-topic" data-topic="t-agent">agent</span><span class="tag t-topic" data-topic="t-claude">claude</span>
+    </div>
+  </a>
+  <a class="fycard adjacent" href="https://github.com/bytedance/deer-flow" target="_blank" rel="noopener noreferrer" data-date="2026-04-29" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="true">
+    <div class="fycard-icon">🦌</div>
+    <div class="fycard-title">deer-flow: Open-Source Long-Horizon SuperAgent Harness</div>
+    <div class="fycard-src"><span>GitHub – bytedance/deer-flow · 2026-04-29</span></div>
+    <div class="fycard-desc">ByteDance's Python-based long-horizon agent framework with sandboxes, memories, subagents, and skill modules — relevant as a reference architecture for Daniel's 3-layer agent system handling complex GIS data pipelines.</div>
+    <div class="fycard-why">↳ Adjacent: Python-based agent harness architecture aligns with Daniel's orchestration layer; subagent and memory patterns are directly applicable to his multi-step GIS automation builds.</div><div class="tag-row">
+      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-tier t-watch">👁 Watch Closely</span>
+      <span class="tag t-topic" data-topic="t-agent">agent</span><span class="tag t-topic" data-topic="t-memory">memory</span>
+    </div>
+  </a>
+  <a class="fycard adjacent" href="https://www.youtube.com/watch?v=yHgHU75N5T8" target="_blank" rel="noopener noreferrer" data-date="2026-04-28" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="true">
+    <div class="fycard-icon">📊</div>
+    <div class="fycard-title">DeepSeek V4 Pro: SOTA Coding Agent at 3x Lower Cost</div>
+    <div class="fycard-src"><span>Alejandro AO · 2026-04-28</span><span class="vid-dur">⏱ 18:10</span></div>
+    <div class="fycard-desc">An 18-minute comparison showing DeepSeek V4 Pro matching GPT-5.5 and Claude Opus on agentic coding benchmarks at significantly lower cost — directly relevant to Daniel's Claude API usage and cost management for geospatial automation scripts.</div>
+    <div class="fycard-why">↳ Adjacent: DeepSeek V4 Pro competes with Claude API (direct stack) on coding tasks; cost-performance data matters for Daniel's API budget across Python/GIS automation projects.</div><div class="tag-row">
+      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-tier t-watch">👁 Watch Closely</span>
+      <span class="tag t-topic" data-topic="t-model">model</span><span class="tag t-topic" data-topic="t-claude">claude</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://www.youtube.com/watch?v=roSJfGz-LKg" target="_blank" rel="noopener noreferrer" data-date="2026-04-29" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="🗺 GIS/FME" data-lenskey="gis" data-adj="false">
+    <div class="fycard-icon">🌐</div>
+    <div class="fycard-title">What is GDaaS (Geospatial Data as a Service)?</div>
+    <div class="fycard-src"><span>GeoWGS84AI · 2026-04-29</span><span class="vid-dur">⏱ 1:25</span></div>
+    <div class="fycard-desc">An explainer on Geospatial Data as a Service as a foundational business model — relevant context for Daniel's Globe & Atlas Industry Lens pillar covering how GIS professionals should position themselves amid cloud-native geospatial service providers.</div>
+    <div class="fycard-why direct">↳ Direct: GDaaS directly intersects Daniel's Sentinel Hub API, Planet Labs, and UP42 usage; relevant editorial material for his Industry Lens pillar on signal vs noise in commercial geospatial services.</div><div class="tag-row">
+      <span class="tag t-lens">🗺 GIS/FME</span>
+      <span class="tag t-tier t-watch">👁 Watch Closely</span>
+      <span class="tag t-topic" data-topic="t-satellite">satellite</span><span class="tag t-topic" data-topic="t-geoai">geoai</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://www.youtube.com/watch?v=iXLcH1wn31k" target="_blank" rel="noopener noreferrer" data-date="2026-04-28" data-tier="🔥 Hype Check" data-tierkey="hype" data-lens="🗺 GIS/FME" data-lenskey="gis" data-adj="false">
+    <div class="fycard-icon">🌍</div>
+    <div class="fycard-title">COMING SOON — 101 Steps to GeoAI from Scratch</div>
+    <div class="fycard-src"><span>Milan's Data Stories · 2026-04-28</span><span class="vid-dur">⏱ 0:24</span></div>
+    <div class="fycard-desc">A teaser for a comprehensive GeoAI curriculum launching soon — a direct competitive signal for Daniel's Globe & Atlas publication and a potential source of structured GeoAI content gaps he can fill with practitioner-level depth.</div>
+    <div class="fycard-why direct">↳ Direct: GeoAI curriculum content directly competes with and informs Daniel's Globe & Atlas editorial strategy; useful for identifying content positioning opportunities in The Build pillar.</div><div class="tag-row">
+      <span class="tag t-lens">🗺 GIS/FME</span>
+      <span class="tag t-tier t-hype">🔥 Hype Check</span>
+      <span class="tag t-topic" data-topic="t-geoai">geoai</span><span class="tag t-topic" data-topic="t-data">data</span>
+    </div>
+  </a>
+  <a class="fycard adjacent" href="https://www.youtube.com/watch?v=d4GfrP-V8mw" target="_blank" rel="noopener noreferrer" data-date="2026-04-28" data-tier="🔥 Hype Check" data-tierkey="hype" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="true">
+    <div class="fycard-icon">💻</div>
+    <div class="fycard-title">Best Local LLM 2026: Beats GPT-4o on 32GB</div>
+    <div class="fycard-src"><span>Inspiring Tech Stories · 2026-04-28</span><span class="vid-dur">⏱ 6:01</span></div>
+    <div class="fycard-desc">A benchmark comparison of Qwen3, Gemma, and other open-source models running locally, claiming to beat GPT-4o on coding tasks — relevant to Daniel's monitoring of alternatives to the Claude API for offline or cost-sensitive GIS scripting workflows.</div>
+    <div class="fycard-why">↳ Adjacent: benchmarks models that could replace Claude API for local Python/GIS scripting tasks; directly informs Daniel's stack decisions around API cost vs local inference trade-offs.</div><div class="tag-row">
+      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-tier t-hype">🔥 Hype Check</span>
+      <span class="tag t-topic" data-topic="t-model">model</span><span class="tag t-topic" data-topic="t-local">local</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://www.reddit.com/r/LocalLLaMA/comments/1sxqa2c/im_done_with_using_local_llms_for_coding/" target="_blank" rel="noopener noreferrer" data-date="2026-04-27" data-tier="🔥 Hype Check" data-tierkey="hype" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="false">
+    <div class="fycard-icon">💬</div>
+    <div class="fycard-title">r/LocalLLaMA: I'm Done with Local LLMs for Coding</div>
+    <div class="fycard-src"><span>r/LocalLLaMA · 2026-04-27</span></div>
+    <div class="fycard-desc">A high-engagement post (864 upvotes, 692 comments) from a developer comparing Qwen 27B and Gemma against Claude Code for coding tasks and concluding local models still fall short — validates Daniel's current Claude Code investment and frames the local vs cloud tradeoff for his Career Navigator content.</div>
+    <div class="fycard-why direct">↳ Direct: directly compares Claude Code (Daniel's dev tool) against local alternatives; 692 comments provide practitioner sentiment data relevant to his Tool Critic and Career Navigator pillars.</div><div class="tag-row">
+      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-tier t-hype">🔥 Hype Check</span>
+      <span class="tag t-topic" data-topic="t-claude">claude</span><span class="tag t-topic" data-topic="t-local">local</span>
+    </div>
+  </a>
+  <a class="fycard adjacent" href="https://github.com/ollama/ollama" target="_blank" rel="noopener noreferrer" data-date="2026-04-29" data-tier="🏗 Foundation" data-tierkey="found" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="true">
+    <div class="fycard-icon">🦙</div>
+    <div class="fycard-title">ollama: Local LLM Runner (Qwen3, GLM-5, DeepSeek, Gemma, Kimi)</div>
+    <div class="fycard-src"><span>GitHub – ollama/ollama · 2026-04-29</span></div>
+    <div class="fycard-desc">The leading local LLM runtime now supporting Kimi-K2.5, GLM-5, MiniMax, and Qwen3 — relevant as a local fallback or offline processing option for Daniel's Python-based GIS scripts when API costs or connectivity are constraints.</div>
+    <div class="fycard-why">↳ Adjacent: provides local inference alternative to Claude API for Python scripts; integrates with Python via REST, relevant for offline geospatial batch processing scenarios.</div><div class="tag-row">
+      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-tier t-found">🏗 Foundation</span>
+      <span class="tag t-topic" data-topic="t-local">local</span><span class="tag t-topic" data-topic="t-model">model</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://www.reddit.com/r/ClaudeAI/comments/1sxe46v/claude_knows_when_you_cheat_on_it_with_codex/" target="_blank" rel="noopener noreferrer" data-date="2026-04-27" data-tier="🌱 On Radar" data-tierkey="radar" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="false">
+    <div class="fycard-icon">👀</div>
+    <div class="fycard-title">r/ClaudeAI: Claude Detects When You Use Codex</div>
+    <div class="fycard-src"><span>r/ClaudeAI · 2026-04-27</span></div>
+    <div class="fycard-desc">A viral post (1,704 upvotes) showing Claude apparently recognizing when a user has been working with Codex — interesting signal about Claude's session awareness and memory behavior that has direct implications for Daniel's Claude Code multi-session GIS workflows.</div>
+    <div class="fycard-why direct">↳ Direct: concerns Claude Code behavior (Daniel's primary dev tool); session context awareness implications matter for how Daniel structures long GIS pipeline builds across tools.</div><div class="tag-row">
+      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-tier t-radar">🌱 On Radar</span>
+      <span class="tag t-topic" data-topic="t-claude">claude</span><span class="tag t-topic" data-topic="t-memory">memory</span>
+    </div>
+  </a>
+  <a class="fycard adjacent" href="https://github.com/huggingface/transformers" target="_blank" rel="noopener noreferrer" data-date="2026-04-28" data-tier="🌱 On Radar" data-tierkey="radar" data-lens="🗺 GIS/FME" data-lenskey="gis" data-adj="true">
+    <div class="fycard-icon">🤗</div>
+    <div class="fycard-title">huggingface/transformers: State-of-the-Art ML Model Framework</div>
+    <div class="fycard-src"><span>GitHub – huggingface/transformers · 2026-04-28</span></div>
+    <div class="fycard-desc">The 160K-star HuggingFace Transformers library now actively integrating DeepSeek, Gemma, and GLM models — a foundational Python library relevant for running geospatial ML models locally against Sentinel imagery or as a bridge to fine-tuned spatial models.</div>
+    <div class="fycard-why">↳ Adjacent: Python library directly usable alongside Daniel's rasterio/geopandas stack for running ML inference on satellite imagery; replaces or extends custom model loading in geospatial workflows.</div><div class="tag-row">
+      <span class="tag t-lens">🗺 GIS/FME</span>
+      <span class="tag t-tier t-radar">🌱 On Radar</span>
+      <span class="tag t-topic" data-topic="t-model">model</span><span class="tag t-topic" data-topic="t-satellite">satellite</span>
+    </div>
+  </a>
+  <a class="fycard adjacent" href="https://github.com/Significant-Gravitas/AutoGPT" target="_blank" rel="noopener noreferrer" data-date="2026-04-28" data-tier="🌱 On Radar" data-tierkey="radar" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="true">
+    <div class="fycard-icon">🤖</div>
+    <div class="fycard-title">AutoGPT: Accessible Autonomous AI Agent Platform</div>
+    <div class="fycard-src"><span>GitHub – Significant-Gravitas/AutoGPT · 2026-04-28</span></div>
+    <div class="fycard-desc">The 183K-star autonomous agent platform continues active development — a reference point for agentic AI architecture patterns relevant to Daniel's 3-layer orchestration system design.</div>
+    <div class="fycard-why">↳ Adjacent: Python-based autonomous agent architecture at massive scale; relevant as a reference for Daniel's orchestration and execution layer design in AI-augmented GIS workflows.</div><div class="tag-row">
+      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-tier t-radar">🌱 On Radar</span>
+      <span class="tag t-topic" data-topic="t-agent">agent</span><span class="tag t-topic" data-topic="t-model">model</span>
+    </div>
+  </a>
+</div>
+
+<div class="section-header" style="margin-top:28px;">
+  <div class="section-title">AI World at Large</div>
+  <span class="section-badge sb-world">4 signals · awareness only</span>
+  <div class="section-line"></div>
+</div>
+
+<div class="world-list">
+<a class="world-row" href="https://www.reddit.com/r/ClaudeAI/comments/1sx4hc6/when_your_data_is_so_bad/" target="_blank" rel="noopener noreferrer"><span class="world-icon">😂</span><span class="world-title">r/ClaudeAI: When Your Data Is So Bad (Bad Data Humor Goes Viral)</span><span class="world-src">r/ClaudeAI · 2026-04-27</span><span class="world-desc">A viral post mocking bad data quality that resonated widely (4,039 upvotes) — pure cultural signal about practitioner frustration with data quality, a theme deeply familiar in GIS work.</span></a><a class="world-row" href="https://www.reddit.com/r/singularity/comments/1sxixck/chat_gpt_54_solved_a_60_years_unsolved_erdos/" target="_blank" rel="noopener noreferrer"><span class="world-icon">🔢</span><span class="world-title">ChatGPT 5.4 Solved a 60+ Year Unsolved Erdős Problem</span><span class="world-src">r/singularity · 2026-04-27</span><span class="world-desc">Community discussion claiming ChatGPT 5.4 produced a novel proof for a longstanding open mathematics problem, reigniting debate about LLM reasoning capabilities.</span></a><a class="world-row" href="https://www.reddit.com/r/singularity/comments/1sxp4ha/talkie_a_13b_lm_trained_exclusively_on_pre1931/" target="_blank" rel="noopener noreferrer"><span class="world-icon">📚</span><span class="world-title">Talkie: 13B Language Model Trained Exclusively on Pre-1931 Data</span><span class="world-src">r/singularity · 2026-04-27</span><span class="world-desc">Researchers including Alec Radford released a 13B model trained on 260B tokens of pre-1931 text, demonstrating how training data curation dramatically shapes model personality and worldview.</span></a><a class="world-row" href="https://www.youtube.com/watch?v=ewpeOvRV200" target="_blank" rel="noopener noreferrer"><span class="world-icon">🚢</span><span class="world-title">AuraLink: Google Gemini AI for Global Supply Chain Logistics</span><span class="world-src">Courses by Notebook LM · 2026-04-28</span><span class="world-desc">A concept demo of a cloud-native AI logistics control tower using Google Gemini to eliminate supply chain blind spots.</span></a>
+</div>
+
+<div class="g3">
+  <div class="panel p-pink">
+    <div class="plabel">Weekly Themes</div>
+    <div class="theme-wrap"><span class="tpill tp-curr"><span class="tpill-dot"></span>Claude Code ecosystem maturing rapidly with memory and harness plugins</span><span class="tpill tp-gis"><span class="tpill-dot"></span>GeoAI natural language interfaces arriving in QGIS and open-source GIS</span><span class="tpill tp-model"><span class="tpill-dot"></span>Local LLM vs cloud API: practitioner verdict still favors Claude for coding</span><span class="tpill tp-agent"><span class="tpill-dot"></span>Agent harness architectures consolidating around memory, skills, and subagents</span><span class="tpill tp-gis"><span class="tpill-dot"></span>GDaaS and geospatial service layers reshaping how spatial data is consumed</span><span class="tpill tp-model"><span class="tpill-dot"></span>Cost-competitive coding models (DeepSeek V4, Qwen3) pressuring Claude API pricing</span></div>
+    <div class="plabel">Signal Mix (Your Stack)</div>
+    <div class="sig"><div class="sig-icon">🎥</div><div class="sig-lbl">Videos</div><div class="sig-bar-bg"><div class="sig-bar" style="width:31%;background:var(--blue);"></div></div><div class="sig-ct">5</div></div><div class="sig"><div class="sig-icon">📦</div><div class="sig-lbl">Repos</div><div class="sig-bar-bg"><div class="sig-bar" style="width:56%;background:var(--purple);"></div></div><div class="sig-ct">9</div></div><div class="sig"><div class="sig-icon">📰</div><div class="sig-lbl">Signals</div><div class="sig-bar-bg"><div class="sig-bar" style="width:12%;background:var(--teal);"></div></div><div class="sig-ct">2</div></div><div class="sig"><div class="sig-icon">🔀</div><div class="sig-lbl">Adjacent</div><div class="sig-bar-bg"><div class="sig-bar" style="width:56%;background:var(--orange);"></div></div><div class="sig-ct">9</div></div><div class="sig"><div class="sig-icon">🗺</div><div class="sig-lbl">GIS picks</div><div class="sig-bar-bg"><div class="sig-bar" style="width:31%;background:var(--green);"></div></div><div class="sig-ct">5</div></div>
+  </div>
+  <div class="panel p-teal">
+    <div class="plabel">Model Tracker</div>
+    <div class="model-row"><div><div class="model-name">DeepSeek V4 Pro</div><div class="model-co">DeepSeek · 2026-04-28</div></div><span class="model-status ms-new">NEW</span></div><div class="model-row"><div><div class="model-name">Qwen3</div><div class="model-co">Alibaba · 2026-04-28</div></div><span class="model-status ms-watch">WATCH</span></div><div class="model-row"><div><div class="model-name">Kimi-K2.5</div><div class="model-co">Moonshot AI · 2026-04-29</div></div><span class="model-status ms-watch">WATCH</span></div><div class="model-row"><div><div class="model-name">GLM-5</div><div class="model-co">Zhipu AI · 2026-04-29</div></div><span class="model-status ms-watch">WATCH</span></div><div class="model-row"><div><div class="model-name">ChatGPT 5.4</div><div class="model-co">OpenAI · 2026-04-27</div></div><span class="model-status ms-watch">WATCH</span></div><div class="model-row"><div><div class="model-name">Talkie 13B</div><div class="model-co">Independent (Radford et al.) · 2026-04-27</div></div><span class="model-status ms-arch">ARCH</span></div>
+  </div>
+  <div class="panel p-yellow">
+    <div class="plabel">The Lab — Apply This Week</div>
+    <div style="font-size:9.5px;color:var(--text3);margin-bottom:10px;font-style:italic;">4 items · one per ✅ Adopt Now artifact</div><div class="apply-card"><div class="apply-head"><div class="apply-title">Install everything-claude-code and benchmark GIS session performance</div><span class="effort e-med">Med effort</span></div><div class="apply-desc">Set up the everything-claude-code harness on your local Claude Code CLI environment. Run a representative FME Python scripting session with and without the skills/memory layers enabled. Measure context retention quality across a multi-step Sentinel Hub data pipeline build and document findings for a Tool Critic post.</div><div style="margin-top:10px;font-size:9.5px;color:var(--text3);font-family:var(--font-mono);">❯ python3 execution/expand_lab.py --item 1</div></div><div class="apply-card"><div class="apply-head"><div class="apply-title">Integrate claude-mem into your current GIS project workflow</div><span class="effort e-low">Low effort</span></div><div class="apply-desc">Install claude-mem as a Claude Code plugin in your active Python/GIS project. Run 3 consecutive sessions on a rasterio or geopandas task and evaluate how well the compressed memory injection restores context. Note which session details survive compression and which are lost — useful material for a Build post on AI memory in geospatial workflows.</div><div style="margin-top:10px;font-size:9.5px;color:var(--text3);font-family:var(--font-mono);">❯ python3 execution/expand_lab.py --item 2</div></div><div class="apply-card"><div class="apply-head"><div class="apply-title">Test OpenGeoAgent plugin on a real QGIS analysis task</div><span class="effort e-med">Med effort</span></div><div class="apply-desc">Once the QGIS OpenGeoAgent plugin is publicly available (monitor the channel), install it and run a natural language query against a local vector or raster dataset. Compare the output quality and workflow speed against a manual QGIS + Python approach. Publish findings as a Tool Critic review for Globe & Atlas readers evaluating NL-to-GIS tools.</div><div style="margin-top:10px;font-size:9.5px;color:var(--text3);font-family:var(--font-mono);">❯ python3 execution/expand_lab.py --item 3</div></div><div class="apply-card"><div class="apply-head"><div class="apply-title">Run gemini-cli against a geospatial Python scripting task and compare with Claude Code</div><span class="effort e-low">Low effort</span></div><div class="apply-desc">Install google-gemini/gemini-cli and ask it to generate a rasterio or geopandas script equivalent to a task you'd normally use Claude Code for. Score both on accuracy, code quality, and context handling. This gives you direct comparative data for a Staying Current post on terminal AI agent alternatives.</div><div style="margin-top:10px;font-size:9.5px;color:var(--text3);font-family:var(--font-mono);">❯ python3 execution/expand_lab.py --item 4</div></div>
+  </div>
+</div>
+
+<div class="footer">
+  <div>powered by claude-sonnet-4-6 · hub-v2</div>
+  <div>April 28, 2026</div>
+</div>
+
+<div class="system-context">
+  <div class="sc-title">Intelligence Profile & Curation Criteria</div>
+  <div class="sc-grid">
+    <div class="sc-col">
+      <div class="sc-col-label">Direct Stack & Adjacent</div>
+      <pre>
+STACK (direct):
+- Languages: Python 3, TypeScript, JavaScript
+- Python libs: Streamlit, python-dotenv, pathlib, pdfplumber, Playwright, requests, rasterio, geopandas, GDAL
+- Frontend: React 19, Vite, TypeScript
+- AI/LLM: Claude API (Anthropic), claude-sonnet-4-6, claude-haiku-4-5, Anthropic SDK; also monitoring ChatGPT/OpenAI, Gemini/Google AI
+- GIS/Geospatial: FME (Safe Software), Sentinel Hub API, QGIS, ArcGIS Pro (Esri), WMS/WMTS, H3, GeoJSON
+- Imagery: Sentinel-2, Sentinel-1 SAR, drone imagery, thermal imagery, multispectral imagery, hyperspectral imagery
+- Imagery services: Planet Labs, Maxar, Airbus Defence & Space, SkyWatch, UP42, Google Earth Engine
+- Deployment: Vercel, GitHub Actions, GitHub Pages
+- Data: JSON, PDF parsing, REST APIs, YouTube Data API, GitHub API, Reddit API
+- Dev tools: Claude Code CLI, VS Code, tmux, git, zsh
+
+ADJACENT (one step away — tools that could replace or significantly enhance direct stack items):
+- Any Python library that replaces or meaningfully upgrades something above
+- Any LLM model or API that competes with or extends Claude API usage (OpenAI, Google Gemini, Mistral, etc.)
+- Any geospatial AI tool that works with or replaces FME/Sentinel Hub/QGIS/ArcGIS workflows
+- Esri/ArcGIS AI features, Esri Living Atlas updates, ArcGIS Python API changes
+- Google Maps Platform AI features, Google Earth Engine updates, Google DeepMind geospatial work
+- Satellite or aerial imagery AI: object detection, change detection, land cover classification, SAR processing
+- Drone/UAV AI: flight planning AI, automated image analysis, photogrammetry AI tools
+- Thermal or multispectral AI: anomaly detection, agricultural AI, environmental monitoring
+- Any frontend framework evolution affecting React 19 + Vite
+- Any agent orchestration tool relevant to the 3-layer architecture (directives/orchestration/execution)
+- Any deployment tooling that affects Vercel or GitHub Actions workflows
+
+NOT RELEVANT (filter to world section):
+- Mobile development, iOS, Android
+- Java, C++, Rust, Go (unless replacing a Python tool)
+- Gaming engines, Unity, Unreal
+- Blockchain, crypto, Web3
+- Enterprise SaaS platforms (Salesforce, SAP, etc.)
+- Tools with no clear connection to Python, GIS, LLMs, React, or imagery
+</pre>
+    </div>
+    <div class="sc-col">
+      <div class="sc-col-label">User Context & Editorial Pillars</div>
+      <pre>
+Daniel Bally — 22-year GIS/FME practitioner transitioning to AI-augmented workflows.
+Publishes Globe & Atlas (Substack) — practitioner-level content for GIS professionals adopting AI.
+Four editorial pillars: The Build (hands-on FME/AI workflows), Tool Critic (honest reviews),
+Career Navigator (AI transition guidance), Industry Lens (signal vs noise analysis).
+GIS/FME/Sentinel content has direct editorial value beyond personal interest.
+</pre>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentLens = 'all';
+  let currentTier = 'all';
+  let currentSort = 'tier';
+
+  function applyFilters() {
+    document.querySelectorAll('#hub-grid .fycard').forEach(card => {
+      const lk = card.dataset.lenskey || '';
+      const tk = card.dataset.tierkey || '';
+      const lensOk = currentLens === 'all'
+        ? true
+        : currentLens === 'adj'
+          ? card.dataset.adj === 'true'
+          : lk === currentLens;
+      const tierOk = currentTier === 'all' || tk === currentTier;
+      card.classList.toggle('hidden', !(lensOk && tierOk));
+    });
+  }
+
+  function filterAdjOnly() {
+    currentLens = 'adj';
+    currentTier = 'all';
+    ['all','home','curr','gis'].forEach(id => document.getElementById('f-' + id).classList.remove('active'));
+    ['all','adopt','watch','hype','found','radar'].forEach(id => document.getElementById('t-' + id).classList.remove('active'));
+    document.getElementById('f-all').classList.add('active');
+    document.getElementById('t-all').classList.add('active');
+    applyFilters();
+  }
+
+  function filterHub(lens) {
+    currentLens = lens;
+    ['all','home','curr','gis'].forEach(id => document.getElementById('f-' + id).classList.remove('active'));
+    document.getElementById('f-' + lens).classList.add('active');
+    applyFilters();
+  }
+
+  function filterTier(tier) {
+    currentTier = tier;
+    ['all','adopt','watch','hype','found','radar'].forEach(id => document.getElementById('t-' + id).classList.remove('active'));
+    document.getElementById('t-' + tier).classList.add('active');
+    applyFilters();
+  }
+
+  function sortHub(method) {
+    currentSort = method;
+    const grid = document.getElementById('hub-grid');
+    const cards = Array.from(grid.children);
+    document.getElementById('sort-tier').classList.toggle('active', method === 'tier');
+    document.getElementById('sort-date').classList.toggle('active', method === 'date');
+    const getTierVal = t => {
+      if (!t) return 5;
+      const s = t.toLowerCase();
+      if (s.includes('adopt')) return 1;
+      if (s.includes('watch')) return 2;
+      if (s.includes('hype'))  return 3;
+      if (s.includes('found')) return 4;
+      return 5;
+    };
+    cards.sort((a, b) => method === 'date'
+      ? new Date(b.dataset.date) - new Date(a.dataset.date)
+      : getTierVal(a.dataset.tier) - getTierVal(b.dataset.tier));
+    grid.innerHTML = '';
+    cards.forEach(card => grid.appendChild(card));
+    applyFilters();
+  }
+
+  document.addEventListener('DOMContentLoaded', () => sortHub('tier'));
+</script>
+</body>
+</html>

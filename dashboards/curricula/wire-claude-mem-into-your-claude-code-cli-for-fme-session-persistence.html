@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wire claude-mem into your Claude Code CLI for FME session persistence — Lab Tutorial</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080b12; --bg2: #0e1220; --bg3: #151c2e; --bg4: #1d2540;
+    --border: #252e4a; --border2: #36416a; --text: #e6eaf4;
+    --text2: #8e9ab8; --text3: #58678e; --blue: #5b8af7;
+    --green: #34d89a; --orange: #f97c3c; --yellow: #f5c842;
+    --teal: #38c9d4; --cyan: #4fd9f5; --purple: #7c5cfc;
+    --font-sans: 'Inter', -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:var(--font-sans); line-height:1.7; }
+  .page { max-width:780px; margin:0 auto; padding:48px 32px 80px; }
+  .back { margin-bottom:32px; }
+  .back a { font-size:12px; font-family:var(--font-mono); color:var(--text3); text-decoration:none; border:1px solid var(--border); padding:6px 14px; border-radius:6px; transition:.15s; }
+  .back a:hover { color:var(--blue); border-color:var(--blue); }
+  .page-title { font-size:26px; font-weight:900; letter-spacing:-.4px; color:var(--text); margin-bottom:10px; line-height:1.25; }
+  .page-meta { font-size:11px; font-family:var(--font-mono); color:var(--text3); margin-bottom:40px; padding-bottom:24px; border-bottom:1px solid var(--border); }
+  h2.cur-h2 { font-size:19px; font-weight:800; color:var(--text); margin:40px 0 10px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+  h3.cur-h3 { font-size:15px; font-weight:700; color:var(--text2); margin:28px 0 8px; }
+  h4.cur-h4 { font-size:12.5px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.6px; margin:20px 0 6px; }
+  p.cur-p { font-size:14px; color:var(--text2); margin-bottom:12px; }
+  ul.cur-list { font-size:14px; color:var(--text2); margin:8px 0 14px 20px; }
+  ul.cur-list li { margin-bottom:6px; line-height:1.6; }
+  ul.cur-ol { list-style:decimal; }
+  pre { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:18px 20px; margin:14px 0 20px; overflow-x:auto; }
+  pre code { font-family:var(--font-mono); font-size:12px; color:var(--green); white-space:pre; line-height:1.6; }
+  code.cur-inline { font-family:var(--font-mono); font-size:12px; background:var(--bg4); color:var(--cyan); padding:2px 6px; border-radius:4px; }
+  strong { color:var(--text); font-weight:700; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="back"><a href="../latest.html">← Back to Hub</a></div>
+  <div class="page-title">Wire claude-mem into your Claude Code CLI for FME session persistence</div>
+  <div class="page-meta">AI Discovery Hub · Lab Tutorial</div>
+  <h2 class="cur-h2">Wire claude-mem into Your Claude Code CLI for FME Session Persistence</h2>
+<h3 class="cur-h3">A Practical Tutorial for GIS/ETL Workflow Automation</h3>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">1. Introduction & Context</h3>
+<h4 class="cur-h4">What Is This?</h4>
+<p class="cur-p"><code class="cur-inline">claude-mem</code> is a Claude Code plugin developed by [@thedotmack](https://github.com/thedotmack) that solves one of the most frustrating pain points in long-running AI-assisted development: <strong>Claude Code forgets everything when you close a session.</strong></p>
+<p class="cur-p">Every time you open a new Claude Code CLI session, you start from zero. You re-explain your FME workspace structure, re-describe your ETL conventions, re-establish which Streamlit patterns you prefer. This cognitive overhead compounds across weeks of work.</p>
+<p class="cur-p"><code class="cur-inline">claude-mem</code> breaks this cycle by:</p>
+<ul class="cur-list cur-ol">
+<li><strong>Capturing</strong> key decisions, context, and patterns from each session</li>
+<li><strong>Compressing</strong> them using Claude's agent SDK into dense, relevant summaries</li>
+<li><strong>Injecting</strong> relevant prior context back into future sessions automatically</li>
+</ul>
+<h4 class="cur-h4">Why This Matters for FME Workflow Automation</h4>
+<p class="cur-p">If you're using Claude Code CLI to assist with multi-session FME workspace development, you've likely already built a <code class="cur-inline">CLAUDE.md</code> file as a manual workaround — documenting your conventions, workspace naming schemes, transformer preferences, and ETL pipeline patterns by hand.</p>
+<p class="cur-p">The <code class="cur-inline">claude-mem</code> plugin automates and enhances this approach:</p>
+<p class="cur-p">| Approach | Effort | Freshness | Coverage |</p>
+<p class="cur-p">|---|---|---|---|</p>
+<p class="cur-p">| Manual <code class="cur-inline">CLAUDE.md</code> | High (you write everything) | Stale (you update manually) | Only what you remember to document |</p>
+<p class="cur-p">| <code class="cur-inline">claude-mem</code> | Low (automatic capture) | Current (updated each session) | Everything discussed in sessions |</p>
+<p class="cur-p">This tutorial walks you through installing the plugin, running it across two FME workflow automation sessions, and documenting the delta between approaches in a structured Build post.</p>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">2. Prerequisites</h3>
+<h4 class="cur-h4">Required Tools</h4>
+<p class="cur-p">Before starting, confirm you have the following installed and configured:</p>
+<pre><code># Verify Claude Code CLI is installed
+claude --version
+
+# Verify Node.js (required for claude-mem)
+node --version   # Should be v18+
+
+# Verify npm
+npm --version
+
+# Verify git (for cloning the plugin)
+git --version</code></pre>
+<h4 class="cur-h4">Required Knowledge</h4>
+<ul class="cur-list">
+<li>[ ] You've used Claude Code CLI for at least one FME-related session</li>
+<li>[ ] You have an existing FME workspace or ETL project you're actively developing</li>
+<li>[ ] You understand what your current <code class="cur-inline">CLAUDE.md</code> contains (or you know you don't have one yet)</li>
+<li>[ ] You have a Globe & Atlas account or equivalent Build journal where you document your learning</li>
+</ul>
+<h4 class="cur-h4">Required Setup</h4>
+<ul class="cur-list">
+<li>[ ] A working <code class="cur-inline">CLAUDE.md</code> file (even a minimal one — we'll use this as our baseline)</li>
+<li>[ ] At least two FME workflow sessions you can run back-to-back within this exercise</li>
+<li>[ ] Write access to your project directory</li>
+</ul>
+<h4 class="cur-h4">Create a Baseline CLAUDE.md (If You Don't Have One)</h4>
+<p class="cur-p">If you don't already have a <code class="cur-inline">CLAUDE.md</code>, create a minimal one now to use as your comparison baseline:</p>
+<pre><code>cat &gt; CLAUDE.md &lt;&lt; 'EOF'
+# Project Context
+
+## FME Workspace Conventions
+- Workspace naming: [your convention here]
+- Transformer preferences: [e.g., "Prefer AttributeCreator over AttributeRenamer for clarity"]
+- Output format standards: [e.g., "All geodata outputs use EPSG:4326"]
+
+## ETL Pipeline Patterns
+- [Describe your standard input → transform → output pattern]
+- [Note any common data sources: PostGIS, Esri, flat files, APIs]
+
+## Active Development Focus
+- [What are you currently building?]
+- [What decisions were made last session?]
+
+## Known Issues / Constraints
+- [Anything Claude needs to know to avoid repeating mistakes]
+EOF</code></pre>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">3. Step-by-Step Guide</h3>
+<h4 class="cur-h4">Phase 1: Install claude-mem</h4>
+<p class="cur-p">#### Step 1.1 — Clone the Repository</p>
+<pre><code># Navigate to your preferred tools directory
+cd ~/tools  # or wherever you keep local tooling
+
+# Clone claude-mem
+git clone https://github.com/thedotmack/claude-mem.git
+cd claude-mem</code></pre>
+<p class="cur-p">#### Step 1.2 — Install Dependencies</p>
+<pre><code>npm install</code></pre>
+<p class="cur-p">Expected output:</p>
+<pre><code>added 47 packages, and audited 48 packages in 3s
+found 0 vulnerabilities</code></pre>
+<p class="cur-p">#### Step 1.3 — Build the Plugin</p>
+<pre><code>npm run build</code></pre>
+<p class="cur-p">#### Step 1.4 — Link Globally (Optional but Recommended)</p>
+<pre><code>npm link</code></pre>
+<p class="cur-p">This allows you to call <code class="cur-inline">claude-mem</code> from any directory.</p>
+<p class="cur-p">#### Step 1.5 — Verify Installation</p>
+<pre><code>claude-mem --version
+# or
+claude-mem --help</code></pre>
+<p class="cur-p">You should see the plugin's help output describing available commands.</p>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 2: Configure claude-mem for Your FME Project</h4>
+<p class="cur-p">#### Step 2.1 — Initialize claude-mem in Your Project Directory</p>
+<p class="cur-p">Navigate to your FME project directory and initialize the plugin:</p>
+<pre><code>cd /path/to/your/fme-project
+claude-mem init</code></pre>
+<p class="cur-p">This creates a <code class="cur-inline">.claude-mem/</code> directory in your project with configuration files:</p>
+<pre><code>your-fme-project/
+├── .claude-mem/
+│   ├── config.json          # Plugin configuration
+│   ├── sessions/            # Raw session captures (auto-generated)
+│   └── memory.md            # Compressed, injected context (auto-generated)
+├── CLAUDE.md                # Your existing manual context
+├── workspaces/              # Your FME workspaces
+└── ...</code></pre>
+<p class="cur-p">#### Step 2.2 — Configure Session Capture Settings</p>
+<p class="cur-p">Open <code class="cur-inline">.claude-mem/config.json</code> and customize for your FME workflow context:</p>
+<pre><code>{
+  "project": {
+    "name": "FME Workflow Automation",
+    "domain": "GIS/ETL",
+    "focus_keywords": [
+      "FME",
+      "workspace",
+      "transformer",
+      "ETL",
+      "geodata",
+      "PostGIS",
+      "EPSG",
+      "Streamlit"
+    ]
+  },
+  "capture": {
+    "auto_capture": true,
+    "capture_on_exit": true,
+    "max_session_tokens": 2000,
+    "compression_strategy": "semantic"
+  },
+  "injection": {
+    "auto_inject": true,
+    "max_injected_tokens": 1500,
+    "relevance_threshold": 0.7
+  },
+  "output": {
+    "memory_file": ".claude-mem/memory.md",
+    "append_to_claude_md": false
+  }
+}</code></pre>
+<p class="cur-p">> <strong>Note on <code class="cur-inline">append_to_claude_md</code>:</strong> Keep this <code class="cur-inline">false</code> for now. You want <code class="cur-inline">claude-mem</code> to maintain its own <code class="cur-inline">memory.md</code> so you can directly compare it against your manual <code class="cur-inline">CLAUDE.md</code> at the end of this exercise.</p>
+<p class="cur-p">#### Step 2.3 — Add .claude-mem to Your .gitignore (Decide Your Policy)</p>
+<p class="cur-p">Consider whether session memory should be committed to version control:</p>
+<pre><code># Option A: Ignore session captures, commit compressed memory
+echo ".claude-mem/sessions/" &gt;&gt; .gitignore
+
+# Option B: Ignore all claude-mem data (keep it local)
+echo ".claude-mem/" &gt;&gt; .gitignore
+
+# Option C: Commit everything (useful for team shared context)
+# Don't add to .gitignore</code></pre>
+<p class="cur-p">For a solo FME project, <strong>Option A</strong> is recommended — sessions are ephemeral noise, but the compressed <code class="cur-inline">memory.md</code> is valuable shared context.</p>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 3: Run Session 1 — Your First Tracked FME Session</h4>
+<p class="cur-p">#### Step 3.1 — Start Claude Code with claude-mem Active</p>
+<pre><code># From your FME project directory
+claude-mem start
+
+# Then in the same terminal, launch Claude Code
+claude</code></pre>
+<p class="cur-p">Alternatively, if claude-mem supports a wrapper mode:</p>
+<pre><code>claude-mem run -- claude</code></pre>
+<p class="cur-p">Check the plugin's README for the exact invocation pattern, as this may vary by version.</p>
+<p class="cur-p">#### Step 3.2 — Work on a Real FME Task</p>
+<p class="cur-p">Conduct a genuine working session. Good candidates for Session 1:</p>
+<ul class="cur-list">
+<li>Building a new reader/writer pair in an FME workspace</li>
+<li>Debugging a transformer chain issue</li>
+<li>Designing an ETL pipeline for a new data source</li>
+<li>Writing a Python caller script for custom transformation logic</li>
+</ul>
+<p class="cur-p"><strong>Suggested prompts to use during Session 1</strong> (these help claude-mem capture rich context):</p>
+<pre><code>"I'm working on an FME workspace that reads from PostGIS and outputs 
+to a GeoJSON file. The workspace is called [name]. Help me structure 
+the AttributeCreator transformer to standardize field names."</code></pre>
+<pre><code>"We've decided to use EPSG:4326 for all output layers in this project. 
+Please remember this convention going forward."</code></pre>
+<pre><code>"The current challenge is that the FeatureMerger is dropping records 
+when the join key has null values. Here's my current approach..."</code></pre>
+<p class="cur-p">> <strong>Why this matters:</strong> These types of domain-specific decisions are exactly what <code class="cur-inline">claude-mem</code> is designed to capture — and what manual <code class="cur-inline">CLAUDE.md</code> maintenance tends to miss between sessions.</p>
+<p class="cur-p">#### Step 3.3 — End Session 1 Cleanly</p>
+<pre><code># Exit Claude Code normally
+exit
+
+# Then stop claude-mem capture
+claude-mem stop
+
+# Optionally, review what was captured
+claude-mem summary</code></pre>
+<p class="cur-p">#### Step 3.4 — Inspect the Session Capture</p>
+<pre><code># View the raw session capture
+cat .claude-mem/sessions/session-001.md
+
+# View the compressed memory (what will be injected next session)
+cat .claude-mem/memory.md</code></pre>
+<p class="cur-p"><strong>Document what you observe:</strong></p>
+<pre><code># Create a personal observation log for this exercise
+cat &gt;&gt; exercise-log.md &lt;&lt; 'EOF'
+## Session 1 Observations
+
+### What claude-mem captured:
+- [ ] FME workspace conventions discussed
+- [ ] Specific transformer decisions
+- [ ] Data source/format preferences
+- [ ] Active problems being solved
+- [ ] Other: 
+
+### What my manual CLAUDE.md has that claude-mem missed:
+- 
+
+### What claude-mem captured that my CLAUDE.md lacked:
+- 
+EOF</code></pre>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 4: Run Session 2 — Test Context Injection</h4>
+<p class="cur-p">#### Step 4.1 — Start a New Session (Simulate a Fresh Day)</p>
+<p class="cur-p">Wait at least a few minutes, or close and reopen your terminal to simulate a realistic session gap.</p>
+<pre><code># From your FME project directory
+claude-mem start
+claude</code></pre>
+<p class="cur-p">#### Step 4.2 — Test Context Retention Without Prompting</p>
+<p class="cur-p">Open Claude Code and <strong>do not manually provide context</strong>. Instead, jump straight into work:</p>
+<pre><code>"Continue working on the FME workspace from our last session. 
+What was the status of the FeatureMerger issue?"</code></pre>
+<pre><code>"What EPSG code are we using for outputs in this project?"</code></pre>
+<pre><code>"Remind me what we decided about the AttributeCreator field naming convention."</code></pre>
+<p class="cur-p">Observe how Claude Code responds. With <code class="cur-inline">claude-mem</code> active and injecting prior context, it should answer these questions without you needing to re-explain.</p>
+<p class="cur-p">#### Step 4.3 — Do Real Work in Session 2</p>
+<p class="cur-p">Continue the FME development task from Session 1, or start a related task:</p>
+<ul class="cur-list">
+<li>Implement the solution to the FeatureMerger issue identified in Session 1</li>
+<li>Extend the workspace to add a new output format</li>
+<li>Write a Workspace Runner script that calls the workspace via CLI</li>
+</ul>
+<p class="cur-p"><strong>Pay attention to:</strong></p>
+<ul class="cur-list">
+<li>Does Claude Code reference Session 1 decisions without being told?</li>
+<li>Does it apply the conventions correctly (EPSG, naming, etc.)?</li>
+<li>Does it avoid suggesting approaches you explicitly rejected in Session 1?</li>
+</ul>
+<p class="cur-p">#### Step 4.4 — End Session 2 and Capture</p>
+<pre><code>exit
+claude-mem stop
+claude-mem summary</code></pre>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 5: Compare and Document the Delta</h4>
+<p class="cur-p">#### Step 5.1 — Side-by-Side Comparison</p>
+<pre><code># View your manual CLAUDE.md
+cat CLAUDE.md
+
+# View claude-mem's generated memory
+cat .claude-mem/memory.md</code></pre>
+<p class="cur-p">Run a diff to see structural differences:</p>
+<pre><code>diff CLAUDE.md .claude-mem/memory.md</code></pre>
+<p class="cur-p">#### Step 5.2 — Fill Out Your Comparison Matrix</p>
+<p class="cur-p">Create a structured comparison document:</p>
+<pre><code>cat &gt; session-comparison.md &lt;&lt; 'EOF'
+# claude-mem vs Manual CLAUDE.md — Session Comparison
+
+## Session 1 → Session 2 Context Retention Test
+
+### Test Scenarios and Results
+
+| Question Asked in Session 2 | With CLAUDE.md Only | With claude-mem | Winner |
+|---|---|---|---|
+| "What was the status of X issue?" | Had to re-explain | Recalled from Session 1 | |
+| "What EPSG are we using?" | ✅ In CLAUDE.md | ✅ Auto-captured | |
+| "What did we decide about Y?" | ❌ Not documented | ✅ Auto-captured | |
+| [Add your own test] | | | |
+
+### Qualitative Observations
+
+**claude-mem captured these things I didn't have in CLAUDE.md:**
+1. 
+2. 
+3. 
+
+**My CLAUDE.md had these things claude-mem missed or got wrong:**
+1. 
+2. 
+3. 
+
+**Context injection quality (1-5):** ___
+**Compression accuracy (did it get the details right?):** ___
+**Setup effort vs. benefit ratio:** ___
+
+### Time Savings Estimate
+- Time spent maintaining CLAUDE.md manually (per session): ___ minutes
+- Time spent reviewing/correcting claude-mem output: ___ minutes
+- Net time saved per session: ___ minutes
+- Projected monthly savings (est. X sessions/month): ___ minutes
+
+### Recommendation
+[ ] Replace CLAUDE.md with claude-mem entirely
+[ ] Use claude-mem to augment CLAUDE.md  
+[ ] Use claude-mem for session context, CLAUDE.md for static conventions
+[ ] Not worth the complexity for my workflow
+EOF</code></pre>
+<p class="cur-p">#### Step 5.3 — Draft Your Globe & Atlas Build Post</p>
+<p class="cur-p">Use this template to structure your Build post:</p>
+<pre><code># Build Post: claude-mem for FME Session Persistence
+
+## What I Built / Tested
+Wired the `claude-mem` Claude Code plugin into my FME workflow 
+automation setup to test whether it could replace or augment my 
+manual CLAUDE.md approach for multi-session context retention.
+
+## The Problem I Was Solving
+[Describe your specific pain point — e.g., "I was spending 5-10 minutes 
+at the start of every FME session re-explaining my workspace conventions 
+to Claude Code..."]
+
+## What I Did
+1. Installed claude-mem from github.com/thedotmack/claude-mem
+2. Configured it for my FME project context
+3. Ran two consecutive FME workflow sessions with memory capture active
+4. Compared context retention against my existing CLAUDE.md
+
+## Results
+
+### What Worked Well
+- [Specific example of good context retention]
+- [Specific decision that was correctly recalled]
+
+### What Didn't Work / Gaps
+- [Specific example of missed or incorrect context]
+- [Any setup friction worth noting]
+
+## The Delta vs. Manual CLAUDE.md
+
+[Paste or summarize your comparison matrix]
+
+## My Recommendation
+[Based on your test, what would you tell someone in a similar workflow?]
+
+## Next Steps
+[What will you change in your workflow based on this?]
+
+## Resources
+- claude-mem: https://github.com/thedotmack/claude-mem
+- Claude Code CLI: https://docs.anthropic.com/claude-code</code></pre>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">4. Validation</h3>
+<h4 class="cur-h4">How to Know You Completed This Exercise Successfully</h4>
+<p class="cur-p">Work through this checklist:</p>
+<p class="cur-p">#### Installation Validation</p>
+<pre><code># ✅ claude-mem is installed and responds
+claude-mem --help
+
+# ✅ Plugin initialized in your project
+ls -la .claude-mem/
+
+# ✅ Configuration is customized (not just defaults)
+cat .claude-mem/config.json | grep "FME\|GIS\|your project name"</code></pre>
+<p class="cur-p">#### Session Capture Validation</p>
+<pre><code># ✅ Session 1 capture exists
+ls .claude-mem/sessions/
+
+# ✅ Compressed memory was generated
+cat .claude-mem/memory.md | wc -l  # Should have meaningful content</code></pre>
+<p class="cur-p">#### Context Retention Validation</p>
+<p class="cur-p">You've successfully validated context injection if <strong>at least 3 of these are true</strong> after Session 2:</p>
+<ul class="cur-list">
+<li>[ ] Claude Code correctly stated the EPSG convention from Session 1 without prompting</li>
+<li>[ ] Claude Code recalled the status of at least one specific FME issue from Session 1</li>
+<li>[ ] Claude Code referenced a naming convention or architectural decision from Session 1</li>
+<li>[ ] Claude Code avoided a mistake you had explicitly corrected in Session 1</li>
+<li>[ ] Claude Code's opening response showed awareness of your active project context</li>
+</ul>
+<p class="cur-p">#### Documentation Validation</p>
+<ul class="cur-list">
+<li>[ ] <code class="cur-inline">session-comparison.md</code> is filled out with real observations (not hypothetical)</li>
+<li>[ ] Build post draft exists with at least 200 words of genuine reflection</li>
+<li>[ ] Build post is published (or scheduled) in Globe & Atlas</li>
+</ul>
+<h4 class="cur-h4">Quick Smoke Test</h4>
+<p class="cur-p">Run this diagnostic to confirm the full loop is working:</p>
+<pre><code># Check session count
+ls .claude-mem/sessions/ | wc -l
+# Expected: 2 (one per session you ran)
+
+# Check memory file was updated
+stat .claude-mem/memory.md
+# Expected: modification time should be recent
+
+# Confirm memory has project-relevant content
+grep -i "FME\|workspace\|ETL\|transformer" .claude-mem/memory.md
+# Expected: multiple matches</code></pre>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">5. Next Steps</h3>
+<h4 class="cur-h4">Immediate (This Week)</h4>
+<ul class="cur-list cur-ol">
+<li><strong>Run a third session</strong> to see if memory compounds correctly — does Session 3 benefit from Sessions 1 and 2 combined?</li>
+</ul>
+<ul class="cur-list cur-ol">
+<li><strong>Tune the relevance threshold</strong> in <code class="cur-inline">config.json</code> — if injection is noisy, raise <code class="cur-inline">relevance_threshold</code> to <code class="cur-inline">0.8</code>; if it's missing things, lower it to <code class="cur-inline">0.6</code></li>
+</ul>
+<ul class="cur-list cur-ol">
+<li><strong>Decide on your hybrid strategy</strong> — most practitioners land on:</li>
+</ul>
+<p class="cur-p">- <code class="cur-inline">CLAUDE.md</code> → Static conventions, project architecture, explicit rules (you maintain this)</p>
+<p class="cur-p">- <code class="cur-inline">claude-mem/memory.md</code> → Dynamic session context, recent decisions, active issues (auto-maintained)</p>
+<h4 class="cur-h4">Short Term (Next 2-4 Weeks)</h4>
+<ul class="cur-list cur-ol">
+<li><strong>Test across a Streamlit build session</strong> — apply the same comparison methodology to your Streamlit app development work and see if retention patterns differ from FME sessions</li>
+</ul>
+<ul class="cur-list cur-ol">
+<li><strong>Explore memory pruning</strong> — as <code class="cur-inline">.claude-mem/memory.md</code> grows, experiment with the plugin's compression settings to keep injected context under the token limit without losing important history</li>
+</ul>
+<ul class="cur-list cur-ol">
+<li><strong>Create a session start ritual</strong> — even with <code class="cur-inline">claude-mem</code> active, a brief structured prompt at session start helps:</li>
+</ul>
+<p class="cur-p"><code class="cur-inline">`</code></p>
+<p class="cur-p">"claude-mem context loaded. Today's focus: [X]. Continue from where we left off."</p>
+<p class="cur-p"><code class="cur-inline">`</code></p>
+<h4 class="cur-h4">Longer Term</h4>
+<ul class="cur-list cur-ol">
+<li><strong>Contribute upstream</strong> — if you find gaps in how <code class="cur-inline">claude-mem</code> handles GIS/ETL-specific terminology or FME workspace patterns, consider opening an issue or PR on [thedotmack/claude-mem](https://github.com/thedotmack/claude-mem)</li>
+</ul>
+<ul class="cur-list cur-ol">
+<li><strong>Evaluate team use cases</strong> — if you collaborate with others on FME workspaces, explore whether committing <code class="cur-inline">memory.md</code> to version control creates a useful shared context layer for the whole team</li>
+</ul>
+<ul class="cur-list cur-ol">
+<li><strong>Build a session summary habit</strong> — regardless of whether you continue using <code class="cur-inline">claude-mem</code>, the act of ending each session with a structured summary is a high-value practice:</li>
+</ul>
+<p class="cur-p"><code class="cur-inline">`</code></p>
+<p class="cur-p">"Before we close: summarize the 3 most important decisions we made today</p>
+<p class="cur-p">and what's blocked or pending. I'll use this to start tomorrow's session."</p>
+<p class="cur-p"><code class="cur-inline">`</code></p>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">Reference: Troubleshooting Common Issues</h3>
+<h4 class="cur-h4">Plugin not capturing session content</h4>
+<pre><code># Verify claude-mem process is running during your Claude Code session
+ps aux | grep claude-mem
+
+# Check for permission issues
+ls -la .claude-mem/sessions/</code></pre>
+<h4 class="cur-h4">Memory injection not appearing in Claude Code</h4>
+<pre><code># Verify auto_inject is enabled
+cat .claude-mem/config.json | grep auto_inject
+
+# Check that memory.md has content
+wc -l .claude-mem/memory.md
+
+# Try manual injection
+claude-mem inject --session-file .claude-mem/memory.md</code></pre>
+<h4 class="cur-h4">Memory file growing too large</h4>
+<pre><code># Check current size
+wc -c .claude-mem/memory.md
+
+# Manually trigger compression
+claude-mem compress --max-tokens 1500
+
+# Adjust config
+# Set "max_injected_tokens": 1000 for more aggressive compression</code></pre>
+<h4 class="cur-h4">Claude Code ignoring injected context</h4>
+<p class="cur-p">This often means the injection is happening but the context isn't being treated as high-priority. Try prepending memory content to your first prompt manually:</p>
+<pre><code># Export memory as a variable
+MEMORY=$(cat .claude-mem/memory.md)
+echo "Session context: $MEMORY" | pbcopy  # macOS
+# Then paste at the start of your first Claude Code prompt</code></pre>
+<p class="cur-p">---</p>
+<p class="cur-p">*Last updated for claude-mem v0.x | Claude Code CLI | FME 2024+*</p>
+</div>
+</body>
+</html>

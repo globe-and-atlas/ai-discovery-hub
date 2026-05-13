@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Publish a Tool Critic Take: Anthropic's Claude Code Monetization Strategy — Lab Tutorial</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080b12; --bg2: #0e1220; --bg3: #151c2e; --bg4: #1d2540;
+    --border: #252e4a; --border2: #36416a; --text: #e6eaf4;
+    --text2: #8e9ab8; --text3: #58678e; --blue: #5b8af7;
+    --green: #34d89a; --orange: #f97c3c; --yellow: #f5c842;
+    --teal: #38c9d4; --cyan: #4fd9f5; --purple: #7c5cfc;
+    --font-sans: 'Inter', -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:var(--font-sans); line-height:1.7; }
+  .page { max-width:780px; margin:0 auto; padding:48px 32px 80px; }
+  .back { margin-bottom:32px; }
+  .back a { font-size:12px; font-family:var(--font-mono); color:var(--text3); text-decoration:none; border:1px solid var(--border); padding:6px 14px; border-radius:6px; transition:.15s; }
+  .back a:hover { color:var(--blue); border-color:var(--blue); }
+  .page-title { font-size:26px; font-weight:900; letter-spacing:-.4px; color:var(--text); margin-bottom:10px; line-height:1.25; }
+  .page-meta { font-size:11px; font-family:var(--font-mono); color:var(--text3); margin-bottom:40px; padding-bottom:24px; border-bottom:1px solid var(--border); }
+  h2.cur-h2 { font-size:19px; font-weight:800; color:var(--text); margin:40px 0 10px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+  h3.cur-h3 { font-size:15px; font-weight:700; color:var(--text2); margin:28px 0 8px; }
+  h4.cur-h4 { font-size:12.5px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.6px; margin:20px 0 6px; }
+  p.cur-p { font-size:14px; color:var(--text2); margin-bottom:12px; }
+  ul.cur-list { font-size:14px; color:var(--text2); margin:8px 0 14px 20px; }
+  ul.cur-list li { margin-bottom:6px; line-height:1.6; }
+  ul.cur-ol { list-style:decimal; }
+  pre { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:18px 20px; margin:14px 0 20px; overflow-x:auto; }
+  pre code { font-family:var(--font-mono); font-size:12px; color:var(--green); white-space:pre; line-height:1.6; }
+  code.cur-inline { font-family:var(--font-mono); font-size:12px; background:var(--bg4); color:var(--cyan); padding:2px 6px; border-radius:4px; }
+  strong { color:var(--text); font-weight:700; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="back"><a href="../latest.html">← Back to Hub</a></div>
+  <div class="page-title">Publish a Tool Critic Take: Anthropic's Claude Code Monetization Strategy</div>
+  <div class="page-meta">AI Discovery Hub · Lab Tutorial</div>
+  <h2 class="cur-h2">Publish a Tool Critic Take: Anthropic's Claude Code Monetization Strategy</h2>
+<h3 class="cur-h3">A Complete Curriculum for Writing Practitioner-Grade Editorial Analysis</h3>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">1. Introduction & Context</h3>
+<h4 class="cur-h4">What This Is</h4>
+<p class="cur-p">This curriculum walks you through drafting a <strong>Tool Critic essay</strong> — a practitioner-first editorial format — analyzing Anthropic's decision to restrict Claude Code access for new prosumer users. The essay will appear in the *Globe & Atlas* <strong>Tool Critic</strong> pillar, a recurring section where working GIS professionals evaluate the tools they actually use in the field, not just feature-compare them on paper.</p>
+<h4 class="cur-h4">Why This Story Matters Right Now</h4>
+<p class="cur-p">Anthropic quietly began limiting Claude Code CLI access to a subset (~2%) of new prosumer signups, reserving full access for Max-tier subscribers. For a solo GIS practitioner or small team already juggling ESRI licensing costs, cloud compute bills, and data subscriptions, this isn't an abstract pricing debate — it's a <strong>workflow disruption</strong>.</p>
+<p class="cur-p">The story sits at the intersection of three forces:</p>
+<ul class="cur-list">
+<li><strong>AI tooling monetization</strong> shifting from "land and expand" to "segment and gate"</li>
+<li><strong>GIS community budget realities</strong> where $20/month tools are common but $100+/month requires justification</li>
+<li><strong>Open-source migration pressure</strong> from communities like LocalLLaMA actively evaluating alternatives</li>
+</ul>
+<h4 class="cur-h4">The Tool Critic Format</h4>
+<p class="cur-p">Tool Critic essays are <strong>600 words</strong>, <strong>practitioner-voiced</strong>, and <strong>recommendation-specific</strong>. They avoid generic tech journalism. They include:</p>
+<ul class="cur-list">
+<li>Real cost math (your numbers, your workflows)</li>
+<li>A recommendation matrix by budget tier</li>
+<li>A clear editorial stance</li>
+</ul>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">2. Prerequisites</h3>
+<p class="cur-p">Before starting this exercise, make sure you have the following:</p>
+<h4 class="cur-h4">Knowledge Prerequisites</h4>
+<p class="cur-p">| Prerequisite | Why You Need It |</p>
+<p class="cur-p">|---|---|</p>
+<p class="cur-p">| Basic familiarity with Claude Code CLI or similar AI coding tools | You need personal usage context for the cost math section |</p>
+<p class="cur-p">| Understanding of GIS professional workflows (QGIS, ArcGIS, Python scripting) | The recommendation matrix must be grounded in real use cases |</p>
+<p class="cur-p">| Familiarity with the Globe & Atlas editorial voice | Tool Critic essays have a specific register: direct, skeptical, helpful |</p>
+<p class="cur-p">| Basic awareness of LLM pricing tiers | Anthropic, OpenAI, and local model options will be compared |</p>
+<h4 class="cur-h4">Research Prerequisites (Gather These First)</h4>
+<p class="cur-p">Before writing, collect and read:</p>
+<ul class="cur-list">
+<li>[ ] <strong>Source 1:</strong> Anthropic's official response thread on r/ClaudeAI (<code class="cur-inline">reddit.com/r/ClaudeAI/comments/1ss5fi4</code>)</li>
+<li>[ ] <strong>Source 2:</strong> The community open letter responding to the change (search r/ClaudeAI for "open letter Claude Code" filtered to the same week)</li>
+<li>[ ] <strong>Source 3:</strong> The LocalLLaMA migration discussion thread (search r/LocalLLaMA for "Claude Code alternative" or "moving from Claude Code")</li>
+</ul>
+<h4 class="cur-h4">Tools You'll Need</h4>
+<pre><code>- A text editor or writing environment (Obsidian, VS Code, Notion, or similar)
+- A spreadsheet or calculator for cost math
+- Access to Anthropic's current pricing page (anthropic.com/pricing)
+- Access to at least one alternative tool's pricing (Gemini CLI, Continue.dev, Ollama, etc.)
+- Your own Claude Code usage history or billing history if available</code></pre>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">3. Step-by-Step Guide</h3>
+<h4 class="cur-h4">Phase 1: Research & Synthesis (60–90 minutes)</h4>
+<p class="cur-p">#### Step 1.1 — Read All Three Sources With a Practitioner Lens</p>
+<p class="cur-p">Open each source and annotate it through a single filter: <strong>"What does this mean for someone billing GIS hours?"</strong></p>
+<p class="cur-p">Use this note-taking structure as you read:</p>
+<pre><code>## Source: [Name]
+
+### Key Facts
+- 
+
+### Practitioner Implications
+- 
+
+### Quotable Moments (copy exact text + URL)
+- 
+
+### What's Missing / Unanswered
+- </code></pre>
+<p class="cur-p"><strong>What to look for in each source:</strong></p>
+<ul class="cur-list">
+<li><strong>Anthropic's official response:</strong> Look for the exact scope of the change ("~2% of new prosumer signups"), what "Max subscribers unaffected" actually means in dollar terms, and any framing language that reveals how Anthropic thinks about this user segment.</li>
+<li><strong>Community open letter:</strong> Look for the specific workflows people say will break, the budget ranges mentioned, and any proposals for what Anthropic should do instead.</li>
+<li><strong>LocalLLaMA migration thread:</strong> Look for which specific alternative tools are gaining traction, what the actual friction is in switching, and whether the migration is ideological (anti-corporate) or practical (cost-driven).</li>
+</ul>
+<p class="cur-p">#### Step 1.2 — Run Your Personal Cost Math</p>
+<p class="cur-p">This is the non-negotiable core of a Tool Critic piece. Use this template:</p>
+<pre><code>## My Claude Code Cost Math (fill in your numbers)
+
+### Current Situation
+- My current Claude plan tier: [Free / Pro $20 / Max $100+]
+- Primary use case for Claude Code: [e.g., Python scripting for spatial data processing]
+- Approximate sessions per week: [X sessions]
+- Approximate tokens per session: [X tokens, or estimate: short/medium/heavy]
+
+### What the Change Costs Me
+- Before change: I had / did not have access to Claude Code at [price]
+- After change: I would need [tier] at [$X/month] to maintain equivalent access
+- Delta: +$X/month or +$X/year
+
+### Comparison Alternatives (15 minutes of research)
+| Tool          | Monthly Cost | Claude Code Parity? | Notes |
+|---------------|-------------|---------------------|-------|
+| Claude Pro    | $20         | Partial             | No CLI agent |
+| Claude Max    | $100+       | Full                | Required for Code |
+| Continue.dev + Ollama | ~$0 local | Partial       | Requires local GPU |
+| Gemini CLI    | Free tier   | Partial             | Different capability profile |
+| GitHub Copilot| $10–$19     | Partial             | IDE-focused |
+
+### My Verdict
+In [X words], what does this mean for my workflow?</code></pre>
+<p class="cur-p">#### Step 1.3 — Draft Your Recommendation Matrix</p>
+<p class="cur-p">Before writing the essay, build the matrix separately. This prevents the essay from becoming a spreadsheet and keeps the prose moving.</p>
+<pre><code>## Recommendation Matrix: GIS Professionals by Budget
+
+### Free Tier ($0/month)
+- Primary Alternative: 
+- Best Use Case: 
+- What You Lose vs. Claude Code: 
+- Recommended Action: 
+
+### Prosumer Tier (~$20/month)
+- Tool(s) at This Price: 
+- Claude Code Access Status: 
+- Best Use Case: 
+- Recommended Action: 
+
+### Power User Tier ($100+/month)
+- Tool(s) at This Price: 
+- Claude Code Access Status: 
+- Best Use Case: 
+- Recommended Action: </code></pre>
+<p class="cur-p"><strong>Guiding questions for each tier:</strong></p>
+<ul class="cur-list">
+<li>*Free:* Is QGIS + a local Ollama model a realistic replacement for a weekend GIS learner? What's the actual setup cost in time?</li>
+<li>*$20:* Does Claude Pro (without Code) still earn its keep for a GIS professional doing documentation, data wrangling scripts, and client communication?</li>
+<li>*$100+:* What does a Max subscriber actually get, and is it a defensible line item in a small firm's budget alongside ESRI licenses?</li>
+</ul>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 2: Structural Outlining (20–30 minutes)</h4>
+<p class="cur-p">#### Step 2.1 — Map Your 600 Words</p>
+<p class="cur-p">A 600-word Tool Critic essay is tight. Every section needs a word budget before you start drafting. Use this structure:</p>
+<pre><code>## Essay Structure Map
+
+**Headline:** [Draft a working title — you'll refine later]
+**Subheadline:** [One sentence that does the work of the lede]
+
+---
+
+### Section 1: The Hook / News Peg (~75 words)
+What happened, stated plainly. No throat-clearing.
+Key question to answer: "What changed, and when?"
+
+---
+
+### Section 2: What Anthropic Said (and What They Didn't) (~100 words)
+Quote or paraphrase the official response.
+Practitioner interpretation: what does "~2% of new prosumer signups" 
+actually mean for someone signing up today?
+Key question to answer: "Is this a pricing test or a pricing shift?"
+
+---
+
+### Section 3: The Community Signal (~75 words)
+What the open letter and LocalLLaMA thread reveal about sentiment.
+Avoid: generic "users are angry" framing.
+Include: a specific, concrete concern from the community.
+Key question to answer: "Are people leaving, or just venting?"
+
+---
+
+### Section 4: My Cost Math (~100 words)
+First-person practitioner numbers.
+This is the section that earns Tool Critic credibility.
+Key question to answer: "What does this actually cost me per month?"
+
+---
+
+### Section 5: The Recommendation Matrix (~150 words)
+Structured advice by budget tier.
+Can be formatted as a short table or three tight paragraphs.
+Key question to answer: "What should I do if I'm at each budget level?"
+
+---
+
+### Section 6: The Editorial Stance (~100 words)
+Your actual opinion on Anthropic's move.
+Not "both sides" — a practitioner take with a clear lean.
+Key question to answer: "Is this a defensible business decision 
+or a misstep, and what should Anthropic do next?"</code></pre>
+<p class="cur-p">#### Step 2.2 — Settle Your Editorial Angle</p>
+<p class="cur-p">Before drafting, answer these three questions in one sentence each:</p>
+<pre><code>1. Is Anthropic's move understandable from a business perspective?
+   Answer: 
+
+2. Is it good for GIS practitioners specifically?
+   Answer: 
+
+3. What is the one thing Anthropic should do differently?
+   Answer: </code></pre>
+<p class="cur-p">Your essay's credibility comes from having answers to these *before* you write, not discovering them during drafting.</p>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 3: Drafting (60–90 minutes)</h4>
+<p class="cur-p">#### Step 3.1 — Write the Lede First, Then Skip to the Matrix</p>
+<p class="cur-p">Counter-intuitive advice: <strong>write the recommendation matrix before the narrative body</strong>. The matrix is factual and structural. Getting it right first prevents you from writing a narrative that doesn't support defensible conclusions.</p>
+<p class="cur-p">Once the matrix is locked, write the lede — your opening 75 words. The Tool Critic lede formula:</p>
+<pre><code>[Specific triggering event] + [what it means for the reader] + [hint at your take]</code></pre>
+<p class="cur-p"><strong>Example lede structure (fill in your version):</strong></p>
+<pre><code>Anthropic confirmed last week what many Claude Code users had already 
+noticed: the CLI tool they'd built workflows around is being moved 
+up-market. If you're a GIS professional on a $20/month Claude Pro plan, 
+here's what you need to know — and what I'm doing about it.</code></pre>
+<p class="cur-p">#### Step 3.2 — Use This Full Draft Template</p>
+<p class="cur-p">Copy this template into your writing environment and fill it in:</p>
+<pre><code>---
+title: "Anthropic's Retreat: Claude Code Goes Up-Market"
+publication: Globe & Atlas
+pillar: Tool Critic
+word-target: 600
+author: [Your Name]
+date: [Today's Date]
+status: draft
+---
+
+# [Your Headline Here]
+### [Your Subheadline Here — one sentence, practitioner-specific]
+
+---
+
+[SECTION 1: THE HOOK — ~75 words]
+
+Write here. Start with the change, not with background. 
+The reader already knows what Claude Code is.
+
+---
+
+[SECTION 2: WHAT ANTHROPIC SAID — ~100 words]
+
+Write here. Include at least one direct quote or close paraphrase 
+from the official Reddit response. Then give your read on what 
+the language reveals about their strategy.
+
+---
+
+[SECTION 3: THE COMMUNITY SIGNAL — ~75 words]
+
+Write here. Reference the open letter and/or the LocalLLaMA thread 
+with at least one specific detail. Avoid "many users expressed frustration."
+Be specific: what workflow, what cost, what alternative?
+
+---
+
+[SECTION 4: MY COST MATH — ~100 words]
+
+Write here. Use your numbers from Phase 1. 
+First person. Specific dollar amounts. 
+What you used it for. What the change costs you.
+
+---
+
+[SECTION 5: RECOMMENDATION MATRIX — ~150 words]
+
+**If you're on the free tier:**
+[3–4 sentences]
+
+**If you're paying $20/month (Claude Pro):**
+[3–4 sentences]
+
+**If you're at $100+/month (or considering Max):**
+[3–4 sentences]
+
+---
+
+[SECTION 6: MY TAKE — ~100 words]
+
+Write here. This is your editorial stance. 
+Be direct. State whether Anthropic made the right call.
+State what they should do next.
+End with a sentence that serves the GIS professional reader.
+
+---
+
+*[Word count: XXX / 600]*</code></pre>
+<p class="cur-p">#### Step 3.3 — Revision Pass: The Tool Critic Checklist</p>
+<p class="cur-p">After completing your first draft, run through this checklist before finalizing:</p>
+<pre><code>ACCURACY
+[ ] All pricing figures verified against current Anthropic pricing page
+[ ] The "~2% of new prosumer signups" figure attributed correctly to Anthropic's statement
+[ ] No alternative tool capabilities overstated
+[ ] "Max subscribers unaffected" claim — did you verify what Max costs today?
+
+PRACTITIONER VOICE
+[ ] At least one first-person cost figure with a dollar amount
+[ ] No generic "AI is transforming the industry" sentences
+[ ] GIS-specific use cases named (not just "coding tasks")
+[ ] The recommendation matrix covers all three budget tiers
+
+EDITORIAL INTEGRITY
+[ ] Your personal take is stated clearly, not hedged to death
+[ ] You've acknowledged the strongest argument for Anthropic's position
+[ ] You haven't recommended a tool you haven't actually used or researched
+
+GLOBE & ATLAS STYLE
+[ ] Headline is specific and useful, not clickbait
+[ ] No jargon unexplained (or jargon used only when it earns its place)
+[ ] Final sentence serves the reader, not the author's opinions
+[ ] Word count between 580–620</code></pre>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 4: Final Polish (20 minutes)</h4>
+<p class="cur-p">#### Step 4.1 — Headline Workshop</p>
+<p class="cur-p">Your headline should do three things: <strong>identify the subject</strong>, <strong>signal the take</strong>, and <strong>speak to the practitioner</strong>. Test your headline against these alternatives and pick the strongest:</p>
+<pre><code>Formula A: [Company] + [Action] + [Implication]
+Example: "Anthropic Moves Claude Code Up-Market — And GIS Pros Are Doing the Math"
+
+Formula B: [Practitioner situation] + [Question]
+Example: "Should GIS Professionals Pay $100/Month for Claude Code? Here's My Answer."
+
+Formula C: [Editorial verdict] + [Evidence clause]
+Example: "Claude Code's Pricing Shift Is Defensible. It's Also a Mistake."
+
+Your working headline: 
+Your final headline: </code></pre>
+<p class="cur-p">#### Step 4.2 — Final Word Count & Formatting Check</p>
+<pre><code># If using a CLI word counter:
+wc -w your-essay-draft.md
+
+# Target range: 580–620 words
+# (Markdown formatting syntax doesn't count toward word total)</code></pre>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">4. Validation</h3>
+<h4 class="cur-h4">How to Know You've Completed This Exercise Successfully</h4>
+<p class="cur-p">Work through each validation check before submitting or publishing:</p>
+<p class="cur-p">#### Content Validation</p>
+<pre><code>[ ] COMPLETENESS: All six sections present and filled in
+[ ] WORD COUNT: Between 580–620 words (excluding headers/metadata)
+[ ] SOURCING: All three source documents referenced (Anthropic response, 
+    open letter, LocalLLaMA thread)
+[ ] COST MATH: At least one specific dollar figure from your own usage
+[ ] MATRIX: All three budget tiers ($0, $20, $100+) addressed with 
+    specific actionable recommendations
+[ ] STANCE: A clear editorial position stated in Section 6 
+    (not "it depends" without specifics)</code></pre>
+<p class="cur-p">#### Quality Validation — Peer Test</p>
+<p class="cur-p">Share your draft with one other GIS professional (or a colleague who uses AI coding tools) and ask them two questions:</p>
+<pre><code>1. "After reading this, do you know what to do if you're on the $20/month tier?" 
+   → If they say no, your matrix section needs more specificity.
+
+2. "What do you think my opinion of Anthropic's decision is?"
+   → If they can't answer, your editorial stance isn't clear enough.</code></pre>
+<p class="cur-p">#### Self-Validation — The Practitioner Test</p>
+<p class="cur-p">Read your essay aloud and flag any sentence that sounds like it was written by someone who has never opened a terminal, processed a shapefile, or looked at a SaaS billing statement. Cut or rewrite those sentences.</p>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">5. Next Steps</h3>
+<h4 class="cur-h4">Immediate Next Steps (This Week)</h4>
+<ul class="cur-list cur-ol">
+<li><strong>Submit to Globe & Atlas editorial queue</strong> with your draft labeled <code class="cur-inline">tool-critic-claude-code-v1.md</code> and include your recommendation matrix as a separate appendix for the editor to format.</li>
+</ul>
+<ul class="cur-list cur-ol">
+<li><strong>Set a calendar reminder for 90 days</strong> — Anthropic's official response indicated this is a "limited test." Track whether the policy is rolled back, expanded, or made permanent, and plan a brief follow-up note.</li>
+</ul>
+<ul class="cur-list cur-ol">
+<li><strong>Document your alternative tool shortlist</strong> from your Phase 1 research. Even if you stay on Claude, having a tested fallback matters for advising clients.</li>
+</ul>
+<h4 class="cur-h4">Deeper Skill Development</h4>
+<p class="cur-p">| Next Exercise | Why It Follows This One |</p>
+<p class="cur-p">|---|---|</p>
+<p class="cur-p">| <strong>Benchmark Claude Code vs. Continue.dev for a spatial Python task</strong> | Your recommendation matrix made claims — verify them with a hands-on comparison |</p>
+<p class="cur-p">| <strong>Draft a Tool Critic piece on ESRI's CoPilot integration</strong> | Apply this same framework to the incumbent GIS tool's AI move |</p>
+<p class="cur-p">| <strong>Interview a GIS firm principal about their AI tool budget</strong> | Ground your future cost math in others' real numbers, not just your own |</p>
+<p class="cur-p">| <strong>Write the 90-day follow-up piece</strong> | Track whether Anthropic's "limited test" framing held up |</p>
+<h4 class="cur-h4">Framework to Carry Forward</h4>
+<p class="cur-p">The core skill you practiced here applies to every future Tool Critic piece:</p>
+<pre><code>TOOL CRITIC FRAMEWORK (reusable)
+
+1. What changed? (Specific, dated, sourced)
+2. What did the company say? (Quote + interpretation)
+3. What did practitioners say? (Specific, not generic)
+4. What does it cost me? (First-person dollar math)
+5. What should people at each budget level do? (Actionable matrix)
+6. What's my take? (Clear stance + forward-looking recommendation)</code></pre>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">Appendix: Reference Materials</h3>
+<h4 class="cur-h4">Recommended Reading Before or After This Exercise</h4>
+<ul class="cur-list">
+<li>Anthropic pricing page: <code class="cur-inline">anthropic.com/pricing</code> (screenshot and date-stamp it — pricing pages change)</li>
+<li>r/ClaudeAI wiki for community-maintained pricing summaries</li>
+<li>The Globe & Atlas Tool Critic style guide (internal document — request from editorial)</li>
+</ul>
+<h4 class="cur-h4">Quick Reference: GIS AI Tool Landscape at Time of Writing</h4>
+<pre><code>CLOUD/SUBSCRIPTION TOOLS
+- Claude Pro ($20/mo): Conversational AI, no CLI agent access at this tier
+- Claude Max ($100+/mo): Full Claude Code CLI access
+- GitHub Copilot ($10–19/mo): Strong IDE integration, less strong for spatial analysis
+- Gemini CLI (free tier available): Google ecosystem, improving spatial awareness
+
+LOCAL/SELF-HOSTED OPTIONS
+- Ollama + Continue.dev ($0 marginal, requires local GPU): 
+  Best for: teams with existing hardware, privacy-sensitive workflows
+  GIS use case fit: Python scripting, documentation, not real-time map tile work
+- LM Studio ($0): 
+  Best for: model experimentation, offline environments
+
+HYBRID APPROACHES
+- API-direct usage (Anthropic API): 
+  Cost varies by token usage — can be cheaper or more expensive than subscription
+  depending on session patterns; worth calculating for heavy users</code></pre>
+<p class="cur-p">---</p>
+<p class="cur-p">*Curriculum version 1.0 | Globe & Atlas Editorial Training Series | Tool Critic Pillar*</p>
+</div>
+</body>
+</html>

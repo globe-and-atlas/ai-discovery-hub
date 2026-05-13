@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audit your CLAUDE.md against the everything-claude-code harness patterns — Lab Tutorial</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080b12; --bg2: #0e1220; --bg3: #151c2e; --bg4: #1d2540;
+    --border: #252e4a; --border2: #36416a; --text: #e6eaf4;
+    --text2: #8e9ab8; --text3: #58678e; --blue: #5b8af7;
+    --green: #34d89a; --orange: #f97c3c; --yellow: #f5c842;
+    --teal: #38c9d4; --cyan: #4fd9f5; --purple: #7c5cfc;
+    --font-sans: 'Inter', -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:var(--font-sans); line-height:1.7; }
+  .page { max-width:780px; margin:0 auto; padding:48px 32px 80px; }
+  .back { margin-bottom:32px; }
+  .back a { font-size:12px; font-family:var(--font-mono); color:var(--text3); text-decoration:none; border:1px solid var(--border); padding:6px 14px; border-radius:6px; transition:.15s; }
+  .back a:hover { color:var(--blue); border-color:var(--blue); }
+  .page-title { font-size:26px; font-weight:900; letter-spacing:-.4px; color:var(--text); margin-bottom:10px; line-height:1.25; }
+  .page-meta { font-size:11px; font-family:var(--font-mono); color:var(--text3); margin-bottom:40px; padding-bottom:24px; border-bottom:1px solid var(--border); }
+  h2.cur-h2 { font-size:19px; font-weight:800; color:var(--text); margin:40px 0 10px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+  h3.cur-h3 { font-size:15px; font-weight:700; color:var(--text2); margin:28px 0 8px; }
+  h4.cur-h4 { font-size:12.5px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.6px; margin:20px 0 6px; }
+  p.cur-p { font-size:14px; color:var(--text2); margin-bottom:12px; }
+  ul.cur-list { font-size:14px; color:var(--text2); margin:8px 0 14px 20px; }
+  ul.cur-list li { margin-bottom:6px; line-height:1.6; }
+  ul.cur-ol { list-style:decimal; }
+  pre { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:18px 20px; margin:14px 0 20px; overflow-x:auto; }
+  pre code { font-family:var(--font-mono); font-size:12px; color:var(--green); white-space:pre; line-height:1.6; }
+  code.cur-inline { font-family:var(--font-mono); font-size:12px; background:var(--bg4); color:var(--cyan); padding:2px 6px; border-radius:4px; }
+  strong { color:var(--text); font-weight:700; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="back"><a href="../latest.html">← Back to Hub</a></div>
+  <div class="page-title">Audit your CLAUDE.md against the everything-claude-code harness patterns</div>
+  <div class="page-meta">AI Discovery Hub · Lab Tutorial</div>
+  <h2 class="cur-h2">Audit Your CLAUDE.md Against the everything-claude-code Harness Patterns</h2>
+<h3 class="cur-h3">A Practical Curriculum for GIS Automation Workflow Optimization</h3>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">1. Introduction & Context</h3>
+<h4 class="cur-h4">What This Is</h4>
+<p class="cur-p">Your <code class="cur-inline">CLAUDE.md</code> file is the instruction layer that shapes how Claude Code behaves in your projects — it defines conventions, constraints, and workflows that Claude follows autonomously. Most practitioners start with a minimal <code class="cur-inline">CLAUDE.md</code> and grow it organically, which often leaves significant performance on the table.</p>
+<p class="cur-p">The <strong>everything-claude-code</strong> repository (by affaan-m) is a battle-tested agent harness that systematically extends Claude Code with five structured layers:</p>
+<p class="cur-p">| Layer | Purpose |</p>
+<p class="cur-p">|---|---|</p>
+<p class="cur-p">| <strong>Skills</strong> | Reusable capability modules Claude can invoke |</p>
+<p class="cur-p">| <strong>Instincts</strong> | Default behavioral heuristics and decision rules |</p>
+<p class="cur-p">| <strong>Persistent Memory</strong> | Cross-session context and project state retention |</p>
+<p class="cur-p">| <strong>Security</strong> | Guardrails against destructive or unintended actions |</p>
+<p class="cur-p">| <strong>Research-First Patterns</strong> | Structured exploration before implementation |</p>
+<h4 class="cur-h4">Why This Matters for GIS Automation</h4>
+<p class="cur-p">GIS workflows sit at the intersection of spatial data complexity, file system operations, external API calls (tile servers, geocoders, WFS/WMS endpoints), and often destructive operations (overwriting shapefiles, dropping PostGIS tables, bulk raster processing). This makes them a <strong>high-value, high-risk</strong> domain for agentic AI — exactly the environment where structured harness patterns pay the biggest dividends.</p>
+<p class="cur-p">By auditing your current <code class="cur-inline">CLAUDE.md</code> against the everything-claude-code patterns, you will:</p>
+<ul class="cur-list">
+<li>Identify capability gaps that are slowing down your GIS automation loops</li>
+<li>Adopt security guardrails appropriate for spatial data pipelines</li>
+<li>Create documented delta analysis suitable for publication as a <strong>Globe & Atlas Tool Critic</strong> post</li>
+</ul>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">2. Prerequisites</h3>
+<p class="cur-p">Before starting this exercise, confirm you have the following in place:</p>
+<h4 class="cur-h4">Technical Requirements</h4>
+<pre><code># Verify Claude Code CLI is installed
+claude --version
+# Expected: claude 1.x.x or higher
+
+# Verify Git is available
+git --version
+
+# Verify Python (for GIS workflow context)
+python --version
+# Expected: 3.10+
+
+# Optional but recommended: GDAL/OGR for GIS validation steps
+gdal-config --version</code></pre>
+<h4 class="cur-h4">Knowledge Prerequisites</h4>
+<ul class="cur-list">
+<li>[ ] You have an existing <code class="cur-inline">CLAUDE.md</code> file in at least one GIS project directory</li>
+<li>[ ] You have used Claude Code CLI for at least one automation task</li>
+<li>[ ] You understand basic Markdown formatting</li>
+<li>[ ] You are familiar with at least one of: QGIS automation, GeoPandas, PostGIS, GDAL/OGR, or similar GIS tooling</li>
+<li>[ ] You have a GitHub account (to fork/clone the repo)</li>
+</ul>
+<h4 class="cur-h4">File System Prerequisites</h4>
+<pre><code># Create a working directory for this exercise
+mkdir -p ~/claude-audit-exercise
+cd ~/claude-audit-exercise
+
+# Locate your existing CLAUDE.md files
+find ~ -name "CLAUDE.md" -not -path "*/node_modules/*" 2&gt;/dev/null</code></pre>
+<p class="cur-p">> <strong>Note:</strong> If you don't have an existing <code class="cur-inline">CLAUDE.md</code>, use the scaffold provided in Step 3.1 below.</p>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">3. Step-by-Step Guide</h3>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Step 3.1 — Clone and Inventory the everything-claude-code Repository</h4>
+<pre><code># Clone the repository
+cd ~/claude-audit-exercise
+git clone https://github.com/affaan-m/everything-claude-code.git
+cd everything-claude-code
+
+# Get a high-level directory inventory
+find . -type f -name "*.md" | sort
+find . -type f -name "*.json" | sort
+find . -type f -name "*.py" | sort
+
+# Review the root CLAUDE.md immediately
+cat CLAUDE.md</code></pre>
+<p class="cur-p">Open a dedicated notes file for your audit:</p>
+<pre><code>touch ~/claude-audit-exercise/audit-notes.md
+cat &gt; ~/claude-audit-exercise/audit-notes.md &lt;&lt; 'EOF'
+# CLAUDE.md Audit Notes
+Date: $(date +%Y-%m-%d)
+Auditor: [Your Name]
+
+## everything-claude-code Patterns Observed
+(fill as you read)
+
+## My Current CLAUDE.md Gaps
+(fill as you compare)
+
+## 3 Adopted Patterns for GIS Workflows
+(fill in Step 3.5)
+
+## Delta Summary for Globe & Atlas Post
+(fill in Step 3.6)
+EOF</code></pre>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Step 3.2 — Extract and Categorize the Five Harness Layers</h4>
+<p class="cur-p">Work through each layer systematically. For each one, read the source files and extract the <strong>core pattern</strong> — the repeatable structure or directive format.</p>
+<p class="cur-p">#### 3.2a — Skills Layer</p>
+<pre><code># Explore the skills directory (adjust path based on actual repo structure)
+ls -la skills/ 2&gt;/dev/null || find . -path "*/skills*" -type f
+
+# Read each skill definition
+for f in skills/*.md skills/*.json 2&gt;/dev/null; do
+  echo "=== $f ==="
+  cat "$f"
+  echo ""
+done</code></pre>
+<p class="cur-p">In your audit notes, answer:</p>
+<pre><code>## Skills Layer Questions
+- What is the format for defining a skill? (YAML front matter? JSON? Inline markdown?)
+- Are skills invoked by name, by trigger phrase, or automatically?
+- What skills are domain-general vs. task-specific?
+- Which skills have NO equivalent in my current CLAUDE.md?</code></pre>
+<p class="cur-p">#### 3.2b — Instincts Layer</p>
+<pre><code># Explore instincts
+find . -path "*/instinct*" -type f | xargs ls -la 2&gt;/dev/null
+cat instincts/*.md 2&gt;/dev/null || find . -name "*instinct*" -exec cat {} \;</code></pre>
+<p class="cur-p">Look specifically for:</p>
+<ul class="cur-list">
+<li><strong>Decision tree patterns</strong> — how Claude is told to choose between approaches</li>
+<li><strong>Default behavior overrides</strong> — what Claude does when instructions are ambiguous</li>
+<li><strong>Escalation triggers</strong> — when Claude stops and asks rather than acts</li>
+</ul>
+<p class="cur-p">Record patterns in this format:</p>
+<pre><code>### Instinct Pattern Template
+- **Trigger condition:** [what situation activates this instinct]
+- **Default behavior:** [what Claude does without the instinct]
+- **Modified behavior:** [what Claude does WITH the instinct]
+- **GIS relevance:** [high/medium/low — why]</code></pre>
+<p class="cur-p">#### 3.2c — Persistent Memory Layer</p>
+<pre><code># Explore memory structures
+find . -path "*/memory*" -type f | xargs cat 2&gt;/dev/null
+find . -name "*.json" | xargs grep -l "memory\|context\|session" 2&gt;/dev/null</code></pre>
+<p class="cur-p">Key things to look for:</p>
+<pre><code># Does the harness use a memory file pattern?
+grep -r "memory_file\|MEMORY\|remember\|recall" . --include="*.md" -l
+
+# Does it reference a project state structure?
+grep -r "project_state\|last_session\|checkpoint" . --include="*.md" -l</code></pre>
+<p class="cur-p">#### 3.2d — Security Layer</p>
+<pre><code># This is critical for GIS work — explore thoroughly
+find . -path "*/security*" -type f | xargs cat 2&gt;/dev/null
+grep -r "never\|always\|forbidden\|prohibited\|confirm\|destructive" . \
+  --include="*.md" -n</code></pre>
+<p class="cur-p">Create a security pattern inventory:</p>
+<pre><code>## Security Patterns Found
+| Pattern Type | Trigger | Action Required | GIS Equivalent |
+|---|---|---|---|
+| File deletion guard | rm, delete, drop | Explicit confirmation | Shapefile deletion, DROP TABLE |
+| Overwrite protection | write, save, export | Backup check | Overwriting GeoTIFF/GPKG |
+| API rate limiting | external request | Throttle + log | Geocoding APIs, WFS calls |
+| Schema validation | before DB write | Validate types | PostGIS geometry validation |</code></pre>
+<p class="cur-p">#### 3.2e — Research-First Patterns</p>
+<pre><code># Find the research-first directives
+grep -r "research\|explore\|understand\|read.*first\|before.*implement" . \
+  --include="*.md" -n | head -40</code></pre>
+<p class="cur-p">The research-first pattern typically looks like this in <code class="cur-inline">CLAUDE.md</code> files:</p>
+<pre><code># Example research-first directive (adapt from repo)
+Before implementing any solution:
+1. Read existing code in the affected directory
+2. Identify existing patterns and conventions
+3. Check for existing utilities that solve the problem
+4. Propose approach and get confirmation before writing code</code></pre>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Step 3.3 — Audit Your Existing CLAUDE.md</h4>
+<p class="cur-p">Now compare your current file against what you've found.</p>
+<pre><code># Copy your primary CLAUDE.md into the working directory
+cp /path/to/your/project/CLAUDE.md ~/claude-audit-exercise/my-current-claude.md
+
+# If you don't have one yet, create a minimal starting scaffold:
+cat &gt; ~/claude-audit-exercise/my-current-claude.md &lt;&lt; 'EOF'
+# Project CLAUDE.md (Starting Scaffold)
+
+## Project Overview
+GIS automation project using [YOUR TOOLS HERE].
+
+## Commands
+- Run tests: `pytest tests/`
+- Lint: `ruff check .`
+- Process data: `python pipeline.py`
+
+## Conventions
+- Use GeoPandas for vector operations
+- Store outputs in /outputs directory
+- CRS: EPSG:4326 unless otherwise specified
+EOF</code></pre>
+<p class="cur-p">Run a structured gap analysis:</p>
+<pre><code># Create the gap analysis file
+cat &gt; ~/claude-audit-exercise/gap-analysis.md &lt;&lt; 'EOF'
+# CLAUDE.md Gap Analysis
+
+## Layer Coverage Assessment
+
+| Layer | everything-claude-code | My CLAUDE.md | Gap Severity |
+|---|---|---|---|
+| Skills | ✅ Defined | ❌/⚠️/✅ | HIGH/MED/LOW |
+| Instincts | ✅ Defined | ❌/⚠️/✅ | HIGH/MED/LOW |
+| Persistent Memory | ✅ Defined | ❌/⚠️/✅ | HIGH/MED/LOW |
+| Security Guards | ✅ Defined | ❌/⚠️/✅ | HIGH/MED/LOW |
+| Research-First | ✅ Defined | ❌/⚠️/✅ | HIGH/MED/LOW |
+
+## Specific Missing Directives
+(list each directive from the harness that has no equivalent in your file)
+
+## Partially Covered Areas
+(list directives where you have something similar but less rigorous)
+
+## Areas Where You Exceed the Harness
+(list GIS-specific directives the harness doesn't cover)
+EOF</code></pre>
+<p class="cur-p">Use this checklist as you audit:</p>
+<pre><code>## Audit Checklist
+
+### Skills Coverage
+- [ ] Does my CLAUDE.md define reusable capability modules?
+- [ ] Are common GIS operations (reproject, clip, buffer, dissolve) defined as skills?
+- [ ] Is there a pattern for how skills are documented and invoked?
+
+### Instincts Coverage  
+- [ ] Does my CLAUDE.md specify default CRS behavior?
+- [ ] Does it define what to do when geometry is invalid?
+- [ ] Does it specify behavior when a spatial join produces unexpected row counts?
+- [ ] Does it say what to do when an API call fails?
+
+### Memory Coverage
+- [ ] Does my CLAUDE.md reference any session persistence?
+- [ ] Is there a project state file that Claude is told to read/write?
+- [ ] Are there instructions about what context to carry between sessions?
+
+### Security Coverage
+- [ ] Are there explicit guards against overwriting source data?
+- [ ] Is there a confirmation requirement before dropping PostGIS tables?
+- [ ] Is there protection against accidentally writing to production vs. dev environments?
+- [ ] Are there file size warnings for large raster operations?
+
+### Research-First Coverage
+- [ ] Is Claude instructed to read existing code before writing new code?
+- [ ] Is there a step requiring Claude to identify existing utilities before building new ones?
+- [ ] Is there a proposal step before implementation?</code></pre>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Step 3.4 — Deep Dive: GIS-Specific Pattern Mapping</h4>
+<p class="cur-p">This is where you translate the generic harness patterns into your specific GIS context.</p>
+<p class="cur-p">Create the mapping file:</p>
+<pre><code>cat &gt; ~/claude-audit-exercise/gis-pattern-mapping.md &lt;&lt; 'EOF'
+# GIS Pattern Mapping: everything-claude-code → GIS Workflows
+
+## Skills → GIS Capability Modules
+
+### Example: Reprojection Skill</code></pre>
+<h3 class="cur-h3">Skill: reproject_layer</h3>
+<p class="cur-p">Trigger: any request involving coordinate reference systems or projection</p>
+<p class="cur-p">Steps:</p>
+<p class="cur-p">1. Identify source CRS from file metadata (not assumed)</p>
+<p class="cur-p">2. Confirm target CRS with user if not specified in task</p>
+<p class="cur-p">3. Validate geometry before reprojection</p>
+<p class="cur-p">4. Use GDAL/OGR or GeoPandas transform, never manual coordinate math</p>
+<p class="cur-p">5. Verify output CRS matches requested CRS</p>
+<p class="cur-p">6. Log: source_crs, target_crs, feature_count, geometry_validity_before/after</p>
+<p class="cur-p">Output: reprojected layer + transformation log</p>
+<pre><code>
+### Example: Spatial Join Skill</code></pre>
+<h3 class="cur-h3">Skill: spatial_join</h3>
+<p class="cur-p">Trigger: any request to join datasets by location or spatial relationship</p>
+<p class="cur-p">Steps:</p>
+<p class="cur-p">1. Read both datasets and report: feature counts, CRS, geometry types</p>
+<p class="cur-p">2. Confirm CRS match; reproject if needed (invoke reproject_layer skill)</p>
+<p class="cur-p">3. Identify join type (intersects, within, contains, nearest)</p>
+<p class="cur-p">4. Execute join</p>
+<p class="cur-p">5. Report: input counts, output count, unmatched features from each layer</p>
+<p class="cur-p">6. Flag if output count differs from either input by >10% (potential error)</p>
+<p class="cur-p">Output: joined layer + join statistics report</p>
+<pre><code>
+## Instincts → GIS Decision Rules
+
+### Geometry Validity Instinct
+Trigger: Before ANY spatial operation
+Default behavior (without instinct): Proceed, fail silently or produce corrupt output
+Modified behavior: Run validity check, report invalid geometries, offer fix options before proceeding
+
+### CRS Ambiguity Instinct  
+Trigger: When CRS is not explicit in user request
+Default behavior: Assume EPSG:4326 or use file's existing CRS silently
+Modified behavior: Report detected CRS, confirm before proceeding with analysis
+
+### Large File Instinct
+Trigger: When input file &gt; 500MB or feature count &gt; 1,000,000
+Default behavior: Attempt operation, potentially run out of memory
+Modified behavior: Report size, suggest chunking strategy, confirm approach before executing
+
+## Security → GIS Guardrails
+
+### Source Data Protection</code></pre>
+<p class="cur-p">NEVER modify files in: /data/raw/, /data/source/, any directory named "original"</p>
+<p class="cur-p">ALWAYS write outputs to: /data/processed/, /outputs/, or explicit user-specified path</p>
+<p class="cur-p">When asked to "update" or "fix" a source file: create a copy first, modify the copy</p>
+<pre><code>
+### Database Safety</code></pre>
+<p class="cur-p">NEVER execute DROP TABLE, TRUNCATE, or DELETE without:</p>
+<p class="cur-p">1. Reporting the exact statement to be executed</p>
+<p class="cur-p">2. Reporting the row/feature count that will be affected</p>
+<p class="cur-p">3. Receiving explicit "CONFIRM" from user</p>
+<p class="cur-p">ALWAYS test with SELECT before DELETE</p>
+<p class="cur-p">ALWAYS use transactions for bulk PostGIS operations</p>
+<pre><code>
+### API Rate Limiting</code></pre>
+<p class="cur-p">For geocoding operations:</p>
+<p class="cur-p">- Batch requests, never individual per-row calls without batching</p>
+<p class="cur-p">- Implement exponential backoff</p>
+<p class="cur-p">- Cache results to avoid re-querying</p>
+<p class="cur-p">- Report estimated API cost before large batches</p>
+<pre><code>
+## Research-First → GIS Implementation Protocol
+
+Before implementing any GIS pipeline:
+1. List all input files and report: format, CRS, feature count, attribute schema
+2. Identify existing scripts in the project that perform similar operations
+3. Check /utils or /helpers directories for reusable functions
+4. Propose the full processing chain with intermediate outputs
+5. Get confirmation before executing any write operations
+EOF</code></pre>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Step 3.5 — Select Your 3 Adoptable Patterns</h4>
+<p class="cur-p">Based on your gap analysis, select the three patterns with the highest impact-to-effort ratio for your GIS workflows.</p>
+<p class="cur-p">Use this decision framework:</p>
+<pre><code>cat &gt; ~/claude-audit-exercise/pattern-selection.md &lt;&lt; 'EOF'
+# Pattern Selection: 3 Immediate Adoptions
+
+## Scoring Criteria
+For each candidate pattern, score 1-5:
+- Impact: How much will this improve my GIS automation outcomes?
+- GIS Fit: How well does this map to common GIS workflow problems?
+- Adoption Effort: (inverted) How easy is it to add to my CLAUDE.md? (5 = easy)
+- Risk Reduction: Does this prevent data loss or corruption?
+
+## Candidate Patterns
+(Fill in after your audit)
+
+| Pattern | Impact | GIS Fit | Ease | Risk Red. | Total |
+|---|---|---|---|---|---|
+| [Pattern 1] | /5 | /5 | /5 | /5 | /20 |
+| [Pattern 2] | /5 | /5 | /5 | /5 | /20 |
+| [Pattern 3] | /5 | /5 | /5 | /5 | /20 |
+| [Pattern 4] | /5 | /5 | /5 | /5 | /20 |
+| [Pattern 5] | /5 | /5 | /5 | /5 | /20 |
+
+## Selected Top 3
+1. **[Pattern Name]** — Score: /20
+   Why selected: 
+   GIS application:
+
+2. **[Pattern Name]** — Score: /20
+   Why selected:
+   GIS application:
+
+3. **[Pattern Name]** — Score: /20
+   Why selected:
+   GIS application:
+EOF</code></pre>
+<h4 class="cur-h4">Common High-Value Patterns for GIS Workflows</h4>
+<p class="cur-p">Based on typical GIS automation pain points, these tend to score highest:</p>
+<p class="cur-p"><strong>Pattern A: Pre-flight Data Validation Instinct</strong></p>
+<pre><code>## Pre-flight Validation (add to CLAUDE.md)
+Before executing any spatial operation on input data:
+1. Run `ogrinfo -al -so {file}` or equivalent and report results
+2. Check for and report: null geometries, invalid geometries, mixed geometry types
+3. Confirm feature count matches user expectation
+4. Do NOT proceed if validation reveals unexpected conditions — report and await instruction</code></pre>
+<p class="cur-p"><strong>Pattern B: Destructive Operation Confirmation Gate</strong></p>
+<pre><code>## Destructive Operation Gate (add to CLAUDE.md)
+Operations classified as destructive:
+- Writing to any existing file (overwrite)
+- DELETE or DROP statements on any database object
+- Removing or replacing files in /data/raw or /data/source
+- Bulk attribute updates affecting &gt;1000 features
+
+For ALL destructive operations:
+1. Print the exact operation to be performed
+2. Print the scope (file path, table name, feature count affected)
+3. Print "Awaiting CONFIRM to proceed."
+4. Do not execute until user types "CONFIRM"</code></pre>
+<p class="cur-p"><strong>Pattern C: Research-First Pipeline Design</strong></p>
+<pre><code>## Research-First Protocol (add to CLAUDE.md)
+When asked to build or modify a GIS pipeline:
+1. READ: Scan all .py, .sh, .sql files in the project for existing utilities
+2. INVENTORY: List what exists that could be reused or extended
+3. DESIGN: Write out the proposed pipeline as pseudocode with I/O at each step
+4. CONFIRM: Get user approval on the design before writing any executable code
+5. IMPLEMENT: Write code one logical section at a time, testing each section
+Never jump directly from request to implementation.</code></pre>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Step 3.6 — Write Your Updated CLAUDE.md</h4>
+<p class="cur-p">Now synthesize your findings into an upgraded <code class="cur-inline">CLAUDE.md</code>:</p>
+<pre><code>cat &gt; ~/claude-audit-exercise/CLAUDE-upgraded.md &lt;&lt; 'EOF'
+# CLAUDE.md — GIS Automation Project
+# Version: 2.0 (Post everything-claude-code audit)
+# Last Updated: [DATE]
+
+---
+
+## 🗺️ Project Overview
+[Your project description]
+
+Primary GIS stack: [GeoPandas / QGIS / PostGIS / GDAL / etc.]
+Primary CRS: EPSG:4326 (geographic) | EPSG:[XXXX] (projected, for analysis)
+Environment: dev | staging | prod (NEVER assume prod unless explicitly stated)
+
+---
+
+## ⚡ Skills (Capability Modules)
+
+### skill: validate_spatial_data
+Invoked automatically before any spatial operation.
+Steps:
+  1. Report file format, CRS, geometry type, feature count
+  2. Run geometry validity check; report count of invalid geometries
+  3. Check for null geometries; report count
+  4. Confirm attribute schema matches expected fields
+  5. Output: validation_report.txt in working directory
+
+### skill: reproject_layer
+Invoked when: CRS transformation is needed or CRS mismatch detected.
+Steps:
+  1. Report source CRS (read from file, never assumed)
+  2. Confirm target CRS with user if not explicit in task
+  3. Invoke validate_spatial_data first
+  4. Execute reprojection using [YOUR PREFERRED TOOL]
+  5. Verify output CRS, report feature count preservation
+Never perform reprojection in-place on source files.
+
+### skill: spatial_join
+Invoked when: joining datasets by spatial relationship.
+Steps:
+  1. Invoke validate_spatial_data on both inputs
+  2. Report and resolve any CRS mismatches
+  3. Confirm join type (intersect/within/nearest) with user
+  4. Execute join
+  5. Report: left_count, right_count, output_count, unmatched_count
+  6. Flag if output_count differs from expected by &gt;10%
+
+---
+
+## 🧠 Instincts (Decision Rules)
+
+### instinct: crs-ambiguity
+When CRS is not explicit in the user's request:
+  - DO: Read CRS from input file and report it
+  - DO: Ask "Detected CRS is EPSG:XXXX. Confirm this is correct?"
+  - DO NOT: Assume any CRS
+  - DO NOT: Silently reproject
+
+### instinct: large-dataset
+When input has &gt;500MB file size OR &gt;500,000 features:
+  - Report: file size, feature count, estimated processing time
+  - Suggest: chunking strategy or spatial index approach
+  - Confirm: processing approach before executing
+  - DO NOT: Attempt full-load without confirmation
+
+### instinct: geometry-invalid
+When geometry validation reveals invalid geometries:
+  - Report: count and types of invalid geometries
+  - Offer options: fix with buffer(0), skip invalids, abort
+  - DO NOT: Proceed with invalid geometries without user decision
+
+### instinct: unexpected-join-result
+When spatial join output count is unexpected:
+  - Flag immediately with counts: input_left, input_right, output
+  - Suggest possible cause (one-to-many, CRS issue, predicate issue)
+  - Ask for confirmation before saving output
+
+---
+
+## 🔒 Security Layer
+
+### Source Data Immutability
+NEVER write to or modify files in:
+  - /data/raw/
+  - /data/source/
+  - Any directory containing "original" or "source" in path
+  - Any file passed as input that has not been explicitly copied first
+
+ALWAYS write outputs to:
+  - /data/processed/
+  - /outputs/
+  - Or explicitly user-specified path
+
+### Destructive Operation Gate
+REQUIRED before executing any of the following:
+  - File overwrite (writing to existing file path)
+  - DROP TABLE, TRUNCATE, DELETE in any database
+  - rm or os.remove on any file
+  - Bulk UPDATE affecting the geometry column
+  - Any operation on a table/file containing "prod" or "production"
+
+Procedure:
+  1. Print: "⚠️ DESTRUCTIVE OPERATION PENDING"
+  2. Print: exact operation (SQL statement, file path, command)
+  3. Print: scope (table name, row count, file size)
+  4. Print: "Type CONFIRM to proceed or CANCEL to abort."
+  5. WAIT for explicit user response
+
+### API Safety
+For any external API calls (geocoding, routing, WFS, tile services):
+  - Batch requests, never row-by-row without batching
+  - Cache results in /cache/ directory
+  - Report estimated request count before large batches
+  - Implement retry with exponential backoff
+  - Never expose API keys in logs or output files
+
+---
+
+## 🔬 Research-First Protocol
+
+When asked to build, modify, or debug any GIS pipeline:
+
+**Phase 1 — READ (before writing any code)**
+1. Scan project directory for existing .py, .sql, .sh files
+2. List existing utilities relevant to the task
+3. Read the most relevant existing file in full
+
+**Phase 2 — DESIGN**
+1. Write the proposed solution as pseudocode/outline
+2. Identify each input, transformation, and output
+3. Note which existing utilities will be reused
+
+**Phase 3 — CONFIRM**
+1. Present the design to the user
+2. Note any assumptions made
+3. Wait for approval before proceeding to implementation
+
+**Phase 4 — IMPLEMENT**
+1. Write one logical section at a time
+2. Test each section before proceeding
+3. Report results at each checkpoint
+
+---
+
+## 📁 Memory & State
+
+### Session Context File
+At the start of each session, read: .claude-context.json (if it exists)
+At the end of each session, write: .claude-context.json with:
+  - last_task: description of what was accomplished
+  - last_output: path to most recent output file
+  - open_issues: list of known problems or TODOs
+  - data_state: current state of key datasets
+
+### Project Knowledge
+Key datasets and their current state:
+  - [DATASET_NAME]: [path], [CRS], [last_modified], [notes]
+
+---
+
+## 🛠️ Commands & Environment
+</code></pre>
+<h2 class="cur-h2">Standard commands</h2>
+<p class="cur-p">run_tests: pytest tests/ -v</p>
+<p class="cur-p">lint: ruff check . && black --check .</p>
+<p class="cur-p">validate: python scripts/validate_pipeline.py</p>
+<p class="cur-p">process: python pipeline.py</p>
+<h2 class="cur-h2">GIS utilities</h2>
+<p class="cur-p">inspect_file: ogrinfo -al -so {file}</p>
+<p class="cur-p">reproject: ogr2ogr -t_srs EPSG:{code} {output} {input}</p>
+<p class="cur-p">validate_geom: python scripts/check_geometry.py {file}</p>
+<pre><code>
+## Environment Detection
+Current environment: [dev/staging/prod]
+If environment is unclear: ASK before executing any write operations.
+NEVER assume production environment.
+
+---
+
+## 🚫 Never Do
+
+- Never modify source/raw data files
+- Never execute spatial operations on data without first running validate_spatial_data
+- Never assume CRS — always read it from the file
+- Never proceed with destructive operations without explicit CONFIRM
+- Never write API keys to any output file, log, or comment
+- Never jump from user request to code implementation without the Research-First Protocol
+
+---
+
+## ✅ Always Do
+
+- Always report CRS of any spatial data you read
+- Always report feature counts before and after any operation
+- Always log operations with: input_path, output_path, timestamp, feature_counts
+- Always create backups before any in-place modification
+- Always use transactions for PostGIS batch operations
+- Always confirm environment (dev/staging/prod) before write operations
+EOF</code></pre>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Step 3.7 — Document the Delta for Your Globe & Atlas Post</h4>
+<pre><code>cat &gt; ~/claude-audit-exercise/globe-atlas-post-draft.md &lt;&lt; 'EOF'
+# Draft: Globe & Atlas Tool Critic Post
+
+**Title:** I Audited My CLAUDE.md Against a Pro Agent Harness — Here's the Delta
+
+**Subtitle:** What the everything-claude-code repo taught me about structured AI agent design for GIS workflows
+
+---
+
+## The Setup
+
+[Brief description of your existing CLAUDE.md and workflow]
+
+I've been using Claude Code CLI for GIS automation for [timeframe]. My CLAUDE.md was [describe: minimal / moderate / detailed]. It covered [what it covered] but I suspected I was leaving performance on the table.
+
+## The Harness I Audited Against
+
+The **everything-claude-code** repo by affaan-m organizes Claude Code enhancements into five layers: Skills, Instincts, Persistent Memory, Security, and Research-First Patterns. Each layer solves a different failure mode in agentic workflows.
+
+## What I Found: The Gap Analysis
+
+### Layer 1: Skills
+**Harness approach:** [describe what you found]
+**My CLAUDE.md:** [describe what you had]
+**Gap:** [describe the gap]
+**GIS impact:** [why this matters for GIS work specifically]
+
+### Layer 2: Instincts
+**Harness approach:** [describe what you found]
+**My CLAUDE.md:** [describe what you had]
+**Gap:** [describe the gap]
+**GIS impact:** [why this matters for GIS work specifically]
+
+### Layer 3: Persistent Memory
+**Harness approach:** [describe what you found]
+**My CLAUDE.md:** [describe what you had]
+**Gap:** [describe the gap]
+**GIS impact:** [why this matters for GIS work specifically]
+
+### Layer 4: Security
+**Harness approach:** [describe what you found]
+**My CLAUDE.md:** [describe what you had]
+**Gap:** [describe the gap]
+**GIS impact:** Spatial data is often irreplaceable. A guard against overwriting /data/raw/ would have saved me [specific near-miss or scenario].
+
+### Layer 5: Research-First
+**Harness approach:** [describe what you found]
+**My CLAUDE.md:** [describe what you had]
+**Gap:** [describe the gap]
+**GIS impact:** Without this, Claude jumps to implementation and reinvents utilities that already exist in my /utils directory.
+
+## The 3 Patterns I Adopted Immediately
+
+### Pattern 1: [Name]
+**Source:** everything-claude-code [specific section]
+**Adapted for GIS as:** [your implementation]
+**First test:** [how you tested it]
+**Result:** [what happened]
+
+### Pattern 2: [Name]
+**Source:** everything-claude-code [specific section]
+**Adapted for GIS as:** [your implementation]
+**First test:** [how you tested it]
+**Result:** [what happened]
+
+### Pattern 3: [Name]
+**Source:** everything-claude-code [specific section]
+**Adapted for GIS as:** [your implementation]
+**First test:** [how you tested it]
+**Result:** [what happened]
+
+## What the Harness Doesn't Cover (GIS-Specific Gaps)
+
+The everything-claude-code harness is domain-agnostic. For GIS workflows, I added patterns it doesn't include:
+- [Your GIS-specific addition 1]
+- [Your GIS-specific addition 2]
+- [Your GIS-specific addition 3]
+
+## The Upgraded CLAUDE.md
+
+[Link to or embed your CLAUDE-upgraded.md]
+
+## My Rating: Tool Critic Verdict
+
+**everything-claude-code as a reference harness for GIS work:**
+- Completeness: [X]/10
+- GIS applicability: [X]/10
+- Adoption difficulty: [X]/10
+- Documentation quality: [X]/10
+
+**Overall:** [Your verdict and recommendation]
+
+---
+
+*Next audit: [what you'll review next]*
+EOF</code></pre>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">4. Validation</h3>
+<p class="cur-p">Use this checklist to confirm you've completed the exercise successfully:</p>
+<h4 class="cur-h4">Completion Checklist</h4>
+</div>
+</body>
+</html>

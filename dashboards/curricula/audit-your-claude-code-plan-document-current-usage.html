@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audit Your Claude Code Plan & Document Current Usage — Lab Tutorial</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080b12; --bg2: #0e1220; --bg3: #151c2e; --bg4: #1d2540;
+    --border: #252e4a; --border2: #36416a; --text: #e6eaf4;
+    --text2: #8e9ab8; --text3: #58678e; --blue: #5b8af7;
+    --green: #34d89a; --orange: #f97c3c; --yellow: #f5c842;
+    --teal: #38c9d4; --cyan: #4fd9f5; --purple: #7c5cfc;
+    --font-sans: 'Inter', -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:var(--font-sans); line-height:1.7; }
+  .page { max-width:780px; margin:0 auto; padding:48px 32px 80px; }
+  .back { margin-bottom:32px; }
+  .back a { font-size:12px; font-family:var(--font-mono); color:var(--text3); text-decoration:none; border:1px solid var(--border); padding:6px 14px; border-radius:6px; transition:.15s; }
+  .back a:hover { color:var(--blue); border-color:var(--blue); }
+  .page-title { font-size:26px; font-weight:900; letter-spacing:-.4px; color:var(--text); margin-bottom:10px; line-height:1.25; }
+  .page-meta { font-size:11px; font-family:var(--font-mono); color:var(--text3); margin-bottom:40px; padding-bottom:24px; border-bottom:1px solid var(--border); }
+  h2.cur-h2 { font-size:19px; font-weight:800; color:var(--text); margin:40px 0 10px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+  h3.cur-h3 { font-size:15px; font-weight:700; color:var(--text2); margin:28px 0 8px; }
+  h4.cur-h4 { font-size:12.5px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.6px; margin:20px 0 6px; }
+  p.cur-p { font-size:14px; color:var(--text2); margin-bottom:12px; }
+  ul.cur-list { font-size:14px; color:var(--text2); margin:8px 0 14px 20px; }
+  ul.cur-list li { margin-bottom:6px; line-height:1.6; }
+  ul.cur-ol { list-style:decimal; }
+  pre { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:18px 20px; margin:14px 0 20px; overflow-x:auto; }
+  pre code { font-family:var(--font-mono); font-size:12px; color:var(--green); white-space:pre; line-height:1.6; }
+  code.cur-inline { font-family:var(--font-mono); font-size:12px; background:var(--bg4); color:var(--cyan); padding:2px 6px; border-radius:4px; }
+  strong { color:var(--text); font-weight:700; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="back"><a href="../latest.html">← Back to Hub</a></div>
+  <div class="page-title">Audit Your Claude Code Plan & Document Current Usage</div>
+  <div class="page-meta">AI Discovery Hub · Lab Tutorial</div>
+  <h2 class="cur-h2">Audit Your Claude Code Plan & Document Current Usage</h2>
+<h3 class="cur-h3">A Practical Guide for GIS Practitioners & Power Users</h3>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">1. Introduction & Context</h3>
+<h4 class="cur-h4">What's Happening and Why It Matters</h4>
+<p class="cur-p">Anthropic has quietly begun removing <strong>Claude Code</strong> from the $20/month Pro plan listing. While currently confirmed as an A/B test affecting approximately 2% of new signups, this signal carries significant weight: Anthropic may be repositioning Claude Code as a premium, higher-cost feature — potentially behind a more expensive tier like Claude Max ($100+/month) or an enterprise plan.</p>
+<p class="cur-p"><strong>For GIS practitioners and spatial analysts</strong>, this isn't just a billing footnote. Claude Code's CLI (Command Line Interface) has become a genuine productivity multiplier for:</p>
+<ul class="cur-list">
+<li>Automating GDAL/OGR workflows</li>
+<li>Writing Python scripts for GeoPandas, Shapely, and Rasterio</li>
+<li>Generating and debugging QGIS plugins</li>
+<li>Processing large geospatial datasets with scripted pipelines</li>
+<li>Iterating rapidly on PostGIS queries</li>
+</ul>
+<p class="cur-p">If Claude Code moves behind a paywall tier you aren't currently on, your <strong>daily dev stack changes overnight</strong> — and so does your cost model for recommending tools to others.</p>
+<p class="cur-p">This exercise has two purposes:</p>
+<ul class="cur-list cur-ol">
+<li><strong>Practical self-audit</strong> — Know exactly what you have before it changes</li>
+<li><strong>Content creation</strong> — Turn this moment of uncertainty into a ready-to-publish "Tool Critic" note for your audience</li>
+</ul>
+<p class="cur-p">> <strong>The best time to document your tooling baseline is before it changes, not after.</strong></p>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">2. Prerequisites</h3>
+<p class="cur-p">Before starting this exercise, confirm you have the following:</p>
+<h4 class="cur-h4">Accounts & Access</h4>
+<ul class="cur-list">
+<li>[ ] An active Claude account (free, Pro, or higher tier) at [claude.ai](https://claude.ai)</li>
+<li>[ ] Access to [claude.com/pricing](https://claude.com/pricing)</li>
+<li>[ ] A text editor or notes app (Notion, Obsidian, VS Code, or plain <code class="cur-inline">.md</code> file)</li>
+</ul>
+<h4 class="cur-h4">Tools</h4>
+<ul class="cur-list">
+<li>[ ] A screenshot tool:</li>
+</ul>
+<p class="cur-p">- <strong>macOS</strong>: <code class="cur-inline">Cmd + Shift + 4</code> (area) or <code class="cur-inline">Cmd + Shift + 3</code> (full screen)</p>
+<p class="cur-p">- <strong>Windows</strong>: <code class="cur-inline">Win + Shift + S</code> (Snipping Tool) or <code class="cur-inline">PrtScn</code></p>
+<p class="cur-p">- <strong>Linux</strong>: <code class="cur-inline">gnome-screenshot</code>, <code class="cur-inline">flameshot</code>, or <code class="cur-inline">scrot</code></p>
+<ul class="cur-list">
+<li>[ ] Optional but recommended: Claude Code CLI installed locally</li>
+</ul>
+<h4 class="cur-h4">Check if Claude Code CLI is installed:</h4>
+<pre><code># Run this in your terminal
+claude --version</code></pre>
+<pre><code># Expected output (if installed):
+claude 0.2.x  # version number will vary
+
+# If not installed:
+# command not found: claude</code></pre>
+<h4 class="cur-h4">Knowledge Level</h4>
+<ul class="cur-list">
+<li>Basic familiarity with SaaS subscription tiers</li>
+<li>Comfortable with terminal/command line (for the CLI verification steps)</li>
+<li>No coding expertise required for the core audit task</li>
+</ul>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">3. Step-by-Step Guide</h3>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Step 1: Capture Your Current Plan Status (5 minutes)</h4>
+<p class="cur-p">#### 1a. Visit the Pricing Page</p>
+<p class="cur-p">Navigate to: <strong>https://claude.com/pricing</strong></p>
+<p class="cur-p">Take a screenshot of the <strong>full pricing comparison table</strong>. Save it as:</p>
+<pre><code>claude-pricing-audit-YYYY-MM-DD.png</code></pre>
+<p class="cur-p">> <strong>Why this matters:</strong> This page is actively being A/B tested. Your screenshot is a timestamped record of what Anthropic is showing you specifically — a data point, not just a reference image.</p>
+<p class="cur-p">#### 1b. Check Your Active Subscription</p>
+<ul class="cur-list cur-ol">
+<li>Log into [claude.ai](https://claude.ai)</li>
+<li>Click your <strong>profile avatar</strong> (bottom-left corner)</li>
+<li>Navigate to <strong>Settings → Account</strong> or <strong>Billing</strong></li>
+<li>Screenshot the page showing your current plan name, billing cycle, and renewal date</li>
+</ul>
+<p class="cur-p">Save as:</p>
+<pre><code>claude-account-plan-YYYY-MM-DD.png</code></pre>
+<p class="cur-p">#### 1c. Document What You See in a Structured Note</p>
+<p class="cur-p">Open your text editor and create a new file: <code class="cur-inline">claude-audit-YYYY-MM-DD.md</code></p>
+<p class="cur-p">Paste and fill in this template:</p>
+<pre><code># Claude Plan Audit
+**Date:** YYYY-MM-DD
+**Audited by:** [Your name]
+
+## Current Subscription
+- Plan tier: [Free / Pro / Max / Team / Enterprise]
+- Monthly cost: $[X]/month
+- Billing cycle: [Monthly / Annual]
+- Next renewal: [Date]
+
+## Claude Code — What the Pricing Page Shows
+- Is Claude Code listed under my current plan? [Yes / No / Not clearly stated]
+- What tier does the pricing page show Claude Code under? [Pro / Max / Team / Not listed]
+- Any asterisks, footnotes, or caveats visible? [Yes/No — describe if yes]
+
+## Claude Code — What I Actually Have Access To
+- Can I access Claude Code from the claude.ai web interface? [Yes / No]
+- Is Claude Code CLI working on my machine? [Yes / No / Not installed]
+
+## Raw Notes
+[Any other observations — UI changes, missing features, confusing language]</code></pre>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Step 2: Verify CLI Access (5 minutes)</h4>
+<p class="cur-p">Even if the pricing page doesn't list Claude Code clearly, your <strong>existing access may be unaffected</strong> (per Anthropic's confirmation that the A/B test targets new signups, not existing subscribers).</p>
+<p class="cur-p">Run these CLI checks:</p>
+<pre><code># Check version and confirm installation
+claude --version
+
+# Confirm authentication status
+claude auth status</code></pre>
+<pre><code># Expected output if authenticated:
+# Logged in as: your@email.com
+# Plan: Pro (or whatever your plan is)</code></pre>
+<pre><code># Run a minimal test to confirm Claude Code is functional
+# Navigate to any project directory first
+cd ~/your-gis-project
+
+# Start Claude Code
+claude</code></pre>
+<p class="cur-p">Once inside Claude Code, run a quick smoke test with a GIS-relevant prompt:</p>
+<pre><code>&gt; Write a one-line Python command using GDAL to list all layers in a GeoPackage file.</code></pre>
+<p class="cur-p"><strong>Expected response</strong> — Claude Code should return something like:</p>
+<pre><code>python -c "from osgeo import ogr; ds = ogr.Open('your_file.gpkg'); [print(ds.GetLayerByIndex(i).GetName()) for i in range(ds.GetLayerCount())]"</code></pre>
+<p class="cur-p">If this works: <strong>your CLI access is confirmed active</strong>, regardless of what the pricing page says.</p>
+<p class="cur-p">Screenshot or copy-paste this terminal session and save it as evidence:</p>
+<pre><code>claude-cli-access-verified-YYYY-MM-DD.txt</code></pre>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Step 3: Write Your Tool Critic Note (15–20 minutes)</h4>
+<p class="cur-p">This is the content creation payoff. You're writing a <strong>200-word "Tool Critic" note</strong> — a short, opinionated, practitioner-focused piece for your *Globe & Atlas* audience.</p>
+<p class="cur-p">#### What is a Tool Critic Note?</p>
+<p class="cur-p">A Tool Critic note is <strong>not</strong> a full review. It's a rapid, honest take on a specific tool change or signal — written for someone who trusts your judgment and wants the 30-second version of "should I care about this?"</p>
+<p class="cur-p">#### The Formula</p>
+<p class="cur-p">Use this structure (each section ≈ 40–50 words):</p>
+<pre><code>1. THE SIGNAL     — What just happened, factually
+2. THE CONTEXT    — Why it matters for GIS practitioners specifically
+3. THE RISK       — What you might lose if this change goes permanent
+4. THE MOVE       — What you should do right now
+5. THE VERDICT    — Your honest one-sentence recommendation</code></pre>
+<p class="cur-p">#### Starter Draft Template</p>
+<pre><code>---
+title: "Tool Critic: Claude Code's Uncertain Future on the Pro Plan"
+category: Tool Critic
+date: YYYY-MM-DD
+author: [Your name]
+word_count: ~200
+---
+
+**THE SIGNAL**
+Anthropic has quietly removed Claude Code from the $20 Pro plan
+listing — confirmed as an A/B test on new signups (~2% of users),
+not a retroactive change. But A/B tests that stick become policy.
+
+**THE CONTEXT**
+For GIS practitioners scripting GDAL workflows, building QGIS plugins,
+or automating spatial data pipelines, Claude Code CLI isn't a novelty —
+it's a daily driver. Losing it from the $20 tier would mean paying $100+/month
+(Claude Max) to maintain the same workflow.
+
+**THE RISK**
+Budget-conscious practitioners — freelancers, academics, small consultancies —
+would face a hard choice: absorb a 5x price increase, switch to alternatives
+(GitHub Copilot, Cursor, Aider), or lose CLI-level AI assistance entirely.
+
+**THE MOVE**
+Log into claude.com/pricing today. Screenshot your plan. Confirm CLI access
+still works. If you're a Pro subscriber, your access is currently protected —
+but document your baseline now, before the rules change.
+
+**THE VERDICT**
+Claude Code remains the best AI pair-programmer for spatial Python workflows,
+but Anthropic just reminded us: no feature is safe at the $20 tier.
+Watch this space closely.</code></pre>
+<p class="cur-p">#### Polish Checklist Before Publishing</p>
+<ul class="cur-list">
+<li>[ ] Word count is 180–220 words</li>
+<li>[ ] At least one specific GIS use case mentioned</li>
+<li>[ ] A clear, actionable recommendation in "The Move" section</li>
+<li>[ ] No vendor cheerleading — honest about the uncertainty</li>
+<li>[ ] Date is current (this signal ages quickly)</li>
+</ul>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Step 4: Organize Your Audit Package (5 minutes)</h4>
+<p class="cur-p">Create a folder to keep everything together:</p>
+<pre><code>mkdir -p ~/tool-audits/claude-code-YYYY-MM-DD</code></pre>
+<p class="cur-p">Move your files into it:</p>
+<pre><code>mv claude-pricing-audit-YYYY-MM-DD.png ~/tool-audits/claude-code-YYYY-MM-DD/
+mv claude-account-plan-YYYY-MM-DD.png ~/tool-audits/claude-code-YYYY-MM-DD/
+mv claude-audit-YYYY-MM-DD.md ~/tool-audits/claude-code-YYYY-MM-DD/
+mv claude-cli-access-verified-YYYY-MM-DD.txt ~/tool-audits/claude-code-YYYY-MM-DD/</code></pre>
+<p class="cur-p">Your folder should look like this:</p>
+<pre><code>claude-code-YYYY-MM-DD/
+├── claude-pricing-audit-YYYY-MM-DD.png     ← Pricing page screenshot
+├── claude-account-plan-YYYY-MM-DD.png      ← Your account/billing screenshot
+├── claude-audit-YYYY-MM-DD.md              ← Structured audit notes
+├── claude-cli-access-verified-YYYY-MM-DD.txt ← CLI smoke test output
+└── tool-critic-note-YYYY-MM-DD.md          ← Ready-to-publish content</code></pre>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">4. Validation</h3>
+<h4 class="cur-h4">How to Know You've Completed This Exercise Successfully</h4>
+<p class="cur-p">Work through this checklist:</p>
+<p class="cur-p">#### Documentation ✅</p>
+<ul class="cur-list">
+<li>[ ] <strong>Pricing page screenshot saved</strong> — timestamped, shows the current plan comparison table</li>
+<li>[ ] <strong>Account billing screenshot saved</strong> — shows your exact plan tier and renewal date</li>
+<li>[ ] <strong>Structured audit note completed</strong> — all fields filled in, no blank lines left</li>
+<li>[ ] <strong>CLI smoke test documented</strong> — either confirms working access or documents failure</li>
+</ul>
+<p class="cur-p">#### Content ✅</p>
+<ul class="cur-list">
+<li>[ ] <strong>Tool Critic note is 180–220 words</strong> (use your editor's word count)</li>
+<li>[ ] <strong>Follows the 5-section formula</strong> (Signal / Context / Risk / Move / Verdict)</li>
+<li>[ ] <strong>Mentions at least one concrete GIS use case</strong></li>
+<li>[ ] <strong>Contains a clear, actionable recommendation</strong></li>
+<li>[ ] <strong>You would actually publish this</strong> — it passes your own editorial bar</li>
+</ul>
+<p class="cur-p">#### Mindset Check ✅</p>
+<p class="cur-p">Ask yourself: *"If Claude Code disappeared from the Pro tier tomorrow, would I know exactly what I'm losing and what my alternatives are?"*</p>
+<p class="cur-p">If the answer is <strong>yes</strong> after completing this exercise — you've done it right.</p>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Quick Self-Test</h4>
+<p class="cur-p">Answer these questions from memory after completing the exercise:</p>
+<pre><code>1. What is your exact plan tier and monthly cost?
+   Answer: ________________
+
+2. Is Claude Code currently listed on your plan's pricing page feature list?
+   Answer: ________________
+
+3. Does your CLI work right now, regardless of the pricing page?
+   Answer: ________________
+
+4. What is the one action you recommended in your Tool Critic note?
+   Answer: ________________</code></pre>
+<p class="cur-p">If you can answer all four without looking — your audit is solid.</p>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">5. Next Steps</h3>
+<h4 class="cur-h4">Immediate (This Week)</h4>
+<p class="cur-p"><strong>Set a calendar reminder</strong> for 30 days from today to re-audit the pricing page. A/B tests that affect even 2% of users are often harbingers of broader rollouts. Catching the change early gives you time to act, not react.</p>
+<pre><code>Reminder title: "Re-audit Claude Code pricing — is A/B test now policy?"
+Date: [Today + 30 days]</code></pre>
+<p class="cur-p"><strong>Share your Tool Critic note.</strong> This is ready-to-publish content. Post it to Globe & Atlas, LinkedIn, or your practitioner community. Your audience is facing the same uncertainty — your documented perspective has real value.</p>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Short Term (Next 30 Days)</h4>
+<p class="cur-p"><strong>Explore your fallback options.</strong> If Claude Code moves to a higher tier, you'll want a tested alternative in your back pocket — not something you're learning under pressure. Consider a one-hour trial of:</p>
+<p class="cur-p">| Tool | Best For | GIS Relevance |</p>
+<p class="cur-p">|---|---|---|</p>
+<p class="cur-p">| <strong>Cursor</strong> | IDE-integrated AI coding | Strong Python/GeoPandas support |</p>
+<p class="cur-p">| <strong>Aider</strong> | CLI-based AI pair programming | Direct Claude Code alternative |</p>
+<p class="cur-p">| <strong>GitHub Copilot</strong> | In-editor autocomplete | QGIS plugin development |</p>
+<p class="cur-p">| <strong>Continue.dev</strong> | VS Code/JetBrains plugin | Open-source, local model option |</p>
+<p class="cur-p"><strong>Audit your Claude Code usage patterns.</strong> Before the pricing changes, document *how often* and *for what tasks* you actually use Claude Code CLI. This quantified usage makes the "is it worth $100/month?" decision rational, not emotional.</p>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Long Term (Ongoing)</h4>
+<p class="cur-p"><strong>Build a "Tool Signal" habit.</strong> This exercise isn't a one-time event — it's a template. Pricing changes, feature deprecations, and API policy shifts are a permanent feature of the AI tooling landscape. A quarterly tool audit (30 minutes, same format) keeps you ahead of disruption.</p>
+<p class="cur-p"><strong>Contribute back to the community.</strong> When Anthropic does clarify their pricing (official announcement, not just Reddit PSA), publish a follow-up Tool Critic note. The "before and after" pair becomes a genuinely useful resource for GIS practitioners making tooling decisions.</p>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Further Reading & Resources</h4>
+<ul class="cur-list">
+<li>[Claude Code Documentation](https://docs.anthropic.com/en/docs/claude-code) — Official CLI docs</li>
+<li>[Anthropic Pricing Page](https://claude.com/pricing) — Bookmark and revisit monthly</li>
+<li>[r/ClaudeAI](https://reddit.com/r/ClaudeAI) — Community signal detection for pricing/feature changes</li>
+<li>[GDAL Python Cookbook](https://pcjericks.github.io/py-gdalogr-cookbook/) — Reference for GIS automation use cases where Claude Code adds the most value</li>
+</ul>
+<p class="cur-p">---</p>
+<p class="cur-p">> <strong>Remember:</strong> The goal of this audit isn't anxiety — it's agency. When you know exactly what you have, what it costs, and what your alternatives are, pricing changes become decisions you make, not disruptions that happen to you.</p>
+</div>
+</body>
+</html>

@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test the everything-claude-code harness on a real GIS scripting task — Lab Tutorial</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080b12; --bg2: #0e1220; --bg3: #151c2e; --bg4: #1d2540;
+    --border: #252e4a; --border2: #36416a; --text: #e6eaf4;
+    --text2: #8e9ab8; --text3: #58678e; --blue: #5b8af7;
+    --green: #34d89a; --orange: #f97c3c; --yellow: #f5c842;
+    --teal: #38c9d4; --cyan: #4fd9f5; --purple: #7c5cfc;
+    --font-sans: 'Inter', -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:var(--font-sans); line-height:1.7; }
+  .page { max-width:780px; margin:0 auto; padding:48px 32px 80px; }
+  .back { margin-bottom:32px; }
+  .back a { font-size:12px; font-family:var(--font-mono); color:var(--text3); text-decoration:none; border:1px solid var(--border); padding:6px 14px; border-radius:6px; transition:.15s; }
+  .back a:hover { color:var(--blue); border-color:var(--blue); }
+  .page-title { font-size:26px; font-weight:900; letter-spacing:-.4px; color:var(--text); margin-bottom:10px; line-height:1.25; }
+  .page-meta { font-size:11px; font-family:var(--font-mono); color:var(--text3); margin-bottom:40px; padding-bottom:24px; border-bottom:1px solid var(--border); }
+  h2.cur-h2 { font-size:19px; font-weight:800; color:var(--text); margin:40px 0 10px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+  h3.cur-h3 { font-size:15px; font-weight:700; color:var(--text2); margin:28px 0 8px; }
+  h4.cur-h4 { font-size:12.5px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.6px; margin:20px 0 6px; }
+  p.cur-p { font-size:14px; color:var(--text2); margin-bottom:12px; }
+  ul.cur-list { font-size:14px; color:var(--text2); margin:8px 0 14px 20px; }
+  ul.cur-list li { margin-bottom:6px; line-height:1.6; }
+  ul.cur-ol { list-style:decimal; }
+  pre { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:18px 20px; margin:14px 0 20px; overflow-x:auto; }
+  pre code { font-family:var(--font-mono); font-size:12px; color:var(--green); white-space:pre; line-height:1.6; }
+  code.cur-inline { font-family:var(--font-mono); font-size:12px; background:var(--bg4); color:var(--cyan); padding:2px 6px; border-radius:4px; }
+  strong { color:var(--text); font-weight:700; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="back"><a href="../latest.html">← Back to Hub</a></div>
+  <div class="page-title">Test the everything-claude-code harness on a real GIS scripting task</div>
+  <div class="page-meta">AI Discovery Hub · Lab Tutorial</div>
+  <h2 class="cur-h2">Test the everything-claude-code Harness on a Real GIS Scripting Task</h2>
+<h3 class="cur-h3">A Hands-On Tool Critic Tutorial</h3>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">1. Introduction & Context</h3>
+<h4 class="cur-h4">What This Is</h4>
+<p class="cur-p">This tutorial walks you through cloning the <strong>everything-claude-code</strong> harness — a structured layer on top of Claude Code CLI that adds persistent memory, skills definitions, security patterns, and research-first development workflows — and stress-testing it against a real-world <strong>GIS scripting task</strong> using Python, GeoPandas, and Rasterio.</p>
+<p class="cur-p">The end product is a published <strong>Tool Critic piece</strong>: a structured evaluation of whether the harness measurably reduces prompt iteration cycles compared to vanilla Claude Code usage.</p>
+<h4 class="cur-h4">Why It Matters</h4>
+<p class="cur-p">Claude Code CLI is a powerful agentic coding tool, but without scaffolding it suffers from:</p>
+<ul class="cur-list">
+<li><strong>Context amnesia</strong> — every session forgets prior decisions</li>
+<li><strong>Security drift</strong> — no enforced guardrails on file writes, API calls, or shell execution</li>
+<li><strong>Prompt thrash</strong> — users re-explain domain context repeatedly</li>
+<li><strong>No orchestration layer</strong> — multi-step workflows require manual chaining</li>
+</ul>
+<p class="cur-p">The <code class="cur-inline">everything-claude-code</code> harness from [affaan-m](https://github.com/affaan-m/everything-claude-code) addresses all four with:</p>
+<p class="cur-p">| Layer | What It Adds |</p>
+<p class="cur-p">|---|---|</p>
+<p class="cur-p">| <strong>Skills</strong> | Reusable capability definitions the agent can invoke |</p>
+<p class="cur-p">| <strong>Memory</strong> | Persistent context files the agent reads on startup |</p>
+<p class="cur-p">| <strong>Security</strong> | Explicit permission scopes and operation sandboxing |</p>
+<p class="cur-p">| <strong>Research-First</strong> | Structured discovery phase before any code generation |</p>
+<h4 class="cur-h4">The GIS Task We'll Use</h4>
+<p class="cur-p">We'll use a representative real-world task:</p>
+<p class="cur-p">> <strong>"Clip a raster DEM to a study area polygon, compute zonal statistics per watershed, and export a CSV summary + styled map PNG."</strong></p>
+<p class="cur-p">This task is ideal for benchmarking because it has:</p>
+<ul class="cur-list">
+<li>Clear inputs/outputs (measurable correctness)</li>
+<li>Domain-specific terminology the agent must understand</li>
+<li>Multi-step workflow requiring coordination</li>
+<li>File I/O and shell commands (where security patterns matter)</li>
+</ul>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">2. Prerequisites</h3>
+<h4 class="cur-h4">Knowledge</h4>
+<ul class="cur-list">
+<li>[ ] Basic Python (functions, file I/O, virtual environments)</li>
+<li>[ ] Passing familiarity with GIS concepts (rasters, vectors, projections)</li>
+<li>[ ] Comfort with CLI/terminal usage</li>
+<li>[ ] Basic understanding of what Claude Code CLI does (you don't need to be an expert)</li>
+</ul>
+<h4 class="cur-h4">Software</h4>
+<pre><code># Check these are available before starting
+python --version        # 3.10+ recommended
+git --version           # any modern version
+node --version          # 18+ (required by Claude Code CLI)
+npm --version           # comes with node</code></pre>
+<h4 class="cur-h4">Accounts & API Keys</h4>
+<ul class="cur-list">
+<li>[ ] <strong>Anthropic API key</strong> with Claude Sonnet or Opus access — get one at [console.anthropic.com](https://console.anthropic.com)</li>
+<li>[ ] GitHub account (for publishing your Tool Critic piece)</li>
+</ul>
+<h4 class="cur-h4">Install Claude Code CLI</h4>
+<pre><code>npm install -g @anthropic-ai/claude-code
+claude --version  # verify installation</code></pre>
+<h4 class="cur-h4">Python GIS Environment</h4>
+<pre><code># Create a dedicated environment (conda recommended for GIS)
+conda create -n gis-harness python=3.11 -y
+conda activate gis-harness
+
+# Install GIS stack — conda handles the tricky binary dependencies
+conda install -c conda-forge geopandas rasterio rasterstats matplotlib fiona pyproj shapely -y
+
+# Verify
+python -c "import geopandas, rasterio, rasterstats; print('GIS stack OK')"</code></pre>
+<p class="cur-p">> <strong>Alternative with pip (Linux/Mac):</strong></p>
+<p class="cur-p">> <code class="cur-inline">`</code>bash</p>
+<p class="cur-p">> pip install geopandas rasterio rasterstats matplotlib pyproj shapely</p>
+<p class="cur-p">> <code class="cur-inline">`</code></p>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">3. Step-by-Step Guide</h3>
+<h4 class="cur-h4">Phase 0: Establish Your Measurement Framework (10 minutes)</h4>
+<p class="cur-p">Before touching any code, set up your evaluation scorecard. This is what separates a Tool Critic piece from a casual blog post.</p>
+<p class="cur-p">Create your benchmarking journal:</p>
+<pre><code>mkdir -p ~/tool-critic/gis-harness-test
+cd ~/tool-critic/gis-harness-test
+touch benchmark_log.md</code></pre>
+<p class="cur-p">Paste this template into <code class="cur-inline">benchmark_log.md</code>:</p>
+<pre><code># Harness Benchmark Log
+
+## Baseline Session (Vanilla Claude Code)
+- Date:
+- Task: Clip DEM → zonal stats → CSV + PNG
+- Prompts to working solution: ___
+- Prompts wasted on re-explaining context: ___
+- Security incidents (unintended writes/deletes): ___
+- Time to first runnable code (minutes): ___
+- Final code quality (1–5): ___
+
+## Harness Session (everything-claude-code)
+- Date:
+- Task: (same task)
+- Prompts to working solution: ___
+- Prompts wasted on re-explaining context: ___
+- Security incidents: ___
+- Time to first runnable code (minutes): ___
+- Final code quality (1–5): ___
+
+## Delta Analysis
+- Prompt reduction: ___%
+- Time savings: ___ minutes
+- Qualitative differences:</code></pre>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 1: Baseline Run — Vanilla Claude Code (20 minutes)</h4>
+<p class="cur-p">Run the GIS task *without* the harness first. This gives you the control condition.</p>
+<p class="cur-p">#### 1.1 Set Your API Key</p>
+<pre><code>export ANTHROPIC_API_KEY="sk-ant-your-key-here"</code></pre>
+<p class="cur-p">#### 1.2 Create the Baseline Project</p>
+<pre><code>mkdir -p ~/tool-critic/baseline-gis
+cd ~/tool-critic/baseline-gis</code></pre>
+<p class="cur-p">#### 1.3 Download Sample GIS Data</p>
+<pre><code># We'll use SRTM elevation data (public domain) and a watershed polygon
+# This script downloads test data for the exercise
+python3 &lt;&lt; 'EOF'
+import urllib.request
+import os
+
+os.makedirs("data", exist_ok=True)
+
+# Download a small SRTM tile (30m DEM) via OpenTopography-style URL
+# Using a small sample from USGS for the tutorial
+print("Downloading sample DEM (this may take a moment)...")
+
+# Use a synthetic DEM if download is slow — uncomment to generate locally:
+import numpy as np
+import rasterio
+from rasterio.transform import from_bounds
+from rasterio.crs import CRS
+
+# Generate a synthetic 100x100 DEM for the tutorial
+data = np.random.randint(200, 3000, (100, 100), dtype=np.int16)
+data = np.where(data &gt; 2500, data, data)  # add some elevation variation
+
+transform = from_bounds(-122.5, 37.5, -122.0, 38.0, 100, 100)
+crs = CRS.from_epsg(4326)
+
+with rasterio.open(
+    "data/dem.tif",
+    "w",
+    driver="GTiff",
+    height=100,
+    width=100,
+    count=1,
+    dtype=data.dtype,
+    crs=crs,
+    transform=transform,
+) as dst:
+    dst.write(data, 1)
+
+print("Created data/dem.tif (synthetic 100x100 DEM)")
+
+# Create sample watershed polygons
+import geopandas as gpd
+from shapely.geometry import box, Polygon
+import pandas as pd
+
+watersheds = gpd.GeoDataFrame(
+    {
+        "watershed_id": [1, 2, 3],
+        "name": ["North Fork", "South Fork", "Main Stem"],
+        "area_km2": [45.2, 38.7, 62.1],
+        "geometry": [
+            box(-122.45, 37.6, -122.25, 37.8),
+            box(-122.45, 37.5, -122.25, 37.6),
+            box(-122.25, 37.5, -122.0, 37.9),
+        ],
+    },
+    crs="EPSG:4326",
+)
+watersheds.to_file("data/watersheds.gpkg", driver="GPKG")
+print("Created data/watersheds.gpkg (3 watershed polygons)")
+print("\nData ready. Files in ./data/")
+EOF</code></pre>
+<p class="cur-p">#### 1.4 Start Vanilla Claude Code Session</p>
+<pre><code>cd ~/tool-critic/baseline-gis
+claude</code></pre>
+<p class="cur-p">Now enter these prompts <strong>one at a time</strong>, logging how many it takes to reach working code:</p>
+<p class="cur-p"><strong>Prompt 1 (Baseline):</strong></p>
+<pre><code>I have a GIS project with a DEM raster at data/dem.tif and watershed polygons at 
+data/watersheds.gpkg. Write a Python script that:
+1. Clips the DEM to each watershed polygon
+2. Computes zonal statistics (min, max, mean, std elevation) per watershed
+3. Exports results to output/zonal_stats.csv
+4. Creates a styled map PNG at output/watershed_map.png showing the DEM with 
+   watershed boundaries overlaid and labeled
+Use geopandas, rasterio, rasterstats, and matplotlib.</code></pre>
+<p class="cur-p">> 📋 <strong>Log:</strong> Record what Claude Code returns. Does it ask clarifying questions? Does it make assumptions? Does it get the imports right? Does it handle CRS mismatches?</p>
+<p class="cur-p"><strong>Continue prompting</strong> until you have working code. Count every exchange. Note when you had to re-explain what GeoPandas is, what a watershed is, or what CRS means.</p>
+<p class="cur-p">#### 1.5 Run the Baseline Code</p>
+<pre><code>mkdir -p output
+python gis_analysis.py  # or whatever Claude named it</code></pre>
+<p class="cur-p">Fix any errors, counting each fix as an additional prompt cycle.</p>
+<p class="cur-p">#### 1.6 Record Baseline Metrics</p>
+<p class="cur-p">Fill in the <strong>Baseline Session</strong> section of your <code class="cur-inline">benchmark_log.md</code> now, while it's fresh.</p>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 2: Clone and Configure the everything-claude-code Harness (15 minutes)</h4>
+<p class="cur-p">#### 2.1 Clone the Repository</p>
+<pre><code>cd ~/tool-critic
+git clone https://github.com/affaan-m/everything-claude-code.git
+cd everything-claude-code
+ls -la  # Survey the structure</code></pre>
+<p class="cur-p">Take 5 minutes to read the README and understand the directory structure before proceeding.</p>
+<p class="cur-p">#### 2.2 Understand the Harness Architecture</p>
+<pre><code># Typical structure you'll find (explore and map it out):
+find . -name "*.md" -o -name "*.json" -o -name "*.yaml" | head -30</code></pre>
+<p class="cur-p">Key components to identify:</p>
+<pre><code>everything-claude-code/
+├── CLAUDE.md              # ← Master directive file (agent reads this first)
+├── skills/                # ← Reusable capability definitions
+│   ├── coding.md
+│   ├── research.md
+│   └── ...
+├── memory/                # ← Persistent context the agent carries forward
+│   ├── project_context.md
+│   └── ...
+├── security/              # ← Permission scopes and guardrails
+│   └── permissions.md
+└── patterns/              # ← Orchestration templates
+    └── ...</code></pre>
+<p class="cur-p">> <strong>Note:</strong> The exact structure may evolve as the repo is updated. Adapt the paths below to match what you actually find.</p>
+<p class="cur-p">#### 2.3 Set Up Your Harness-Backed GIS Project</p>
+<pre><code>mkdir -p ~/tool-critic/harness-gis
+cd ~/tool-critic/harness-gis
+
+# Copy your same test data
+cp -r ~/tool-critic/baseline-gis/data ./data
+mkdir -p output</code></pre>
+<p class="cur-p">#### 2.4 Initialize the Harness in Your Project</p>
+<p class="cur-p">The core of this setup is creating a <code class="cur-inline">CLAUDE.md</code> file that gives the agent persistent context. This is where the harness earns its keep.</p>
+<pre><code># Copy the harness CLAUDE.md as your starting template
+cp ~/tool-critic/everything-claude-code/CLAUDE.md ./CLAUDE.md</code></pre>
+<p class="cur-p">Now <strong>edit</strong> <code class="cur-inline">CLAUDE.md</code> to add your GIS project context. Open it and append a new section:</p>
+<pre><code>cat &gt;&gt; CLAUDE.md &lt;&lt; 'EOF'
+
+---
+
+## Project: GIS Watershed Analysis Harness
+
+### Domain Context
+This project performs terrain analysis on DEM raster data using watershed polygon boundaries.
+- **DEM**: `data/dem.tif` — GeoTIFF, EPSG:4326, integer Int16 elevation values in meters
+- **Watersheds**: `data/watersheds.gpkg` — GeoPackage, EPSG:4326, fields: watershed_id, name, area_km2
+- **Output dir**: `output/` — all generated files go here
+
+### GIS Stack
+- `geopandas` — vector data (polygons, attribute joins)
+- `rasterio` — raster I/O and clipping
+- `rasterstats` — zonal statistics (always use `zonal_stats()` from this library)
+- `matplotlib` + `contextily` — mapping and basemap tiles
+
+### Critical GIS Rules (always follow these)
+1. ALWAYS check and align CRS before any spatial operation: `assert gdf.crs == raster_crs`
+2. Use `all_touched=True` in rasterstats for small polygons
+3. Handle nodata values explicitly: `nodata=-9999` or read from raster metadata
+4. Reproject to a projected CRS (e.g., EPSG:32610) before area/distance calculations
+5. Never hardcode bounding boxes — derive from data geometry
+
+### Security Scope
+- READ: `data/` directory (rasters and vectors)
+- WRITE: `output/` directory only
+- FORBIDDEN: Any writes to `data/`, system paths, or network calls without explicit approval
+
+### Memory: Previous Decisions
+- Synthetic DEM generated at 100x100 pixels, bounds: -122.5 to -122.0 lon, 37.5 to 38.0 lat
+- Watershed polygons: 3 features (North Fork, South Fork, Main Stem)
+- Chosen visualization: terrain colormap (cmap='terrain') with viridis-compatible colorbar
+EOF</code></pre>
+<p class="cur-p">#### 2.5 Copy Skills Definitions</p>
+<pre><code># Copy relevant skill files from the harness
+mkdir -p skills
+cp ~/tool-critic/everything-claude-code/skills/*.md ./skills/ 2&gt;/dev/null || echo "Skills dir structure may differ — check repo"
+
+# If skills are structured differently, manually create a GIS skill:
+cat &gt; skills/gis_analysis.md &lt;&lt; 'EOF'
+# Skill: GIS Raster-Vector Analysis
+
+## Capability
+Clip rasters to polygon features, compute zonal statistics, and produce publication-quality maps.
+
+## Standard Workflow
+1. **Load and validate** — read files, check CRS alignment, print basic metadata
+2. **Reproject if needed** — align all layers to a single CRS before analysis  
+3. **Clip** — use rasterio.mask.mask() for raster clipping to polygon extent
+4. **Zonal stats** — use rasterstats.zonal_stats() with nodata handling
+5. **Join** — merge stats back to GeoDataFrame via watershed_id
+6. **Export** — CSV with pandas, PNG with matplotlib (dpi=150 minimum)
+
+## Error Patterns to Avoid
+- Forgetting to pass `nodata` value to zonal_stats → inflated mean values
+- Using lat/lon CRS for rasterio clip operations → incorrect extents  
+- Not closing rasterio datasets → file lock issues on Windows
+- Hardcoding figure size for rasters of unknown dimensions
+
+## Quality Gates
+- [ ] All spatial joins produce expected row count
+- [ ] CSV contains no NaN values in stat columns
+- [ ] PNG has legend, title, north arrow placeholder, and scale reference
+- [ ] Script runs end-to-end with `python script.py` without errors
+EOF</code></pre>
+<p class="cur-p">#### 2.6 Configure Security Permissions</p>
+<pre><code>cat &gt; security/permissions.md &lt;&lt; 'EOF'
+# Security Permissions: GIS Watershed Project
+
+## Allowed Operations
+| Operation | Scope | Requires Confirmation |
+|-----------|-------|----------------------|
+| File Read | `data/` only | No |
+| File Write | `output/` only | No |
+| File Delete | NONE | Always block |
+| Shell Exec | `python`, `pip list` | No |
+| Network | NONE | Always block |
+| System Paths | NONE | Always block |
+
+## Enforcement
+- Before any write operation, confirm path starts with `output/`
+- Before any delete operation, STOP and ask user
+- If asked to overwrite source data, REFUSE and explain why
+EOF</code></pre>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 3: Run the Harness Session (25 minutes)</h4>
+<p class="cur-p">#### 3.1 Start Claude Code with Harness Context</p>
+<pre><code>cd ~/tool-critic/harness-gis
+claude</code></pre>
+<p class="cur-p">#### 3.2 The Harness Prompt Battery</p>
+<p class="cur-p">Now run the <strong>same task</strong> but observe how the harness changes the interaction quality. Start with a deliberately brief prompt to test whether the persistent context compensates:</p>
+<p class="cur-p"><strong>Prompt 1 (Harness — intentionally minimal):</strong></p>
+<pre><code>Run the full watershed analysis pipeline per our project setup.</code></pre>
+<p class="cur-p">> 📋 <strong>Observe:</strong> Does the agent correctly reference <code class="cur-inline">data/dem.tif</code> and <code class="cur-inline">data/watersheds.gpkg</code> without being told? Does it follow the GIS rules in CLAUDE.md? Does it use <code class="cur-inline">rasterstats</code> correctly?</p>
+<p class="cur-p"><strong>Prompt 2 (if needed — test memory):</strong></p>
+<pre><code>Add the security validation you know about before any file write.</code></pre>
+<p class="cur-p">> 📋 <strong>Observe:</strong> Does it pull the security scope from <code class="cur-inline">security/permissions.md</code>?</p>
+<p class="cur-p"><strong>Prompt 3 (test skill invocation):</strong></p>
+<pre><code>Apply the GIS analysis quality gates from our skills before finalizing.</code></pre>
+<p class="cur-p">> 📋 <strong>Observe:</strong> Does it reference <code class="cur-inline">skills/gis_analysis.md</code>?</p>
+<p class="cur-p">#### 3.3 Run the Harness-Generated Code</p>
+<pre><code>mkdir -p output
+python gis_analysis.py</code></pre>
+<p class="cur-p">Compare outputs:</p>
+<pre><code># Both runs should produce these files
+ls ~/tool-critic/baseline-gis/output/
+ls ~/tool-critic/harness-gis/output/
+
+# Quick diff of the generated scripts
+diff ~/tool-critic/baseline-gis/gis_analysis.py \
+     ~/tool-critic/harness-gis/gis_analysis.py</code></pre>
+<p class="cur-p">#### 3.4 Complete Reference Implementation</p>
+<p class="cur-p">If Claude Code's output has issues, here's a complete reference implementation to compare against. This is what a high-quality output should look like:</p>
+<pre><code>#!/usr/bin/env python3
+"""
+Watershed Elevation Analysis
+Clips DEM to watershed polygons, computes zonal statistics,
+exports CSV summary and styled map PNG.
+"""
+
+import os
+import sys
+from pathlib import Path
+
+import geopandas as gpd
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+import numpy as np
+import pandas as pd
+import rasterio
+from rasterio.mask import mask
+from rasterstats import zonal_stats
+from matplotlib.colors import LightSource
+
+# ─── Configuration ──────────────────────────────────────────────────────────
+
+DATA_DIR = Path("data")
+OUTPUT_DIR = Path("output")
+DEM_PATH = DATA_DIR / "dem.tif"
+WATERSHEDS_PATH = DATA_DIR / "watersheds.gpkg"
+CSV_OUTPUT = OUTPUT_DIR / "zonal_stats.csv"
+MAP_OUTPUT = OUTPUT_DIR / "watershed_map.png"
+
+STATS = ["min", "max", "mean", "std", "count"]
+NODATA_VALUE = -9999
+
+
+# ─── Security Validation ─────────────────────────────────────────────────────
+
+def validate_write_path(path: Path) -&gt; None:
+    """Enforce that all writes stay within OUTPUT_DIR."""
+    path = Path(path).resolve()
+    output_resolved = OUTPUT_DIR.resolve()
+    if not str(path).startswith(str(output_resolved)):
+        raise PermissionError(
+            f"SECURITY: Attempted write outside output dir: {path}"
+        )
+
+
+# ─── Data Loading & Validation ───────────────────────────────────────────────
+
+def load_and_validate_data():
+    """Load raster and vector data, validate CRS alignment."""
+    print("Loading data...")
+
+    # Load watersheds
+    watersheds = gpd.read_file(WATERSHEDS_PATH)
+    print(f"  Watersheds: {len(watersheds)} features, CRS={watersheds.crs}")
+
+    # Load raster metadata
+    with rasterio.open(DEM_PATH) as src:
+        raster_crs = src.crs
+        raster_bounds = src.bounds
+        raster_nodata = src.nodata or NODATA_VALUE
+        print(f"  DEM: {src.width}x{src.height} px, CRS={raster_crs}")
+        print(f"  DEM bounds: {raster_bounds}")
+        print(f"  DEM nodata: {raster_nodata}")
+
+    # CRS alignment check
+    if watersheds.crs != raster_crs:
+        print(f"  CRS mismatch — reprojecting watersheds to {raster_crs}")
+        watersheds = watersheds.to_crs(raster_crs)
+
+    return watersheds, raster_nodata
+
+
+# ─── Zonal Statistics ────────────────────────────────────────────────────────
+
+def compute_zonal_statistics(watersheds: gpd.GeoDataFrame, nodata: float) -&gt; gpd.GeoDataFrame:
+    """Compute elevation statistics per watershed polygon."""
+    print("\nComputing zonal statistics...")
+
+    # rasterstats expects GeoJSON-like geometries
+    geometries = [feature.__geo_interface__ for feature in watersheds.geometry]
+
+    stats = zonal_stats(
+        geometries,
+        str(DEM_PATH),
+        stats=STATS,
+        nodata=nodata,
+        all_touched=True,  # include cells touched by boundary
+        geojson_out=False,
+    )
+
+    # Convert to DataFrame and join back
+    stats_df = pd.DataFrame(stats)
+    stats_df.columns = [f"elev_{col}" for col in stats_df.columns]
+
+    result = watersheds.copy()
+    for col in stats_df.columns:
+        result[col] = stats_df[col].values
+
+    # Quality gate: no NaN in stat columns
+    stat_cols = [c for c in result.columns if c.startswith("elev_")]
+    nan_counts = result[stat_cols].isna().sum()
+    if nan_counts.any():
+        print(f"  WARNING: NaN values found in stats:\n{nan_counts[nan_counts &gt; 0]}")
+    else:
+        print("  Quality gate passed: no NaN values in elevation stats")
+
+    print(result[["name"] + stat_cols].to_string(index=False))
+    return result
+
+
+# ─── Export CSV ──────────────────────────────────────────────────────────────
+
+def export_csv(result: gpd.GeoDataFrame) -&gt; None:
+    """Export zonal statistics to CSV (no geometry column)."""
+    validate_write_path(CSV_OUTPUT)
+    OUTPUT_DIR.mkdir(exist_ok=True)
+
+    export_cols = [c for c in result.columns if c != "geometry"]
+    df = result[export_cols].copy()
+
+    # Round float columns for readability
+    float_cols = df.select_dtypes(include="float").columns
+    df[float_cols] = df[float_cols].round(2)
+
+    df.to_csv(CSV_OUTPUT, index=False)
+    print(f"\nCSV exported: {CSV_OUTPUT}")
+    print(f"  Rows: {len(df)}, Columns: {list(df.columns)}")
+
+
+# ─── Styled Map ──────────────────────────────────────────────────────────────
+
+def create_styled_map(watersheds: gpd.GeoDataFrame) -&gt; None:
+    """Create styled map PNG with DEM background and watershed overlays."""
+    validate_write_path(MAP_OUTPUT)
+    OUTPUT_DIR.mkdir(exist_ok=True)
+
+    print("\nGenerating styled map...")
+
+    with rasterio.open(DEM_PATH) as src:
+        dem_data = src.read(1).astype(float)
+        nodata = src.nodata or NODATA_VALUE
+        dem_data[dem_data == nodata] = np.nan
+        extent = [src.bounds.left, src.bounds.right,
+                  src.bounds.bottom, src.bounds.top]
+
+    fig, ax = plt.subplots(1, 1, figsize=(10, 8))
+
+    # Plot DEM with terrain colormap
+    im = ax.imshow(
+        dem_data,
+        extent=extent,
+        cmap="terrain",
+        origin="upper",
+        alpha=0.85,
+        vmin=np.nanpercentile(dem_data, 2),
+        vmax=np.nanpercentile(dem_data, 98),
+    )
+
+    # Colorbar
+    cbar = plt.colorbar(im, ax=ax, fraction=0.03, pad=0.04)
+    cbar.set_label("Elevation (m)", fontsize=10)
+
+    # Watershed boundaries with labels
+    colors = ["#E74C3C", "#3498DB", "#2ECC71"]
+    for idx, (_, row) in enumerate(watersheds.iterrows()):
+        color = colors[idx % len(colors)]
+        gpd.GeoDataFrame([row], crs=watersheds.crs).plot(
+            ax=ax,
+            facecolor="none",
+            edgecolor=color,
+            linewidth=2.5,
+            linestyle="--",
+        )
+        # Label at centroid
+        centroid = row.geometry.centroid
+        ax.annotate(
+            row["name"],
+            xy=(centroid.x, centroid.y),
+            fontsize=8,
+            fontweight="bold",
+            color=color,
+            ha="center",
+            va="center",
+            bbox=dict(boxstyle="round,pad=0.2", facecolor="white", alpha=0.7),
+        )
+
+    # Legend patches
+    patches = [
+        mpatches.Patch(edgecolor=colors[i], facecolor="none",
+                       linestyle="--", linewidth=2, label=row["name"])
+        for i, (_, row) in enumerate(watersheds.iterrows())
+    ]
+    ax.legend(handles=patches, loc="lower right", fontsize=9,
+              framealpha=0.85, title="Watersheds")
+
+    # Titles and labels
+    ax.set_title("Watershed Elevation Analysis\n(Synthetic DEM — Tutorial Dataset)",
+                 fontsize=13, fontweight="bold", pad=12)
+    ax.set_xlabel("Longitude", fontsize=10)
+    ax.set_ylabel("Latitude", fontsize=10)
+    ax.tick_params(labelsize=8)
+
+    # Minimal "north arrow" annotation
+    ax.annotate("N ↑", xy=(0.02, 0.95), xycoords="axes fraction",
+                fontsize=12, fontweight="bold")
+
+    plt.tight_layout()
+    plt.savefig(MAP_OUTPUT, dpi=150, bbox_inches="tight")
+    plt.close()
+    print(f"Map exported: {MAP_OUTPUT} (150 dpi)")
+
+
+# ─── Main Pipeline ───────────────────────────────────────────────────────────
+
+def main():
+    print("=" * 55)
+    print("  Watershed Elevation Analysis Pipeline")
+    print("=" * 55)
+
+    OUTPUT_DIR.mkdir(exist_ok=True)
+
+    # Step 1: Load and validate
+    watersheds, nodata = load_and_validate_data()
+
+    # Step 2: Zonal statistics
+    result = compute_zonal_statistics(watersheds, nodata)
+
+    # Step 3: Export CSV
+    export_csv(result)
+
+    # Step 4: Styled map
+    create_styled_map(watersheds)
+
+    print("\n" + "=" * 55)
+    print("  Pipeline complete.")
+    print(f"  → {CSV_OUTPUT}")
+    print(f"  → {MAP_OUTPUT}")
+    print("=" * 55)
+
+
+if __name__ == "__main__":
+    main()</code></pre>
+<p class="cur-p">Save this as <code class="cur-inline">reference_implementation.py</code> and run it to confirm your environment is healthy:</p>
+<pre><code>cd ~/tool-critic/harness-gis
+python reference_implementation.py</code></pre>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 4: Measure and Compare (15 minutes)</h4>
+<p class="cur-p">#### 4.1 Code Quality Comparison Script</p>
+<pre><code># save as compare_outputs.py
+"""Quick comparison of baseline vs harness outputs."""
+import hashlib
+import os
+from pathlib import Path
+
+
+def file_stats(path):
+    if not Path(path).exists():
+        return {"exists": False}
+    text = Path(path).read_text(errors="ignore")
+    return {
+        "exists": True,
+        "lines": text.count("\n"),
+        "chars": len(text),
+        "has_nodata_handling": "nodata" in text.lower(),
+        "has_crs_check": "crs" in text.lower(),
+        "has_security_check": "output" in text.lower() and ("validate" in text or "permission" in text.lower()),
+        "has_docstrings": '"""' in text or "'''" in text,
+        "has_type_hints": ": " in text and "-&gt;" in text,
+        "has_error_handling": "try:" in text or "except" in text,
+    }
+
+
+baseline = file_stats("../baseline-gis/gis_analysis.py")
+harness = file_stats("gis_analysis.py")
+
+print("=" * 50)
+print("Code Quality Comparison")
+print("=" * 50)
+print(f"{'Attribute':&lt;30} {'Baseline':&gt;10} {'Harness':&gt;10}")
+print("-" * 50)
+for key in baseline:
+    b_val = str(baseline.get(key, "N/A"))
+    h_val = str(harness.get(key, "N/A"))
+    flag = "✓" if h_val == "True" and b_val == "False" else " "
+    print(f"{flag} {key:&lt;28} {b_val:&gt;10} {h_val:&gt;10}")</code></pre>
+<pre><code>cd ~/tool-critic/harness-gis
+python compare_outputs.py</code></pre>
+<p class="cur-p">#### 4.2 Output Correctness Check</p>
+<pre><code># save as validate_outputs.py
+"""Validate that both pipeline outputs are correct."""
+import pandas as pd
+from pathlib import Path
+
+for session in ["baseline-gis", "harness-gis"]:
+    csv_path = Path(f"../{session}/output/zonal_stats.csv")
+    print(f"\n--- {session} ---")
+    if csv_path.exists():
+        df = pd.read_csv(csv_path)
+        print(f"  Rows: {len(df)}")
+        print(f"  Columns: {list(df.columns)}")
+        print(f"  Has NaN: {df.isna().any().any()}")
+        elev_cols = [c for c in df.columns if "elev" in c]
+        if elev_cols:
+            print(f"  Stats cols: {elev_cols}")
+            print(df[elev_cols].describe().round(1).to_string())
+    else:
+        print(f"  MISSING: {csv_path}")
+
+    png_path = Path(f"../{session}/output/watershed_map.png")
+    print(f"  Map PNG exists: {png_path.exists()}")
+    if png_path.exists():
+        size_kb = png_path.stat().st_size / 1024
+        print(f"  Map PNG size: {size_kb:.1f} KB")</code></pre>
+<pre><code>python validate_outputs.py</code></pre>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 5: Write the Tool Critic Piece (30 minutes)</h4>
+<p class="cur-p">#### 5.1 Tool Critic Template</p>
+<p class="cur-p">Create your evaluation write-up using this structure:</p>
+</div>
+</body>
+</html>

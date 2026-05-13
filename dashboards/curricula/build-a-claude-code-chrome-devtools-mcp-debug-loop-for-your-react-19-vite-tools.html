@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Build a Claude Code + Chrome DevTools MCP debug loop for your React 19/Vite tools — Lab Tutorial</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080b12; --bg2: #0e1220; --bg3: #151c2e; --bg4: #1d2540;
+    --border: #252e4a; --border2: #36416a; --text: #e6eaf4;
+    --text2: #8e9ab8; --text3: #58678e; --blue: #5b8af7;
+    --green: #34d89a; --orange: #f97c3c; --yellow: #f5c842;
+    --teal: #38c9d4; --cyan: #4fd9f5; --purple: #7c5cfc;
+    --font-sans: 'Inter', -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:var(--font-sans); line-height:1.7; }
+  .page { max-width:780px; margin:0 auto; padding:48px 32px 80px; }
+  .back { margin-bottom:32px; }
+  .back a { font-size:12px; font-family:var(--font-mono); color:var(--text3); text-decoration:none; border:1px solid var(--border); padding:6px 14px; border-radius:6px; transition:.15s; }
+  .back a:hover { color:var(--blue); border-color:var(--blue); }
+  .page-title { font-size:26px; font-weight:900; letter-spacing:-.4px; color:var(--text); margin-bottom:10px; line-height:1.25; }
+  .page-meta { font-size:11px; font-family:var(--font-mono); color:var(--text3); margin-bottom:40px; padding-bottom:24px; border-bottom:1px solid var(--border); }
+  h2.cur-h2 { font-size:19px; font-weight:800; color:var(--text); margin:40px 0 10px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+  h3.cur-h3 { font-size:15px; font-weight:700; color:var(--text2); margin:28px 0 8px; }
+  h4.cur-h4 { font-size:12.5px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.6px; margin:20px 0 6px; }
+  p.cur-p { font-size:14px; color:var(--text2); margin-bottom:12px; }
+  ul.cur-list { font-size:14px; color:var(--text2); margin:8px 0 14px 20px; }
+  ul.cur-list li { margin-bottom:6px; line-height:1.6; }
+  ul.cur-ol { list-style:decimal; }
+  pre { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:18px 20px; margin:14px 0 20px; overflow-x:auto; }
+  pre code { font-family:var(--font-mono); font-size:12px; color:var(--green); white-space:pre; line-height:1.6; }
+  code.cur-inline { font-family:var(--font-mono); font-size:12px; background:var(--bg4); color:var(--cyan); padding:2px 6px; border-radius:4px; }
+  strong { color:var(--text); font-weight:700; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="back"><a href="../latest.html">← Back to Hub</a></div>
+  <div class="page-title">Build a Claude Code + Chrome DevTools MCP debug loop for your React 19/Vite tools</div>
+  <div class="page-meta">AI Discovery Hub · Lab Tutorial</div>
+  <h2 class="cur-h2">Build a Claude Code + Chrome DevTools MCP Debug Loop for React 19/Vite</h2>
+<h3 class="cur-h3">A Hands-On Tutorial for Agentic Frontend Debugging</h3>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">1. Introduction & Context</h3>
+<h4 class="cur-h4">What Is This?</h4>
+<p class="cur-p">This tutorial walks you through wiring together three powerful tools into a single autonomous debugging loop:</p>
+<ul class="cur-list">
+<li><strong>Claude Code CLI</strong> — Anthropic's agentic coding assistant that can read, write, and reason about your codebase</li>
+<li><strong>Chrome DevTools MCP Server</strong> — A Model Context Protocol server that gives AI agents direct access to Chrome's debugging APIs (console logs, network requests, DOM inspection, JavaScript evaluation)</li>
+<li><strong>Your React 19/Vite app</strong> — The live frontend target where bugs get caught and fixed</li>
+</ul>
+<p class="cur-p">The end result: Claude can *see* your browser's console, *inspect* the DOM, *read* network errors, and *patch your source code* — all without you manually opening DevTools or copying error messages.</p>
+<h4 class="cur-h4">Why This Matters</h4>
+<p class="cur-p">Traditional debugging is a human-in-the-loop process:</p>
+<pre><code>Bug appears → You open DevTools → You read errors → You describe them to AI → AI suggests fix → You apply fix → Repeat</code></pre>
+<p class="cur-p">With this setup, the loop becomes:</p>
+<pre><code>Bug appears → Claude inspects DevTools → Claude reads errors → Claude patches code → Bug fixed</code></pre>
+<p class="cur-p">This is particularly powerful for:</p>
+<ul class="cur-list">
+<li><strong>Hydration errors</strong> common in React 19's new concurrent rendering model</li>
+<li><strong>Vite HMR edge cases</strong> where hot module replacement silently fails</li>
+<li><strong>Network/API mismatch bugs</strong> visible only in the Network tab</li>
+<li><strong>CSS-in-JS rendering issues</strong> that only appear in computed styles</li>
+</ul>
+<h4 class="cur-h4">Why Sentdex's Walkthrough Is the Right Starting Point</h4>
+<p class="cur-p">Sentdex's video provides the most practical, no-fluff setup path for the Chrome DevTools MCP server. This tutorial expands that walkthrough specifically for a <strong>React 19/Vite</strong> development context, adds the Claude Code CLI integration layer, and documents everything in a format suitable for a <strong>Globe & Atlas workflow post</strong>.</p>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">2. Prerequisites</h3>
+<h4 class="cur-h4">Required Knowledge</h4>
+<ul class="cur-list">
+<li>[ ] Comfortable with terminal/CLI usage</li>
+<li>[ ] Basic understanding of what MCP (Model Context Protocol) is</li>
+<li>[ ] Familiarity with React and Vite project structure</li>
+<li>[ ] Have used Claude Code CLI at least once before</li>
+</ul>
+<h4 class="cur-h4">Required Software</h4>
+<p class="cur-p">| Tool | Version | Install |</p>
+<p class="cur-p">|------|---------|---------|</p>
+<p class="cur-p">| Node.js | ≥ 18.x | [nodejs.org](https://nodejs.org) |</p>
+<p class="cur-p">| npm or pnpm | latest | bundled with Node / <code class="cur-inline">npm i -g pnpm</code> |</p>
+<p class="cur-p">| Google Chrome | ≥ 121 | [google.com/chrome](https://google.com/chrome) |</p>
+<p class="cur-p">| Claude Code CLI | latest | <code class="cur-inline">npm install -g @anthropic-ai/claude-code</code> |</p>
+<p class="cur-p">| Git | any | [git-scm.com](https://git-scm.com) |</p>
+<h4 class="cur-h4">Required Accounts/Keys</h4>
+<ul class="cur-list">
+<li>[ ] Anthropic API key with Claude Code access (set as <code class="cur-inline">ANTHROPIC_API_KEY</code> in your environment)</li>
+</ul>
+<h4 class="cur-h4">Your React 19/Vite App</h4>
+<p class="cur-p">You need a running React 19/Vite project. If you don't have one, scaffold one now:</p>
+<pre><code>npm create vite@latest my-debug-lab -- --template react
+cd my-debug-lab
+npm install
+npm run dev</code></pre>
+<p class="cur-p">Confirm it's running at <code class="cur-inline">http://localhost:5173</code> before proceeding.</p>
+<p class="cur-p">> <strong>Note:</strong> If you're using a Streamlit app instead, jump to the [Streamlit Variant](#streamlit-variant) section after completing the core setup.</p>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">3. Step-by-Step Guide</h3>
+<h4 class="cur-h4">Phase 1: Install and Configure the Chrome DevTools MCP Server</h4>
+<p class="cur-p">#### Step 1.1 — Install the MCP Server Package</p>
+<p class="cur-p">The Chrome DevTools MCP server bridges Claude to Chrome's [Chrome DevTools Protocol (CDP)](https://chromedevtools.github.io/devtools-protocol/).</p>
+<pre><code>npm install -g @modelcontextprotocol/server-chrome-devtools</code></pre>
+<p class="cur-p">Verify the installation:</p>
+<pre><code>mcp-server-chrome-devtools --version</code></pre>
+<p class="cur-p">> If you see a version number, you're good. If the command isn't found, check that your npm global bin directory is in your <code class="cur-inline">PATH</code>.</p>
+<p class="cur-p">#### Step 1.2 — Launch Chrome with Remote Debugging Enabled</p>
+<p class="cur-p">Chrome must be started with a specific flag that opens a debugging port. <strong>Close any existing Chrome windows first</strong>, then run:</p>
+<p class="cur-p"><strong>macOS:</strong></p>
+<pre><code>/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \
+  --remote-debugging-port=9222 \
+  --user-data-dir=/tmp/chrome-debug-profile \
+  --no-first-run \
+  --no-default-browser-check</code></pre>
+<p class="cur-p"><strong>Linux:</strong></p>
+<pre><code>google-chrome \
+  --remote-debugging-port=9222 \
+  --user-data-dir=/tmp/chrome-debug-profile \
+  --no-first-run \
+  --no-default-browser-check</code></pre>
+<p class="cur-p"><strong>Windows (PowerShell):</strong></p>
+<pre><code>Start-Process "C:\Program Files\Google\Chrome\Application\chrome.exe" -ArgumentList `
+  "--remote-debugging-port=9222", `
+  "--user-data-dir=$env:TEMP\chrome-debug-profile", `
+  "--no-first-run", `
+  "--no-default-browser-check"</code></pre>
+<p class="cur-p">#### Step 1.3 — Verify Chrome Is Debuggable</p>
+<p class="cur-p">Open a new terminal and run:</p>
+<pre><code>curl http://localhost:9222/json/version</code></pre>
+<p class="cur-p">You should see a JSON response like:</p>
+<pre><code>{
+  "Browser": "Chrome/121.0.0.0",
+  "Protocol-Version": "1.3",
+  "webSocketDebuggerUrl": "ws://localhost:9222/devtools/browser/..."
+}</code></pre>
+<p class="cur-p">If you get a connection refused error, Chrome isn't running with remote debugging. Repeat Step 1.2.</p>
+<p class="cur-p">#### Step 1.4 — Navigate Chrome to Your React App</p>
+<p class="cur-p">In the debugging Chrome instance, navigate to:</p>
+<pre><code>http://localhost:5173</code></pre>
+<p class="cur-p">This is important — the MCP server needs an active tab with your app loaded.</p>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 2: Configure Claude Code CLI to Use the MCP Server</h4>
+<p class="cur-p">#### Step 2.1 — Understand Claude Code's MCP Configuration</p>
+<p class="cur-p">Claude Code reads MCP server configurations from a <code class="cur-inline">.mcp.json</code> file. This file can live at:</p>
+<ul class="cur-list">
+<li><strong>Project level:</strong> <code class="cur-inline"><your-project-root>/.mcp.json</code> (affects only this project)</li>
+<li><strong>Global level:</strong> <code class="cur-inline">~/.claude/mcp.json</code> (affects all Claude Code sessions)</li>
+</ul>
+<p class="cur-p">For this tutorial, we'll use <strong>project-level</strong> configuration to keep things contained.</p>
+<p class="cur-p">#### Step 2.2 — Create the MCP Configuration File</p>
+<p class="cur-p">In your React project root, create <code class="cur-inline">.mcp.json</code>:</p>
+<pre><code>cd my-debug-lab  # or your existing project root
+touch .mcp.json</code></pre>
+<p class="cur-p">Paste the following configuration:</p>
+<pre><code>{
+  "mcpServers": {
+    "chrome-devtools": {
+      "command": "mcp-server-chrome-devtools",
+      "args": [],
+      "env": {
+        "CHROME_DEBUGGING_URL": "http://localhost:9222"
+      }
+    }
+  }
+}</code></pre>
+<p class="cur-p">> <strong>What this does:</strong> When Claude Code starts, it launches <code class="cur-inline">mcp-server-chrome-devtools</code> as a subprocess. Claude can then call tools exposed by this server — things like <code class="cur-inline">get_console_logs</code>, <code class="cur-inline">evaluate_javascript</code>, <code class="cur-inline">get_dom_snapshot</code>, and <code class="cur-inline">get_network_requests</code>.</p>
+<p class="cur-p">#### Step 2.3 — Verify Claude Code Sees the MCP Server</p>
+<p class="cur-p">Start Claude Code in your project directory:</p>
+<pre><code>claude</code></pre>
+<p class="cur-p">Once the interactive session starts, type:</p>
+<pre><code>/mcp</code></pre>
+<p class="cur-p">You should see output listing your configured servers:</p>
+<pre><code>MCP Servers:
+  ✓ chrome-devtools (connected)
+    Tools: get_console_logs, evaluate_javascript, get_dom_snapshot, 
+           get_network_requests, take_screenshot, navigate_to_url</code></pre>
+<p class="cur-p">If you see <code class="cur-inline">✗ chrome-devtools (failed)</code>, go back and confirm:</p>
+<ul class="cur-list cur-ol">
+<li>Chrome is running with <code class="cur-inline">--remote-debugging-port=9222</code></li>
+<li><code class="cur-inline">curl http://localhost:9222/json/version</code> returns valid JSON</li>
+<li>The <code class="cur-inline">mcp-server-chrome-devtools</code> binary is in your PATH</li>
+</ul>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 3: Plant a Realistic Frontend Bug</h4>
+<p class="cur-p">Before we test the debug loop, we need a bug to find and fix. Let's plant one that's representative of real React 19/Vite issues.</p>
+<p class="cur-p">#### Step 3.1 — Create a Buggy Component</p>
+<p class="cur-p">In your project, create <code class="cur-inline">src/components/UserDashboard.jsx</code>:</p>
+<pre><code>// src/components/UserDashboard.jsx
+import { useState, useEffect } from 'react';
+
+// BUG 1: API endpoint is wrong (typo) — will cause network 404
+const API_URL = 'http://localhost:3001/api/usres'; // "usres" instead of "users"
+
+// BUG 2: Rendering a non-existent nested property without optional chaining
+function UserCard({ user }) {
+  return (
+    &lt;div className="user-card"&gt;
+      {/* This will throw if user.profile is undefined */}
+      &lt;h2&gt;{user.profile.displayName}&lt;/h2&gt;
+      &lt;p&gt;{user.email}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default function UserDashboard() {
+  const [users, setUsers] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() =&gt; {
+    console.log('UserDashboard mounted, fetching users...');
+    
+    fetch(API_URL)
+      .then(res =&gt; {
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        return res.json();
+      })
+      .then(data =&gt; {
+        console.log('Users fetched:', data);
+        setUsers(data);
+      })
+      .catch(err =&gt; {
+        console.error('Failed to fetch users:', err.message);
+        setError(err.message);
+        // BUG 3: Fallback data has wrong shape — missing .profile property
+        setUsers([{ email: 'fallback@example.com', name: 'Fallback User' }]);
+      });
+  }, []);
+
+  if (!users) return &lt;p&gt;Loading...&lt;/p&gt;;
+
+  return (
+    &lt;div className="dashboard"&gt;
+      &lt;h1&gt;User Dashboard&lt;/h1&gt;
+      {error && &lt;div className="error-banner"&gt;API Error: {error}&lt;/div&gt;}
+      {users.map((user, i) =&gt; (
+        &lt;UserCard key={i} user={user} /&gt;
+      ))}
+    &lt;/div&gt;
+  );
+}</code></pre>
+<p class="cur-p">#### Step 3.2 — Wire It Into Your App</p>
+<p class="cur-p">Update <code class="cur-inline">src/App.jsx</code>:</p>
+<pre><code>import UserDashboard from './components/UserDashboard';
+import './App.css';
+
+function App() {
+  return (
+    &lt;div className="App"&gt;
+      &lt;UserDashboard /&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;</code></pre>
+<p class="cur-p">#### Step 3.3 — Save and Watch Vite HMR Update</p>
+<p class="cur-p">Vite should hot-reload automatically. The app will now show a React error boundary crash or a blank screen, with errors in the console. <strong>Do not open Chrome DevTools manually.</strong> Let Claude find them.</p>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 4: Run the Autonomous Debug Loop</h4>
+<p class="cur-p">This is the core of the exercise. We'll give Claude a high-level prompt and watch it use the MCP tools to diagnose and fix bugs.</p>
+<p class="cur-p">#### Step 4.1 — Craft Your Debug Prompt</p>
+<p class="cur-p">In your Claude Code session, paste this prompt:</p>
+<pre><code>I have a React 19/Vite app running at http://localhost:5173. 
+The UserDashboard component appears to be broken. 
+
+Please do the following:
+1. Navigate to http://localhost:5173 using the browser tools
+2. Check the browser console for any errors or warnings
+3. Check the network tab for any failed requests
+4. Inspect the DOM to understand what's actually rendering
+5. Read the source file at src/components/UserDashboard.jsx
+6. Identify ALL bugs you find
+7. Fix them directly in the source file
+8. Verify your fix works by checking the console again after Vite reloads
+
+Do not ask me for permission at each step. Work autonomously through the full debug cycle.</code></pre>
+<p class="cur-p">#### Step 4.2 — Observe Claude's Tool Calls</p>
+<p class="cur-p">Watch Claude work through the debug loop. You should see it making tool calls similar to:</p>
+<pre><code>● chrome-devtools:navigate_to_url
+  url: "http://localhost:5173"
+  
+● chrome-devtools:get_console_logs
+  → [ERROR] Failed to fetch users: HTTP 404: Not Found
+  → [ERROR] Cannot read properties of undefined (reading 'displayName')
+  → [LOG] UserDashboard mounted, fetching users...
+
+● chrome-devtools:get_network_requests
+  → GET http://localhost:3001/api/usres — 404 Not Found
+
+● Read(src/components/UserDashboard.jsx)
+  → [reads file content]
+
+● Edit(src/components/UserDashboard.jsx)
+  → Fixes API URL typo: 'usres' → 'users'
+  → Adds optional chaining: user.profile?.displayName ?? user.name
+  → Updates fallback data shape to include profile object
+
+● chrome-devtools:get_console_logs
+  → [LOG] UserDashboard mounted, fetching users...
+  → No errors present</code></pre>
+<p class="cur-p">#### Step 4.3 — Example of What Claude Should Produce</p>
+<p class="cur-p">After the debug loop, your fixed file should look something like:</p>
+<pre><code>// src/components/UserDashboard.jsx (FIXED)
+import { useState, useEffect } from 'react';
+
+// FIXED: Corrected API endpoint typo
+const API_URL = 'http://localhost:3001/api/users';
+
+// FIXED: Added optional chaining and fallback for missing profile
+function UserCard({ user }) {
+  return (
+    &lt;div className="user-card"&gt;
+      &lt;h2&gt;{user.profile?.displayName ?? user.name ?? 'Unknown User'}&lt;/h2&gt;
+      &lt;p&gt;{user.email}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default function UserDashboard() {
+  const [users, setUsers] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() =&gt; {
+    console.log('UserDashboard mounted, fetching users...');
+    
+    fetch(API_URL)
+      .then(res =&gt; {
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        return res.json();
+      })
+      .then(data =&gt; {
+        console.log('Users fetched:', data);
+        setUsers(data);
+      })
+      .catch(err =&gt; {
+        console.error('Failed to fetch users:', err.message);
+        setError(err.message);
+        // FIXED: Fallback data now matches expected shape with profile object
+        setUsers([{ 
+          email: 'fallback@example.com', 
+          name: 'Fallback User',
+          profile: { displayName: 'Fallback User' }
+        }]);
+      });
+  }, []);
+
+  if (!users) return &lt;p&gt;Loading...&lt;/p&gt;;
+
+  return (
+    &lt;div className="dashboard"&gt;
+      &lt;h1&gt;User Dashboard&lt;/h1&gt;
+      {error && &lt;div className="error-banner"&gt;API Error: {error}&lt;/div&gt;}
+      {users.map((user, i) =&gt; (
+        &lt;UserCard key={i} user={user} /&gt;
+      ))}
+    &lt;/div&gt;
+  );
+}</code></pre>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 5: Document Your Setup (Globe & Atlas Workflow Post)</h4>
+<p class="cur-p">#### Step 5.1 — Create a Setup Script for Repeatability</p>
+<p class="cur-p">Create <code class="cur-inline">scripts/start-debug-session.sh</code> in your project:</p>
+<pre><code>#!/usr/bin/env bash
+# Globe & Atlas Dev Workflow: Claude Code + Chrome DevTools Debug Loop
+# Run this before starting a debugging session
+
+set -e
+
+echo "🔍 Starting Chrome DevTools debug session..."
+
+# Kill any existing debug Chrome instances
+pkill -f "remote-debugging-port=9222" 2&gt;/dev/null || true
+sleep 1
+
+# Detect OS and launch Chrome with debugging
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  CHROME_BIN="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+  CHROME_BIN="google-chrome"
+else
+  echo "Windows detected: please run the PowerShell command manually"
+  exit 1
+fi
+
+"$CHROME_BIN" \
+  --remote-debugging-port=9222 \
+  --user-data-dir=/tmp/chrome-debug-profile \
+  --no-first-run \
+  --no-default-browser-check \
+  &
+
+echo "⏳ Waiting for Chrome to initialize..."
+sleep 3
+
+# Verify Chrome is ready
+if curl -s http://localhost:9222/json/version &gt; /dev/null; then
+  echo "✅ Chrome DevTools accessible at port 9222"
+else
+  echo "❌ Chrome failed to start with debugging enabled"
+  exit 1
+fi
+
+# Start Vite dev server in background if not running
+if ! curl -s http://localhost:5173 &gt; /dev/null 2&gt;&1; then
+  echo "🚀 Starting Vite dev server..."
+  npm run dev &
+  sleep 3
+  echo "✅ Vite running at http://localhost:5173"
+else
+  echo "✅ Vite already running at http://localhost:5173"
+fi
+
+echo ""
+echo "🤖 Ready! Start your Claude Code session:"
+echo "   cd $(pwd) && claude"
+echo ""
+echo "💡 In Claude, run: /mcp to verify chrome-devtools is connected"</code></pre>
+<p class="cur-p">Make it executable:</p>
+<pre><code>chmod +x scripts/start-debug-session.sh</code></pre>
+<p class="cur-p">#### Step 5.2 — Document Your MCP Configuration in the Project README</p>
+<p class="cur-p">Add this section to your project's <code class="cur-inline">README.md</code>:</p>
+<pre><code>## 🤖 Claude Code + Chrome DevTools Debug Loop
+
+This project is configured for autonomous AI-assisted debugging using Claude Code CLI
+and the Chrome DevTools MCP server.
+
+### Quick Start
+</code></pre>
+<h2 class="cur-h2">1. Start the debug environment</h2>
+<p class="cur-p">./scripts/start-debug-session.sh</p>
+<h2 class="cur-h2">2. Launch Claude Code</h2>
+<p class="cur-p">claude</p>
+<h2 class="cur-h2">3. Verify MCP connection inside Claude</h2>
+<p class="cur-p">/mcp</p>
+<h2 class="cur-h2">4. Give Claude a debug task</h2>
+<h2 class="cur-h2">"Check the browser console for errors and fix any issues you find in src/"</h2>
+<pre><code>
+### How It Works
+
+| Component | Role |
+|-----------|------|
+| Chrome (port 9222) | Exposes DevTools Protocol for AI access |
+| MCP Server | Translates CDP into tools Claude can call |
+| Claude Code CLI | Reads console, inspects network, edits source |
+| Vite HMR | Applies fixes instantly without full reload |
+
+### MCP Tools Available
+
+- `get_console_logs` — Read browser console output
+- `get_network_requests` — Inspect HTTP requests and responses  
+- `evaluate_javascript` — Run JS in the browser context
+- `get_dom_snapshot` — Get current DOM structure
+- `take_screenshot` — Capture visual state
+- `navigate_to_url` — Control browser navigation</code></pre>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Streamlit Variant</h4>
+<p class="cur-p">If you're debugging a <strong>Streamlit app</strong> instead of React/Vite, the MCP server setup is identical. Only the target URL and bug patterns differ.</p>
+<p class="cur-p">#### Key Differences</p>
+<pre><code># Streamlit runs on port 8501 by default
+streamlit run app.py
+
+# Navigate Claude to:
+# http://localhost:8501</code></pre>
+<p class="cur-p">#### Streamlit-Specific Debug Prompt</p>
+<pre><code>I have a Streamlit app running at http://localhost:8501.
+Check the browser console for WebSocket errors or component rendering failures.
+Look specifically for st.session_state KeyErrors or widget key conflicts.
+Read app.py and fix any issues you find.</code></pre>
+<p class="cur-p">> <strong>Note:</strong> Streamlit's WebSocket-based rendering means console errors are often more informative than React's — Claude tends to catch session state bugs very effectively through this loop.</p>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">4. Validation</h3>
+<p class="cur-p">Use this checklist to confirm you've successfully completed the exercise.</p>
+<h4 class="cur-h4">✅ Infrastructure Validation</h4>
+<pre><code># 1. Chrome debugging port is accessible
+curl http://localhost:9222/json/version | python3 -m json.tool
+# Expected: Valid JSON with Browser version info
+
+# 2. MCP server binary is available
+which mcp-server-chrome-devtools
+# Expected: A file path (not "not found")
+
+# 3. Vite is running
+curl -s -o /dev/null -w "%{http_code}" http://localhost:5173
+# Expected: 200</code></pre>
+<h4 class="cur-h4">✅ Claude Code Integration Validation</h4>
+<p class="cur-p">Inside a Claude Code session:</p>
+<pre><code>/mcp</code></pre>
+<p class="cur-p">Expected output:</p>
+<pre><code>✓ chrome-devtools (connected)
+  Tools available: get_console_logs, evaluate_javascript, ...</code></pre>
+<h4 class="cur-h4">✅ Debug Loop Validation</h4>
+<p class="cur-p">Run this prompt in Claude Code and verify each step produces real output:</p>
+<pre><code>Using the chrome-devtools MCP server:
+1. Get the current console logs from the browser
+2. Evaluate this JavaScript: document.title
+3. Take a screenshot
+Tell me what you found at each step.</code></pre>
+<p class="cur-p">Claude should return:</p>
+<ul class="cur-list">
+<li>Actual console log entries (not empty/error)</li>
+<li>The actual page title string</li>
+<li>A description of what's visible in the screenshot</li>
+</ul>
+<h4 class="cur-h4">✅ Autonomous Bug Fix Validation</h4>
+<p class="cur-p">After Claude fixes your <code class="cur-inline">UserDashboard.jsx</code>:</p>
+<ul class="cur-list cur-ol">
+<li><strong>No crash:</strong> The React app renders without an error boundary triggering</li>
+<li><strong>No console errors:</strong> Claude's re-check of <code class="cur-inline">get_console_logs</code> returns clean output</li>
+<li><strong>Source file updated:</strong> <code class="cur-inline">git diff src/components/UserDashboard.jsx</code> shows the three bug fixes</li>
+<li><strong>Bug fixes are correct:</strong> Optional chaining added, API URL corrected, fallback data shape fixed</li>
+</ul>
+<h4 class="cur-h4">✅ Documentation Validation</h4>
+<ul class="cur-list">
+<li>[ ] <code class="cur-inline">.mcp.json</code> exists in project root and is committed to git</li>
+<li>[ ] <code class="cur-inline">scripts/start-debug-session.sh</code> exists and runs without errors</li>
+<li>[ ] <code class="cur-inline">README.md</code> contains the Claude Code debug loop section</li>
+<li>[ ] You can answer: *"What's the difference between running Claude with and without the chrome-devtools MCP server?"*</li>
+</ul>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">5. Next Steps</h3>
+<h4 class="cur-h4">Immediate Improvements (This Week)</h4>
+<p class="cur-p"><strong>A. Add Playwright to the Loop</strong></p>
+<p class="cur-p">Claude Code + Chrome DevTools MCP + Playwright creates a complete test-debug-fix triangle:</p>
+<pre><code>npm install -D @playwright/test
+npx playwright install chromium</code></pre>
+<p class="cur-p">Create <code class="cur-inline">playwright.config.ts</code> with <code class="cur-inline">use: { channel: 'chrome' }</code> so Playwright reuses your debug Chrome instance. Now Claude can write a failing Playwright test, watch it fail via DevTools, fix the code, and verify the test passes — all autonomously.</p>
+<p class="cur-p"><strong>B. Persist Console Logs to a File</strong></p>
+<p class="cur-p">Add this to your Vite dev setup to create a queryable log history:</p>
+<pre><code>// vite.config.js — custom plugin to log browser errors to file
+// Useful for post-mortem analysis of what Claude found</code></pre>
+<p class="cur-p"><strong>C. Add Network Request Interception</strong></p>
+<p class="cur-p">Ask Claude to use <code class="cur-inline">evaluate_javascript</code> to inject a fetch interceptor that logs all API calls to the console — this makes network debugging even richer.</p>
+<h4 class="cur-h4">Medium-Term Projects (Next Month)</h4>
+<p class="cur-p"><strong>D. Build a Pre-Commit Debug Hook</strong></p>
+<p class="cur-p">Wire Claude Code into a pre-commit hook that:</p>
+<ul class="cur-list cur-ol">
+<li>Runs your app</li>
+<li>Checks the console for errors</li>
+<li>Blocks the commit if errors are found</li>
+<li>Optionally auto-fixes and re-stages</li>
+</ul>
+<p class="cur-p"><strong>E. Create a Reusable MCP Config Library</strong></p>
+<p class="cur-p">Abstract your <code class="cur-inline">.mcp.json</code> into a shared config package for all your Globe & Atlas projects:</p>
+<pre><code>@globe-atlas/mcp-config
+  ├── react-vite.mcp.json
+  ├── streamlit.mcp.json
+  └── next-js.mcp.json</code></pre>
+<p class="cur-p"><strong>F. Add the Filesystem MCP Server</strong></p>
+<p class="cur-p">Combine Chrome DevTools MCP with the filesystem MCP server for deeper context:</p>
+<pre><code>{
+  "mcpServers": {
+    "chrome-devtools": { ... },
+    "filesystem": {
+      "command": "mcp-server-filesystem",
+      "args": ["--root", "."]
+    }
+  }
+}</code></pre>
+<h4 class="cur-h4">Resources for Deeper Learning</h4>
+<p class="cur-p">| Resource | What You'll Learn |</p>
+<p class="cur-p">|----------|-------------------|</p>
+<p class="cur-p">| [Chrome DevTools Protocol Docs](https://chromedevtools.github.io/devtools-protocol/) | All available CDP domains and methods |</p>
+<p class="cur-p">| [MCP Specification](https://spec.modelcontextprotocol.io/) | How to build your own MCP servers |</p>
+<p class="cur-p">| [Claude Code Docs](https://docs.anthropic.com/claude-code) | Advanced Claude Code CLI configuration |</p>
+<p class="cur-p">| [Sentdex YouTube Channel](https://youtube.com/@sentdex) | More practical AI agent walkthroughs |</p>
+<p class="cur-p">| [Vite Plugin API](https://vitejs.dev/guide/api-plugin.html) | Building custom Vite plugins for dev tooling |</p>
+<h4 class="cur-h4">The Bigger Picture</h4>
+<p class="cur-p">What you've built here is a microcosm of <strong>agentic software development</strong>:</p>
+<pre><code>Observe (DevTools) → Reason (Claude) → Act (Edit source) → Verify (DevTools again)</code></pre>
+<p class="cur-p">This loop is the foundation of autonomous software agents. The same pattern scales to:</p>
+<ul class="cur-list">
+<li>Multi-page application audits</li>
+<li>Accessibility scanning and auto-remediation</li>
+<li>Performance regression detection</li>
+<li>Cross-browser compatibility testing</li>
+</ul>
+<p class="cur-p">The Chrome DevTools MCP server is one node in what will become a much larger network of tool integrations. Getting comfortable with this pattern now puts you ahead of the curve for how software development will work at scale.</p>
+<p class="cur-p">---</p>
+<p class="cur-p">*Tutorial designed for the Globe & Atlas workflow documentation series. Last validated against Claude Code CLI v1.x, Chrome 121+, and Vite 5.x.*</p>
+</div>
+</body>
+</html>

@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wire claude-mem into your Claude Code workflow and run a 1-week GIS scripting session — Lab Tutorial</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080b12; --bg2: #0e1220; --bg3: #151c2e; --bg4: #1d2540;
+    --border: #252e4a; --border2: #36416a; --text: #e6eaf4;
+    --text2: #8e9ab8; --text3: #58678e; --blue: #5b8af7;
+    --green: #34d89a; --orange: #f97c3c; --yellow: #f5c842;
+    --teal: #38c9d4; --cyan: #4fd9f5; --purple: #7c5cfc;
+    --font-sans: 'Inter', -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:var(--font-sans); line-height:1.7; }
+  .page { max-width:780px; margin:0 auto; padding:48px 32px 80px; }
+  .back { margin-bottom:32px; }
+  .back a { font-size:12px; font-family:var(--font-mono); color:var(--text3); text-decoration:none; border:1px solid var(--border); padding:6px 14px; border-radius:6px; transition:.15s; }
+  .back a:hover { color:var(--blue); border-color:var(--blue); }
+  .page-title { font-size:26px; font-weight:900; letter-spacing:-.4px; color:var(--text); margin-bottom:10px; line-height:1.25; }
+  .page-meta { font-size:11px; font-family:var(--font-mono); color:var(--text3); margin-bottom:40px; padding-bottom:24px; border-bottom:1px solid var(--border); }
+  h2.cur-h2 { font-size:19px; font-weight:800; color:var(--text); margin:40px 0 10px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+  h3.cur-h3 { font-size:15px; font-weight:700; color:var(--text2); margin:28px 0 8px; }
+  h4.cur-h4 { font-size:12.5px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.6px; margin:20px 0 6px; }
+  p.cur-p { font-size:14px; color:var(--text2); margin-bottom:12px; }
+  ul.cur-list { font-size:14px; color:var(--text2); margin:8px 0 14px 20px; }
+  ul.cur-list li { margin-bottom:6px; line-height:1.6; }
+  ul.cur-ol { list-style:decimal; }
+  pre { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:18px 20px; margin:14px 0 20px; overflow-x:auto; }
+  pre code { font-family:var(--font-mono); font-size:12px; color:var(--green); white-space:pre; line-height:1.6; }
+  code.cur-inline { font-family:var(--font-mono); font-size:12px; background:var(--bg4); color:var(--cyan); padding:2px 6px; border-radius:4px; }
+  strong { color:var(--text); font-weight:700; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="back"><a href="../latest.html">← Back to Hub</a></div>
+  <div class="page-title">Wire claude-mem into your Claude Code workflow and run a 1-week GIS scripting session</div>
+  <div class="page-meta">AI Discovery Hub · Lab Tutorial</div>
+  <h2 class="cur-h2">Wire `claude-mem` into Your Claude Code Workflow: A 1-Week GIS Scripting Session Guide</h2>
+<h3 class="cur-h3">Introduction & Context</h3>
+<p class="cur-p">If you've spent any time with Claude Code on multi-session projects — like migrating FME workspaces to Python — you've felt the pain: every new session starts cold. You re-explain your coordinate reference systems, re-paste your FME transformer logic, re-clarify why you're using <code class="cur-inline">geopandas</code> over <code class="cur-inline">arcpy</code>. It's a productivity tax that compounds daily.</p>
+<p class="cur-p"><strong><code class="cur-inline">claude-mem</code></strong> is a Claude Code plugin built by [@thedotmack](https://github.com/thedotmack) that solves this. It:</p>
+<ul class="cur-list">
+<li><strong>Auto-captures</strong> meaningful activity from each Claude Code session</li>
+<li><strong>Compresses</strong> that activity using AI into dense, reusable context snippets</li>
+<li><strong>Injects</strong> relevant context automatically when you start future sessions</li>
+</ul>
+<p class="cur-p">For a GIS developer mid-migration from FME to Python, this means Claude remembers your spatial data schemas, your preferred <code class="cur-inline">shapely</code> patterns, your CRS conventions, and your project-specific quirks — without you lifting a finger.</p>
+<p class="cur-p"><strong>Why this matters for your workflow specifically:</strong></p>
+<ul class="cur-list">
+<li>Your <code class="cur-inline">CLAUDE.md</code> may be carrying dead weight — repeated context that <code class="cur-inline">claude-mem</code> can handle dynamically</li>
+<li>FME-to-Python migrations are multi-week efforts with deeply stateful context (transformer equivalents, workspace logic, data pipeline decisions)</li>
+<li>Agentic sessions benefit enormously from memory continuity — fewer corrections, faster iteration</li>
+</ul>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">Prerequisites</h3>
+<p class="cur-p">Before starting, confirm you have the following in place:</p>
+<h4 class="cur-h4">Required</h4>
+<ul class="cur-list">
+<li>[ ] <strong>Claude Code CLI</strong> installed and authenticated (<code class="cur-inline">claude --version</code> returns a version)</li>
+<li>[ ] <strong>Node.js</strong> v18+ (<code class="cur-inline">node --version</code>)</li>
+<li>[ ] <strong>npm</strong> or <strong>npx</strong> available in your PATH</li>
+<li>[ ] An active <strong>FME-to-Python migration project</strong> with at least one Python script or workspace to work from</li>
+<li>[ ] A working <code class="cur-inline">CLAUDE.md</code> file in your project root (even a rough one)</li>
+<li>[ ] Git initialized in your project (<code class="cur-inline">git init</code> if not already)</li>
+</ul>
+<h4 class="cur-h4">Helpful but not required</h4>
+<ul class="cur-list">
+<li>[ ] Basic familiarity with Claude Code slash commands (e.g., <code class="cur-inline">/project</code>, <code class="cur-inline">/help</code>)</li>
+<li>[ ] Existing session logs or notes from prior Claude Code sessions</li>
+</ul>
+<h4 class="cur-h4">Environment check</h4>
+<p class="cur-p">Run these to confirm your setup before proceeding:</p>
+<pre><code># Check Claude Code
+claude --version
+
+# Check Node
+node --version  # Should be 18+
+
+# Check you're in a git repo (claude-mem uses git context)
+git status
+
+# Check your CLAUDE.md exists
+ls -la CLAUDE.md</code></pre>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">Step-by-Step Guide</h3>
+<h4 class="cur-h4">Phase 1: Installation (Day 1 — ~20 minutes)</h4>
+<p class="cur-p">#### Step 1.1 — Clone and Install <code class="cur-inline">claude-mem</code></p>
+<pre><code># Option A: Install globally via npm (recommended)
+npm install -g claude-mem
+
+# Option B: Use npx without installing
+npx claude-mem --help
+
+# Verify installation
+claude-mem --version</code></pre>
+<p class="cur-p">> <strong>Note:</strong> If the npm package name differs from the repo, install directly from source:</p>
+<pre><code>git clone https://github.com/thedotmack/claude-mem.git
+cd claude-mem
+npm install
+npm link  # Makes `claude-mem` available globally</code></pre>
+<p class="cur-p">#### Step 1.2 — Initialize <code class="cur-inline">claude-mem</code> in Your Project</p>
+<p class="cur-p">Navigate to your GIS migration project root and initialize:</p>
+<pre><code>cd /path/to/your/fme-to-python-project
+claude-mem init</code></pre>
+<p class="cur-p">This creates a <code class="cur-inline">.claude-mem/</code> directory in your project. Inspect what it generates:</p>
+<pre><code>ls -la .claude-mem/
+# Expect: config.json, sessions/, memory/
+cat .claude-mem/config.json</code></pre>
+<p class="cur-p">#### Step 1.3 — Configure for GIS Context</p>
+<p class="cur-p">Edit <code class="cur-inline">.claude-mem/config.json</code> to tune the plugin for your use case. Add any project-specific capture hints:</p>
+<pre><code>{
+  "project": "fme-to-python-migration",
+  "capturePatterns": [
+    "*.py",
+    "*.fmw",
+    "*.geojson",
+    "*.gpkg"
+  ],
+  "contextHints": [
+    "FME transformer equivalents",
+    "CRS and projection handling",
+    "geopandas workflows",
+    "spatial data schemas"
+  ],
+  "compressionLevel": "high",
+  "injectOnStart": true
+}</code></pre>
+<p class="cur-p">> <strong>Adjust based on actual config schema</strong> — check <code class="cur-inline">claude-mem --help</code> or the repo README for the exact keys your installed version supports.</p>
+<p class="cur-p">#### Step 1.4 — Add <code class="cur-inline">.claude-mem/sessions/</code> to <code class="cur-inline">.gitignore</code></p>
+<p class="cur-p">Keep raw session logs out of your repo (the compressed memory is fine to commit):</p>
+<pre><code>echo ".claude-mem/sessions/" &gt;&gt; .gitignore
+echo "# claude-mem compressed memory (safe to commit)" &gt;&gt; .gitignore
+echo "# .claude-mem/memory/" &gt;&gt; .gitignore
+git add .gitignore
+git commit -m "chore: add claude-mem, ignore raw sessions"</code></pre>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 2: Baseline — Your First Instrumented Session (Day 1-2)</h4>
+<p class="cur-p">#### Step 2.1 — Document Your Starting <code class="cur-inline">CLAUDE.md</code></p>
+<p class="cur-p">Before <code class="cur-inline">claude-mem</code> changes anything, snapshot your current <code class="cur-inline">CLAUDE.md</code> length and content. This is your baseline:</p>
+<pre><code>wc -l CLAUDE.md  # Line count
+wc -w CLAUDE.md  # Word count
+cp CLAUDE.md CLAUDE.md.baseline  # Save baseline</code></pre>
+<p class="cur-p">Create a simple log file to track your weekly observations:</p>
+<pre><code>cat &gt; claude-mem-findings.md &lt;&lt; 'EOF'
+# claude-mem Findings Log
+
+## Baseline (Day 1)
+- CLAUDE.md line count: [FILL IN]
+- CLAUDE.md word count: [FILL IN]
+- Known pain points re-injected manually each session:
+  - [ ] Project CRS (e.g., EPSG:4326 → EPSG:27700)
+  - [ ] FME workspace being migrated: [NAME]
+  - [ ] Python environment / dependency choices
+  - [ ] Data schema field names
+  - [ ] [Add your own]
+
+## Sessions
+EOF</code></pre>
+<p class="cur-p">#### Step 2.2 — Run Your First Session WITH <code class="cur-inline">claude-mem</code></p>
+<p class="cur-p">Start Claude Code with <code class="cur-inline">claude-mem</code> active:</p>
+<pre><code># Start claude-mem listener (if it runs as a background process)
+claude-mem start
+
+# Then launch Claude Code as normal
+claude</code></pre>
+<p class="cur-p">> <strong>Depending on how <code class="cur-inline">claude-mem</code> integrates</strong>, it may wrap Claude Code directly:</p>
+<p class="cur-p">> <code class="cur-inline">`</code>bash</p>
+<p class="cur-p">> claude-mem run claude</p>
+<p class="cur-p">> # or</p>
+<p class="cur-p">> claude-mem exec -- claude</p>
+<p class="cur-p">> <code class="cur-inline">`</code></p>
+<p class="cur-p">> Check <code class="cur-inline">claude-mem --help</code> for the exact invocation.</p>
+<p class="cur-p">#### Step 2.3 — Run a Real FME-to-Python Task</p>
+<p class="cur-p">Inside your Claude Code session, work on an actual migration task. Here's an example prompt to get productive output that's worth capturing:</p>
+<pre><code>I'm migrating an FME workspace to Python. The workspace does the following:
+1. Reads a shapefile of UK local authority boundaries (EPSG:27700)
+2. Uses a Clipper transformer to extract features within a bounding box
+3. Reprojects to EPSG:4326
+4. Writes to GeoJSON
+
+Help me write the equivalent Python script using geopandas. 
+My shapefile is at: data/raw/local_authority_boundaries.shp
+Output should go to: data/processed/clipped_boundaries.geojson</code></pre>
+<p class="cur-p">Work through 2-3 meaningful exchanges — ask follow-up questions, refine the script, debug edge cases. This gives <code class="cur-inline">claude-mem</code> substantive material to capture.</p>
+<p class="cur-p">#### Step 2.4 — Close the Session and Review Capture</p>
+<p class="cur-p">End your Claude Code session, then check what <code class="cur-inline">claude-mem</code> captured:</p>
+<pre><code># End the session
+claude-mem stop  # or it may auto-capture on session end
+
+# Review what was captured
+claude-mem status
+claude-mem show --last
+
+# See the compressed memory
+cat .claude-mem/memory/latest.md</code></pre>
+<p class="cur-p">Log your observations:</p>
+<pre><code>cat &gt;&gt; claude-mem-findings.md &lt;&lt; 'EOF'
+
+## Session 1 — [DATE]
+**Task:** FME Clipper → geopandas clip migration
+**Duration:** [X] minutes
+**What claude-mem captured:**
+- [Copy key items from .claude-mem/memory/latest.md]
+
+**What it MISSED that I'd want remembered:**
+- 
+
+**Manual context I still had to provide:**
+- 
+EOF</code></pre>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 3: The 5-Session Experiment (Days 2-6)</h4>
+<p class="cur-p">Run at least 5 sessions across the week. Here's a suggested session plan for a GIS migration project:</p>
+<p class="cur-p">#### Suggested Session Topics</p>
+<p class="cur-p">| Session | Day | FME Transformer Focus | Python/GIS Equivalent |</p>
+<p class="cur-p">|---------|-----|----------------------|----------------------|</p>
+<p class="cur-p">| 1 | 1-2 | Clipper + Reprojector | <code class="cur-inline">geopandas.clip()</code> + <code class="cur-inline">.to_crs()</code> |</p>
+<p class="cur-p">| 2 | 2-3 | AttributeFilter + Tester | Boolean masks + <code class="cur-inline">.loc[]</code> filtering |</p>
+<p class="cur-p">| 3 | 3-4 | Joiner (spatial join) | <code class="cur-inline">geopandas.sjoin()</code> |</p>
+<p class="cur-p">| 4 | 4-5 | Aggregator + StatisticsCalculator | <code class="cur-inline">.dissolve()</code> + <code class="cur-inline">.agg()</code> |</p>
+<p class="cur-p">| 5 | 5-6 | FeatureWriter (multiple formats) | Format-aware write abstraction |</p>
+<p class="cur-p">#### Step 3.1 — Starting Each Session (The Test)</p>
+<p class="cur-p">For sessions 2-5, <strong>deliberately do NOT manually re-inject your usual context</strong>. Let <code class="cur-inline">claude-mem</code> do the work:</p>
+<pre><code># Start fresh session
+claude-mem start
+claude
+
+# In the session, begin with a COLD prompt:
+# "Continue the FME to Python migration."
+# 
+# Observe: Does Claude already know your project context?
+# Does it remember your CRS? Your file paths? Your style preferences?</code></pre>
+<p class="cur-p">After each session, rate the auto-injected context quality (0-5):</p>
+<pre><code>cat &gt;&gt; claude-mem-findings.md &lt;&lt; 'EOF'
+
+## Session [N] — [DATE]
+**Task:** [FME transformer being migrated]
+**Auto-injected context quality (0-5):** 
+**Context it correctly remembered:**
+- 
+**Context gaps (still had to manually provide):**
+- 
+**Useful new patterns claude-mem captured:**
+- 
+EOF</code></pre>
+<p class="cur-p">#### Step 3.2 — Sample GIS Scripts to Run Across Sessions</p>
+<p class="cur-p">Use these as your session material — they build on each other, which is a good test of memory continuity:</p>
+<p class="cur-p"><strong>Session 2 — Attribute filtering:</strong></p>
+<pre><code># Prompt Claude to help you build this, then let claude-mem capture the decisions
+import geopandas as gpd
+
+def filter_by_attribute(gdf, field, values, operator='eq'):
+    """
+    FME AttributeFilter equivalent.
+    
+    Args:
+        gdf: GeoDataFrame
+        field: field name to filter on  
+        values: list of accepted values
+        operator: 'eq', 'gt', 'lt', 'contains'
+    """
+    if operator == 'eq':
+        return gdf[gdf[field].isin(values)]
+    elif operator == 'contains':
+        return gdf[gdf[field].str.contains('|'.join(values), na=False)]
+    # Add operators as needed
+    raise ValueError(f"Unsupported operator: {operator}")</code></pre>
+<p class="cur-p"><strong>Session 3 — Spatial join:</strong></p>
+<pre><code># Ask Claude to help translate FME Joiner behavior
+def spatial_join_with_fallback(left_gdf, right_gdf, how='left', predicate='intersects'):
+    """
+    FME SpatialFilter/Joiner equivalent.
+    Handles CRS mismatch automatically — a lesson from Session 1.
+    """
+    if left_gdf.crs != right_gdf.crs:
+        right_gdf = right_gdf.to_crs(left_gdf.crs)
+    
+    return gpd.sjoin(left_gdf, right_gdf, how=how, predicate=predicate)</code></pre>
+<p class="cur-p"><strong>Session 4 — Dissolve and aggregate:</strong></p>
+<pre><code># FME Aggregator equivalent
+def dissolve_with_stats(gdf, dissolve_by, agg_fields):
+    """
+    FME Aggregator equivalent.
+    
+    Args:
+        dissolve_by: field to dissolve on (FME: Group By)
+        agg_fields: dict of {field: aggregation_func}
+                    e.g., {'population': 'sum', 'name': 'first'}
+    """
+    return gdf.dissolve(by=dissolve_by, aggfunc=agg_fields).reset_index()</code></pre>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 4: Evaluation and Write-Up (Day 7)</h4>
+<p class="cur-p">#### Step 4.1 — Quantitative Audit</p>
+<p class="cur-p">At the end of the week, measure the impact:</p>
+<pre><code># Current CLAUDE.md
+wc -l CLAUDE.md
+wc -w CLAUDE.md
+
+# Memory stored by claude-mem
+claude-mem stats  # If available
+ls -la .claude-mem/memory/
+wc -l .claude-mem/memory/*.md
+
+# What's been auto-captured
+claude-mem show --all</code></pre>
+<p class="cur-p">Fill in this comparison table in your findings:</p>
+<pre><code>## Week Summary — Quantitative
+
+| Metric | Before | After |
+|--------|--------|-------|
+| CLAUDE.md line count | [BASELINE] | [CURRENT] |
+| CLAUDE.md word count | [BASELINE] | [CURRENT] |
+| Manual context re-injections/session | ~[N] | ~[N] |
+| Avg session ramp-up time (estimate) | [N] min | [N] min |
+| claude-mem memory entries captured | 0 | [N] |</code></pre>
+<p class="cur-p">#### Step 4.2 — Prune Your <code class="cur-inline">CLAUDE.md</code></p>
+<p class="cur-p">Based on what <code class="cur-inline">claude-mem</code> is reliably capturing, identify which sections of <code class="cur-inline">CLAUDE.md</code> can be removed or shortened:</p>
+<pre><code># Open both side by side
+code CLAUDE.md .claude-mem/memory/latest.md</code></pre>
+<p class="cur-p">Look for overlaps. Common candidates for removal from <code class="cur-inline">CLAUDE.md</code>:</p>
+<ul class="cur-list">
+<li>File path conventions (captured from session activity)</li>
+<li>CRS preferences (captured from code patterns)</li>
+<li>Dependency choices (captured from imports and installs)</li>
+<li>Naming conventions (captured from your code style)</li>
+</ul>
+<p class="cur-p"><strong>Keep in <code class="cur-inline">CLAUDE.md</code>:</strong></p>
+<ul class="cur-list">
+<li>High-level project goals</li>
+<li>Constraints that aren't inferrable from code (business rules, data sensitivity)</li>
+<li>Architectural decisions</li>
+<li>Things you want Claude to *never* do</li>
+</ul>
+<pre><code># Diff original vs trimmed
+diff CLAUDE.md.baseline CLAUDE.md</code></pre>
+<p class="cur-p">#### Step 4.3 — Write Your Findings for The Build Pillar</p>
+<p class="cur-p">Use this template to structure your write-up:</p>
+<pre><code># claude-mem Review: 1-Week GIS Scripting Trial
+
+## TL;DR
+[2-3 sentence summary of whether it's worth it]
+
+## Setup Experience
+- Installation friction: [Low/Medium/High]
+- Configuration required: [describe]
+- Integration with Claude Code: [seamless/requires workaround/broken]
+
+## What It Captured Well
+- [Specific examples from your sessions]
+
+## What It Missed
+- [Gaps you still had to fill manually]
+
+## Impact on CLAUDE.md
+- Before: [N] lines / [N] words
+- After: [N] lines / [N] words  
+- Reduction: [%]
+- Sections removed: [list]
+
+## GIS-Specific Observations
+- [Did it handle spatial/domain context well?]
+- [Any FME-specific terminology handled correctly?]
+
+## Recommendation
+[ ] Adopt permanently
+[ ] Adopt with modifications
+[ ] Skip — not worth the overhead
+
+## If Adopting: Suggested Config
+[Paste your working config.json]</code></pre>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">Validation</h3>
+<p class="cur-p">You've successfully completed this exercise if you can check off all of the following:</p>
+<h4 class="cur-h4">Installation ✓</h4>
+<ul class="cur-list">
+<li>[ ] <code class="cur-inline">claude-mem --version</code> returns a version number</li>
+<li>[ ] <code class="cur-inline">.claude-mem/</code> directory exists in your project root</li>
+<li>[ ] <code class="cur-inline">.claude-mem/sessions/</code> is in your <code class="cur-inline">.gitignore</code></li>
+</ul>
+<h4 class="cur-h4">Usage ✓</h4>
+<ul class="cur-list">
+<li>[ ] Completed 5+ Claude Code sessions with <code class="cur-inline">claude-mem</code> running</li>
+<li>[ ] Each session covered a real FME-to-Python migration task</li>
+<li>[ ] <code class="cur-inline">.claude-mem/memory/</code> contains at least 3 compressed session entries</li>
+</ul>
+<h4 class="cur-h4">Evaluation ✓</h4>
+<ul class="cur-list">
+<li>[ ] You have a before/after word count for <code class="cur-inline">CLAUDE.md</code></li>
+<li>[ ] You can name at least 2 things <code class="cur-inline">claude-mem</code> captured correctly without prompting</li>
+<li>[ ] You can name at least 1 gap where it fell short</li>
+<li>[ ] You have a written recommendation (adopt / modify / skip)</li>
+</ul>
+<h4 class="cur-h4">The Build Pillar Write-Up ✓</h4>
+<ul class="cur-list">
+<li>[ ] Findings document exists with quantitative metrics</li>
+<li>[ ] At least one "GIS-specific observation" is recorded</li>
+<li>[ ] You have a clear verdict on whether this reduces <code class="cur-inline">CLAUDE.md</code> length meaningfully</li>
+</ul>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">Troubleshooting</h3>
+<h4 class="cur-h4">`claude-mem` doesn't seem to inject context on session start</h4>
+<pre><code># Check if the plugin is actually hooking into Claude Code
+claude-mem status
+claude-mem doctor  # If available
+
+# Manual injection fallback
+claude-mem show --last | pbcopy  # Copy to clipboard
+# Then paste at the start of your Claude session manually</code></pre>
+<h4 class="cur-h4">Context captured is too generic / not GIS-specific</h4>
+<p class="cur-p">Edit your config to increase specificity hints and reduce noise:</p>
+<pre><code>{
+  "contextHints": [
+    "geopandas",
+    "shapely",
+    "FME transformer",
+    "EPSG CRS codes",
+    "spatial join",
+    "coordinate reference system"
+  ],
+  "minRelevanceScore": 0.7
+}</code></pre>
+<h4 class="cur-h4">Sessions aren't being captured</h4>
+<pre><code># Ensure you're ending sessions cleanly
+claude-mem stop  # Don't just close the terminal
+
+# Or set up auto-capture on exit
+claude-mem config --set autoCapture=true</code></pre>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">Next Steps</h3>
+<p class="cur-p">Once you've completed the 1-week trial and written your findings, here's where to take this further:</p>
+<h4 class="cur-h4">Immediate (Week 2)</h4>
+<ul class="cur-list cur-ol">
+<li><strong>Share your findings</strong> — Post your write-up to The Build pillar; your config and observations are genuinely useful to others running similar workflows</li>
+<li><strong>Refine your config</strong> — Based on gaps identified, tune <code class="cur-inline">claude-mem</code>'s capture patterns specifically for GIS work</li>
+<li><strong>Trim <code class="cur-inline">CLAUDE.md</code> aggressively</strong> — If <code class="cur-inline">claude-mem</code> is working, your <code class="cur-inline">CLAUDE.md</code> should get shorter and more strategic, not longer</li>
+</ul>
+<h4 class="cur-h4">Extend the Experiment</h4>
+<ul class="cur-list cur-ol">
+<li><strong>Test across project boundaries</strong> — Does <code class="cur-inline">claude-mem</code> help when switching between the FME migration project and a separate analysis project? Or does it bleed context incorrectly?</li>
+<li><strong>Contribute upstream</strong> — If you find GIS-specific capture improvements, open a PR or issue at [github.com/thedotmack/claude-mem](https://github.com/thedotmack/claude-mem)</li>
+</ul>
+<h4 class="cur-h4">Broader Workflow Integration</h4>
+<ul class="cur-list cur-ol">
+<li><strong>Pair with a structured <code class="cur-inline">CLAUDE.md</code> template</strong> — Your trimmed post-experiment <code class="cur-inline">CLAUDE.md</code> could become the template for future GIS projects</li>
+<li><strong>Explore other Claude Code plugins</strong> — The ecosystem is young; <code class="cur-inline">claude-mem</code> is one of the first memory-layer plugins, but not the last</li>
+</ul>
+<h4 class="cur-h4">The Bigger Picture</h4>
+<ul class="cur-list cur-ol">
+<li><strong>Document your FME-to-Python patterns</strong> — The transformer equivalents you've built across 5+ sessions are now partly in <code class="cur-inline">claude-mem</code>. Extract them into a standalone <code class="cur-inline">FME_EQUIVALENTS.md</code> reference — this is institutional knowledge worth making explicit</li>
+<li><strong>Evaluate against alternatives</strong> — Compare <code class="cur-inline">claude-mem</code>'s automatic approach against manually maintained session notes or a structured <code class="cur-inline">scratchpad.md</code> — your week of data gives you an honest basis for comparison</li>
+</ul>
+<p class="cur-p">---</p>
+<p class="cur-p">*This curriculum was designed for a 1-week, low-effort trial. The goal isn't perfection — it's honest data on whether automatic session memory earns its place in your agentic development stack.*</p>
+</div>
+</body>
+</html>

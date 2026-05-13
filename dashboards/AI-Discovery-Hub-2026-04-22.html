@@ -71,6 +71,13 @@
   .t-found { color:var(--yellow); border-color:rgba(245,200,66,.3); }
   .t-radar { color:var(--teal); border-color:rgba(56,201,212,.3); }
   .t-topic { background:rgba(124,92,252,.08); color:var(--purple); border:1px solid rgba(124,92,252,.2); }
+  [class*="t-topic"][data-topic="t-claude"]  { background:rgba(249,124,60,.08); color:var(--orange); border-color:rgba(249,124,60,.25); }
+  [class*="t-topic"][data-topic="t-openai"]  { background:rgba(52,216,154,.08); color:var(--green);  border-color:rgba(52,216,154,.25); }
+  [class*="t-topic"][data-topic="t-gemini"]  { background:rgba(91,138,247,.08); color:var(--blue);   border-color:rgba(91,138,247,.25); }
+  [class*="t-topic"][data-topic="t-esri"]    { background:rgba(56,201,212,.08); color:var(--teal);   border-color:rgba(56,201,212,.25); }
+  [class*="t-topic"][data-topic="t-satellite"]{ background:rgba(79,217,245,.08); color:var(--cyan);  border-color:rgba(79,217,245,.25); }
+  [class*="t-topic"][data-topic="t-drone"]   { background:rgba(245,200,66,.08); color:var(--yellow); border-color:rgba(245,200,66,.25); }
+  [class*="t-topic"][data-topic="t-thermal"] { background:rgba(240,93,154,.08); color:var(--pink);   border-color:rgba(240,93,154,.25); }
   .fycard.hidden { display:none; }
   .world-list { display:flex; flex-direction:column; border:1px solid var(--border); border-radius:10px; overflow:hidden; }
   .world-row { display:grid; grid-template-columns:24px 1fr 150px 2fr; gap:12px; align-items:center; padding:9px 14px; text-decoration:none; color:inherit; border-bottom:1px solid var(--border); transition:background .15s; }
@@ -139,16 +146,16 @@
 <div class="header">
   <div>
     <div class="h-title">AI Discovery Hub</div>
-    <div class="h-sub">April 22, 2026 &nbsp;·&nbsp; 15 relevant · 5 world signals</div>
+    <div class="h-sub">April 22, 2026 &nbsp;·&nbsp; 17 relevant · 5 world signals</div>
   </div>
 </div>
 
 <div class="stat-row">
-  <div class="sc" onclick="filterTier('all')"><div class="sc-num c-blue">15</div><div class="sc-lbl">Your Stack</div></div>
+  <div class="sc" onclick="filterTier('all')"><div class="sc-num c-blue">17</div><div class="sc-lbl">Your Stack</div></div>
   <div class="sc" onclick="filterTier('adopt')"><div class="sc-num c-green">3</div><div class="sc-lbl">✅ Adopt Now</div></div>
   <div class="sc" onclick="filterTier('watch')"><div class="sc-num c-blue">6</div><div class="sc-lbl">👁 Watch Closely</div></div>
   <div class="sc" onclick="filterTier('radar')"><div class="sc-num c-teal">3</div><div class="sc-lbl">🌱 On Radar</div></div>
-  <div class="sc" onclick="filterAdjOnly()" style="cursor:pointer;"><div class="sc-num c-orange">7</div><div class="sc-lbl">🔀 Adjacent</div></div>
+  <div class="sc" onclick="filterAdjOnly()" style="cursor:pointer;"><div class="sc-num c-orange">6</div><div class="sc-lbl">🔀 Adjacent</div></div>
   <div class="sc" style="cursor:default"><div class="sc-num c-text3">5</div><div class="sc-lbl">🌐 AI World</div></div>
 </div>
 
@@ -162,8 +169,8 @@
     <span class="row-lbl">LENS</span>
     <button class="filter-btn active" id="f-all" onclick="filterHub('all')">All</button>
     <button class="filter-btn f-home" id="f-home" onclick="filterHub('home')" data-tip="Personal projects, home automation, local tools, budgeting">🏠 Home</button>
-    <button class="filter-btn f-curr" id="f-curr" onclick="filterHub('curr')" data-tip="Claude API, model releases, AI industry, agent tooling">📡 Current</button>
-    <button class="filter-btn f-gis"  id="f-gis"  onclick="filterHub('gis')"  data-tip="Geospatial AI, FME, Sentinel Hub, QGIS, spatial data">🗺 GIS/FME</button>
+    <button class="filter-btn f-curr" id="f-curr" onclick="filterHub('curr')" data-tip="Claude, ChatGPT, Gemini, model releases, AI industry, agent tooling">📡 Current</button>
+    <button class="filter-btn f-gis"  id="f-gis"  onclick="filterHub('gis')"  data-tip="Geospatial AI, FME, Esri/ArcGIS, Sentinel Hub, QGIS, satellite/drone/thermal imagery">🗺 GIS/FME</button>
   </div>
   <div class="filter-row">
     <span class="row-lbl">TIER</span>
@@ -178,174 +185,196 @@
 
 <div class="section-header">
   <div class="section-title">Your Stack &amp; Adjacent</div>
-  <span class="section-badge sb-personal">15 signals</span>
+  <span class="section-badge sb-personal">17 signals</span>
   <div class="section-line"></div>
 </div>
 
 <div class="hub-grid" id="hub-grid">
   <a class="fycard" href="https://www.reddit.com/r/ClaudeAI/comments/1srzhd7/psa_claude_pro_no_longer_lists_claude_code_as_an/" target="_blank" rel="noopener noreferrer" data-date="2026-04-21" data-tier="✅ Adopt Now" data-tierkey="adopt" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="false">
     <div class="fycard-icon">⚠️</div>
-    <div class="fycard-title">Claude Code Removed from Pro Plan — Anthropic Confirms A/B Test</div>
+    <div class="fycard-title">PSA: Claude Pro no longer lists Claude Code as an included feature</div>
     <div class="fycard-src"><span>r/ClaudeAI · 2026-04-21</span></div>
-    <div class="fycard-desc">Anthropic quietly removed Claude Code from the $20 Pro plan listing; confirmed as a ~2% A/B test on new signups, not affecting existing subscribers. Daniel relies on Claude Code CLI daily — this signals Anthropic may be moving Claude Code to a higher-cost tier, directly affecting his tooling budget and workflow planning.</div>
-    <div class="fycard-why direct">↳ Direct: Claude Code CLI is core to Daniel's dev stack — pricing changes affect his daily workflow and cost model.</div><div class="tag-row">
+    <div class="fycard-desc">Anthropic has quietly removed Claude Code from the Pro plan feature list, with a confirmed A/B test affecting ~2% of new signups — a pricing signal that directly affects Daniel's Claude Code CLI dependency and ongoing subscription calculus.</div>
+    <div class="fycard-why direct">↳ Direct: Claude Code CLI is in Daniel's dev stack; any pricing or access change has immediate workflow impact.</div><div class="tag-row">
       <span class="tag t-lens">📡 Staying Current</span>
       <span class="tag t-tier t-adopt">✅ Adopt Now</span>
-      <span class="tag t-topic">claude</span>
+      <span class="tag t-topic" data-topic="t-claude">claude</span>
     </div>
   </a>
-  <a class="fycard" href="https://www.reddit.com/r/ClaudeAI/comments/1ss5fi4/anthropic_response_to_claude_code_change/" target="_blank" rel="noopener noreferrer" data-date="2026-04-21" data-tier="✅ Adopt Now" data-tierkey="adopt" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="false">
-    <div class="fycard-icon">📣</div>
-    <div class="fycard-title">Anthropic's Official Response to Claude Code Plan Change</div>
-    <div class="fycard-src"><span>r/ClaudeAI · 2026-04-21</span></div>
-    <div class="fycard-desc">Anthropic clarified the Claude Code removal is a limited test on ~2% of new prosumer signups, with Max subscribers unaffected. For Daniel's Tool Critic pillar, this is a must-track story — Anthropic's monetization shift for their CLI agent tool has direct implications for practitioners recommending it to GIS professionals.</div>
-    <div class="fycard-why direct">↳ Direct: Anthropic SDK and Claude Code CLI are primary tools; official pricing policy changes require immediate editorial and budgetary response.</div><div class="tag-row">
+  <a class="fycard" href="https://github.com/affaan-m/everything-claude-code" target="_blank" rel="noopener noreferrer" data-date="2026-04-21" data-tier="✅ Adopt Now" data-tierkey="adopt" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="false">
+    <div class="fycard-icon">🔧</div>
+    <div class="fycard-title">affaan-m/everything-claude-code</div>
+    <div class="fycard-src"><span>GitHub · 2026-04-21</span></div>
+    <div class="fycard-desc">A high-star agent harness system for Claude Code that adds skills, persistent memory, security layers, and research-first development patterns — a ready-to-adopt enhancement layer directly on top of Daniel's Claude Code CLI usage.</div>
+    <div class="fycard-why direct">↳ Direct: Builds directly on top of Claude Code CLI, which is in Daniel's stack, adding memory and orchestration that extend his current coding-agent workflows.</div><div class="tag-row">
       <span class="tag t-lens">📡 Staying Current</span>
       <span class="tag t-tier t-adopt">✅ Adopt Now</span>
-      <span class="tag t-topic">claude</span>
+      <span class="tag t-topic" data-topic="t-claude">claude</span><span class="tag t-topic" data-topic="t-agent">agent</span>
     </div>
   </a>
-  <a class="fycard" href="https://www.youtube.com/watch?v=nD24henxjT8" target="_blank" rel="noopener noreferrer" data-date="2026-04-22" data-tier="✅ Adopt Now" data-tierkey="adopt" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="false">
-    <div class="fycard-icon">🛠️</div>
-    <div class="fycard-title">Spec-Driven Development with Traycer Epic Mode + Claude Code</div>
-    <div class="fycard-src"><span>WorldofAI · 2026-04-22</span><span class="vid-dur">⏱ 12:58</span></div>
-    <div class="fycard-desc">Traycer's Epic Mode introduces spec-driven development as a structured alternative to vibe coding, using Claude Code as the execution engine with a pre-defined specification toolkit. Directly relevant to Daniel's Claude Code CLI usage — spec-driven workflows could significantly improve reliability of AI-assisted FME script generation and Streamlit app builds.</div>
-    <div class="fycard-why direct">↳ Direct: Uses Claude Code CLI with a spec-driven workflow — upgrades Daniel's existing Claude Code usage pattern with structured prompting discipline.</div><div class="tag-row">
+  <a class="fycard" href="https://github.com/thedotmack/claude-mem" target="_blank" rel="noopener noreferrer" data-date="2026-04-22" data-tier="✅ Adopt Now" data-tierkey="adopt" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="false">
+    <div class="fycard-icon">🧠</div>
+    <div class="fycard-title">thedotmack/claude-mem</div>
+    <div class="fycard-src"><span>GitHub · 2026-04-22</span></div>
+    <div class="fycard-desc">A Claude Code plugin that auto-captures session context, compresses it with Claude's agent SDK, and injects relevant memory back into future sessions — directly solves context-loss friction in Daniel's Claude Code CLI workflows.</div>
+    <div class="fycard-why direct">↳ Direct: Plugin for Claude Code CLI (in Daniel's stack); addresses context continuity across multi-session GIS and AI workflow builds.</div><div class="tag-row">
       <span class="tag t-lens">📡 Staying Current</span>
       <span class="tag t-tier t-adopt">✅ Adopt Now</span>
-      <span class="tag t-topic">claude</span><span class="tag t-topic">agent</span>
+      <span class="tag t-topic" data-topic="t-claude">claude</span><span class="tag t-topic" data-topic="t-memory">memory</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://www.reddit.com/r/ClaudeAI/comments/1ss5fi4/anthropic_response_to_claude_code_change/" target="_blank" rel="noopener noreferrer" data-date="2026-04-21" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="false">
+    <div class="fycard-icon">📢</div>
+    <div class="fycard-title">Anthropic response to Claude Code change</div>
+    <div class="fycard-src"><span>r/ClaudeAI · 2026-04-21</span></div>
+    <div class="fycard-desc">Anthropic officially clarified that the Claude Code removal is a limited test on ~2% of new prosumer signups, not affecting existing Pro/Max subscribers — critical context for Daniel's platform dependency assessment and any editorial piece on AI tooling economics.</div>
+    <div class="fycard-why direct">↳ Direct: Clarifies risk to Daniel's Claude Code CLI access and informs his Tool Critic and Career Navigator editorial pillars.</div><div class="tag-row">
+      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-tier t-watch">👁 Watch Closely</span>
+      <span class="tag t-topic" data-topic="t-claude">claude</span>
     </div>
   </a>
   <a class="fycard" href="https://www.youtube.com/watch?v=jeA-KBv0b68" target="_blank" rel="noopener noreferrer" data-date="2026-04-21" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="false">
-    <div class="fycard-icon">✨</div>
-    <div class="fycard-title">Claude Gets a New Superpower — Claude Design and Infrastructure</div>
+    <div class="fycard-icon">📹</div>
+    <div class="fycard-title">Claude just got another superpower...</div>
     <div class="fycard-src"><span>Fireship · 2026-04-21</span><span class="vid-dur">⏱ 5:12</span></div>
-    <div class="fycard-desc">Fireship covers a new Claude capability release — likely Claude Design — running on Google Cloud infrastructure with 2M free requests/month via Cloud Run. As a direct Claude API user, Daniel needs to track new Claude model capabilities and any API surface changes that could affect his Streamlit and React apps built on the Anthropic SDK.</div>
-    <div class="fycard-why direct">↳ Direct: Claude API (Anthropic SDK) is Daniel's primary AI backend — new capability releases change what's possible in his production workflows.</div><div class="tag-row">
+    <div class="fycard-desc">Fireship's 5-minute breakdown of a new Claude capability (referencing 'Claude Design'), likely tied to multimodal or agentic upgrades — directly relevant to Daniel's Claude API dependency and editorial coverage of Anthropic releases.</div>
+    <div class="fycard-why direct">↳ Direct: Covers the Claude API and new model capabilities that Daniel integrates via Anthropic SDK in his projects.</div><div class="tag-row">
       <span class="tag t-lens">📡 Staying Current</span>
       <span class="tag t-tier t-watch">👁 Watch Closely</span>
-      <span class="tag t-topic">claude</span><span class="tag t-topic">model</span>
+      <span class="tag t-topic" data-topic="t-claude">claude</span><span class="tag t-topic" data-topic="t-agent">agent</span>
     </div>
   </a>
-  <a class="fycard" href="https://www.youtube.com/watch?v=ji08ILsXQ7M" target="_blank" rel="noopener noreferrer" data-date="2026-04-21" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="false">
-    <div class="fycard-icon">🧪</div>
-    <div class="fycard-title">AI Testing Mental Model: Evals, LLM Judges, and Test Layering</div>
-    <div class="fycard-src"><span>sentdex · 2026-04-21</span><span class="vid-dur">⏱ 1:46</span></div>
-    <div class="fycard-desc">Sentdex breaks down a structured mental model for testing AI applications — covering evals, LLM-as-judge patterns, and layered test strategies that differ fundamentally from standard web app testing. Daniel builds production Streamlit and React apps on Claude API; adopting a proper eval framework would directly improve reliability of his AI-augmented GIS pipelines.</div>
-    <div class="fycard-why direct">↳ Direct: Applies to Daniel's Claude API-powered Streamlit and React apps — eval methodology is missing infrastructure in his current stack.</div><div class="tag-row">
+  <a class="fycard adjacent" href="https://github.com/google-gemini/gemini-cli" target="_blank" rel="noopener noreferrer" data-date="2026-04-22" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="true">
+    <div class="fycard-icon">🔭</div>
+    <div class="fycard-title">google-gemini/gemini-cli</div>
+    <div class="fycard-src"><span>GitHub · 2026-04-22</span></div>
+    <div class="fycard-desc">Google's open-source terminal AI agent (100k+ stars) that brings Gemini into the CLI — a direct competitive alternative to Claude Code CLI that Daniel should benchmark as part of his AI tooling evaluation and Tool Critic editorial work.</div>
+    <div class="fycard-why">↳ Adjacent: Competes directly with Claude Code CLI in Daniel's stack; a TypeScript-based terminal agent using the Gemini API he already monitors.</div><div class="tag-row">
       <span class="tag t-lens">📡 Staying Current</span>
       <span class="tag t-tier t-watch">👁 Watch Closely</span>
-      <span class="tag t-topic">claude</span><span class="tag t-topic">agent</span>
+      <span class="tag t-topic" data-topic="t-gemini">gemini</span><span class="tag t-topic" data-topic="t-agent">agent</span>
+    </div>
+  </a>
+  <a class="fycard adjacent" href="https://www.youtube.com/watch?v=Pm7yGm6Fgl4" target="_blank" rel="noopener noreferrer" data-date="2026-04-22" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="🗺 GIS/FME" data-lenskey="gis" data-adj="true">
+    <div class="fycard-icon">🌐</div>
+    <div class="fycard-title">Google Cloud Next '26 Opening Keynote</div>
+    <div class="fycard-src"><span>Google Cloud · 2026-04-22</span><span class="vid-dur">⏱ 1:55:30</span></div>
+    <div class="fycard-desc">Google Cloud's 2026 keynote introduces the 'agentic enterprise' blueprint, with likely announcements touching Gemini API, Google Earth Engine AI, and geospatial cloud services — all adjacent to Daniel's monitored stack and GIS editorial beat.</div>
+    <div class="fycard-why">↳ Adjacent: Google Cloud hosts Earth Engine and Gemini API updates that Daniel monitors; agentic enterprise framing is directly relevant to his Career Navigator pillar.</div><div class="tag-row">
+      <span class="tag t-lens">🗺 GIS/FME</span>
+      <span class="tag t-tier t-watch">👁 Watch Closely</span>
+      <span class="tag t-topic" data-topic="t-gemini">gemini</span><span class="tag t-topic" data-topic="t-geoai">geoai</span>
     </div>
   </a>
   <a class="fycard" href="https://www.reddit.com/r/gis/comments/1ss46jd/qgis_will_slowly_take_over_the_market/" target="_blank" rel="noopener noreferrer" data-date="2026-04-21" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="🗺 GIS/FME" data-lenskey="gis" data-adj="false">
-    <div class="fycard-icon">🌍</div>
-    <div class="fycard-title">QGIS Will Slowly Take Over the Market</div>
+    <div class="fycard-icon">🗺️</div>
+    <div class="fycard-title">QGIS will slowly take over the market</div>
     <div class="fycard-src"><span>r/gis · 2026-04-21</span></div>
-    <div class="fycard-desc">High-engagement r/gis post (1,095 upvotes, 186 comments) discussing QGIS's growing displacement of proprietary GIS platforms, fueled by budget pressures and plugin ecosystem maturity. For Daniel's Industry Lens pillar and his QGIS stack position, this is a strong signal to editorialize — especially for GIS professionals weighing FME + QGIS vs. full Esri dependency.</div>
-    <div class="fycard-why direct">↳ Direct: QGIS is in Daniel's stack; this community signal directly informs his Industry Lens editorial pillar and audience's career decisions.</div><div class="tag-row">
+    <div class="fycard-desc">High-engagement Reddit thread (1,391 upvotes, 238 comments) debating QGIS market penetration vs. Esri — a direct Industry Lens signal for Daniel's GIS audience about platform consolidation and the role of open-source in AI-augmented workflows.</div>
+    <div class="fycard-why direct">↳ Direct: QGIS is in Daniel's stack; this community debate informs his Industry Lens pillar on open-source vs. proprietary GIS dynamics.</div><div class="tag-row">
       <span class="tag t-lens">🗺 GIS/FME</span>
       <span class="tag t-tier t-watch">👁 Watch Closely</span>
-      <span class="tag t-topic">geoai</span>
+      <span class="tag t-topic" data-topic="t-geoai">geoai</span>
     </div>
   </a>
-  <a class="fycard adjacent" href="https://www.youtube.com/watch?v=jEfNn5oHQGA" target="_blank" rel="noopener noreferrer" data-date="2026-04-21" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="🗺 GIS/FME" data-lenskey="gis" data-adj="true">
-    <div class="fycard-icon">🏙️</div>
-    <div class="fycard-title">Top 5 AI Urban Risk Prediction Systems Explained</div>
-    <div class="fycard-src"><span>Native GIS · 2026-04-21</span><span class="vid-dur">⏱ 0:50</span></div>
-    <div class="fycard-desc">Overview of five AI-based urban risk prediction systems that move beyond mapping historical events to predictive spatial modeling. Relevant to Daniel's GeoAI editorial thread — these systems likely integrate satellite/aerial imagery with ML models, adjacent to his Sentinel Hub + rasterio + geopandas stack.</div>
-    <div class="fycard-why">↳ Adjacent: AI urban risk prediction systems use satellite imagery + spatial ML — directly adjacent to Daniel's Sentinel Hub, rasterio, and geopandas stack and his GeoAI editorial coverage.</div><div class="tag-row">
-      <span class="tag t-lens">🗺 GIS/FME</span>
-      <span class="tag t-tier t-watch">👁 Watch Closely</span>
-      <span class="tag t-topic">geoai</span>
-    </div>
-  </a>
-  <a class="fycard adjacent" href="https://www.youtube.com/watch?v=3Lw8sKYzFzQ" target="_blank" rel="noopener noreferrer" data-date="2026-04-22" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="true">
-    <div class="fycard-icon">🖥️</div>
-    <div class="fycard-title">Local LLM Inference: LM Studio vs Ollama 2026 Performance Comparison</div>
-    <div class="fycard-src"><span>NiuGee · 2026-04-22</span><span class="vid-dur">⏱ 17:40</span></div>
-    <div class="fycard-desc">Head-to-head comparison of LM Studio and Ollama for local LLM inference in 2026, benchmarking usability vs. raw speed (translated from Chinese). Adjacent to Daniel's Claude API usage — local inference via Ollama is a direct cost-reduction alternative and fallback, especially relevant given Claude Pro pricing changes this week.</div>
-    <div class="fycard-why">↳ Adjacent: Ollama/LM Studio are direct alternatives to Claude API for local inference — especially timely given Claude Code pricing changes affecting Daniel's cost model.</div><div class="tag-row">
+  <a class="fycard adjacent" href="https://github.com/langgenius/dify" target="_blank" rel="noopener noreferrer" data-date="2026-04-22" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="true">
+    <div class="fycard-icon">⚙️</div>
+    <div class="fycard-title">langgenius/dify</div>
+    <div class="fycard-src"><span>GitHub · 2026-04-22</span></div>
+    <div class="fycard-desc">Production-ready agentic workflow platform (138k stars) with visual builder and multi-model support — a potential orchestration layer alternative that could complement or replace custom Python agent pipelines in Daniel's 3-layer architecture.</div>
+    <div class="fycard-why">↳ Adjacent: Could replace or augment the orchestration layer in Daniel's 3-layer agent architecture, supporting Claude API and Python-based workflows.</div><div class="tag-row">
       <span class="tag t-lens">📡 Staying Current</span>
       <span class="tag t-tier t-watch">👁 Watch Closely</span>
-      <span class="tag t-topic">local</span><span class="tag t-topic">model</span>
+      <span class="tag t-topic" data-topic="t-agent">agent</span><span class="tag t-topic" data-topic="t-claude">claude</span>
     </div>
   </a>
-  <a class="fycard adjacent" href="https://www.youtube.com/watch?v=DiWN0dednTE" target="_blank" rel="noopener noreferrer" data-date="2026-04-20" data-tier="👁 Watch Closely" data-tierkey="watch" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="true">
-    <div class="fycard-icon">🤖</div>
-    <div class="fycard-title">Build a Hermes AI Agent with Ollama + Telegram (Local AI Bot)</div>
-    <div class="fycard-src"><span>MLWorks · 2026-04-20</span><span class="vid-dur">⏱ 12:45</span></div>
-    <div class="fycard-desc">Step-by-step tutorial building a local AI agent using Hermes model with Ollama inference connected to Telegram for interaction. Adjacent to Daniel's agent orchestration interest — demonstrates a local-first agent pattern that could serve as a fallback or complement to his Claude API-based workflows at zero API cost.</div>
-    <div class="fycard-why">↳ Adjacent: Ollama-based local agent architecture is a direct alternative to Claude API in Daniel's 3-layer agent orchestration architecture — relevant given this week's pricing signal.</div><div class="tag-row">
+  <a class="fycard" href="https://www.youtube.com/watch?v=nD24henxjT8" target="_blank" rel="noopener noreferrer" data-date="2026-04-22" data-tier="🔥 Hype Check" data-tierkey="hype" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="false">
+    <div class="fycard-icon">📹</div>
+    <div class="fycard-title">Bart Mode + Claude Code: New Spec Toolkit Ends Vibe Coding! 100x Better Than Vibe Coding (Tutorial)</div>
+    <div class="fycard-src"><span>WorldofAI · 2026-04-22</span><span class="vid-dur">⏱ 12:58</span></div>
+    <div class="fycard-desc">Tutorial on Traycer's spec-driven development mode ('Epic Mode') paired with Claude Code, promoting structured specs over freeform AI prompting — directly relevant to Daniel's Claude Code CLI workflows and 'Build' editorial pillar on disciplined AI-assisted development.</div>
+    <div class="fycard-why direct">↳ Direct: Demonstrates structured workflow patterns for Claude Code CLI, which is Daniel's primary coding agent tool.</div><div class="tag-row">
       <span class="tag t-lens">📡 Staying Current</span>
-      <span class="tag t-tier t-watch">👁 Watch Closely</span>
-      <span class="tag t-topic">local</span><span class="tag t-topic">agent</span>
+      <span class="tag t-tier t-hype">🔥 Hype Check</span>
+      <span class="tag t-topic" data-topic="t-claude">claude</span><span class="tag t-topic" data-topic="t-agent">agent</span>
     </div>
   </a>
   <a class="fycard" href="https://www.reddit.com/r/ClaudeAI/comments/1ss8h1x/an_open_letter_to_anthropic/" target="_blank" rel="noopener noreferrer" data-date="2026-04-21" data-tier="🔥 Hype Check" data-tierkey="hype" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="false">
-    <div class="fycard-icon">📮</div>
-    <div class="fycard-title">Claude Code Pricing Backlash — Community Open Letter to Anthropic</div>
+    <div class="fycard-icon">📣</div>
+    <div class="fycard-title">An open letter to Anthropic</div>
     <div class="fycard-src"><span>r/ClaudeAI · 2026-04-21</span></div>
-    <div class="fycard-desc">A Max-tier ($20x) power user published an open letter to Anthropic expressing frustration with Claude Co-work and feature changes, gaining 1,669 upvotes and 234 comments. Useful editorial signal for Daniel's Tool Critic pillar — illustrates the practitioner sentiment around Anthropic's product direction and monetization approach.</div>
-    <div class="fycard-why direct">↳ Direct: As a Claude API and Claude Code user, community sentiment around Anthropic's product decisions is directly relevant to Daniel's Tool Critic editorial pillar.</div><div class="tag-row">
+    <div class="fycard-desc">A viral Max-tier user post (2,794 upvotes) expressing frustration with Anthropic's product direction — a strong community sentiment signal for Daniel's Tool Critic pillar on platform trust and the risks of over-dependence on a single AI vendor.</div>
+    <div class="fycard-why direct">↳ Direct: Reflects community trust dynamics around the Claude platform Daniel depends on; editorial gold for Tool Critic and Career Navigator pillars.</div><div class="tag-row">
       <span class="tag t-lens">📡 Staying Current</span>
       <span class="tag t-tier t-hype">🔥 Hype Check</span>
-      <span class="tag t-topic">claude</span>
+      <span class="tag t-topic" data-topic="t-claude">claude</span>
     </div>
   </a>
-  <a class="fycard adjacent" href="https://www.reddit.com/r/LocalLLaMA/comments/1ss23b8/claude_code_removed_from_claude_pro_plan_better/" target="_blank" rel="noopener noreferrer" data-date="2026-04-21" data-tier="🔥 Hype Check" data-tierkey="hype" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="true">
-    <div class="fycard-icon">🔄</div>
-    <div class="fycard-title">Claude Code Removal Sparks Migration to Local Models (Kimi k2.6, OpenCode)</div>
-    <div class="fycard-src"><span>r/LocalLLaMA · 2026-04-21</span></div>
-    <div class="fycard-desc">r/LocalLLaMA community uses Claude Code's Pro plan removal as a rallying point to promote local alternatives including Kimi k2.6 and OpenCode's $5-10/month Go coding plan. Relevant to Daniel's stack cost decisions — understanding the competitive landscape of coding assistants helps him make informed Tool Critic recommendations.</div>
-    <div class="fycard-why">↳ Adjacent: Competing coding agent tools (Kimi k2.6, OpenCode) are direct adjacent replacements to Claude Code CLI in Daniel's stack — critical context for a cost-conscious evaluation.</div><div class="tag-row">
-      <span class="tag t-lens">📡 Staying Current</span>
-      <span class="tag t-tier t-hype">🔥 Hype Check</span>
-      <span class="tag t-topic">claude</span><span class="tag t-topic">local</span>
-    </div>
-  </a>
-  <a class="fycard adjacent" href="https://www.youtube.com/watch?v=Eike3RdeLY8" target="_blank" rel="noopener noreferrer" data-date="2026-04-21" data-tier="🏗 Foundation" data-tierkey="found" data-lens="🗺 GIS/FME" data-lenskey="gis" data-adj="true">
-    <div class="fycard-icon">🎓</div>
-    <div class="fycard-title">NSCC Graduate Certificate: GIS and Geospatial Data Analytics Program Info Session</div>
-    <div class="fycard-src"><span>Nova Scotia Community College · 2026-04-21</span><span class="vid-dur">⏱ 51:42</span></div>
-    <div class="fycard-desc">Recorded info session for NSCC's graduate certificate programs in GIS and Geospatial Data Analytics, covering curriculum and career paths. Useful background for Daniel's Career Navigator pillar — understanding what formal GIS education covers helps him position AI-augmented workflow content relative to traditional training.</div>
-    <div class="fycard-why">↳ Adjacent: GIS education program content directly informs Daniel's Career Navigator pillar — understanding what formal GIS training covers helps position his AI transition content.</div><div class="tag-row">
+  <a class="fycard adjacent" href="https://github.com/n8n-io/n8n" target="_blank" rel="noopener noreferrer" data-date="2026-04-22" data-tier="🏗 Foundation" data-tierkey="found" data-lens="🗺 GIS/FME" data-lenskey="gis" data-adj="true">
+    <div class="fycard-icon">🔗</div>
+    <div class="fycard-title">n8n-io/n8n</div>
+    <div class="fycard-src"><span>GitHub · 2026-04-22</span></div>
+    <div class="fycard-desc">Self-hostable workflow automation platform with 400+ integrations and native AI capabilities (185k stars) — could serve as a visual ETL/automation layer that bridges FME-style spatial workflows with Claude API calls and REST APIs in Daniel's stack.</div>
+    <div class="fycard-why">↳ Adjacent: Could replace or augment FME for non-spatial automation chains while integrating Claude API and REST APIs already in Daniel's stack.</div><div class="tag-row">
       <span class="tag t-lens">🗺 GIS/FME</span>
       <span class="tag t-tier t-found">🏗 Foundation</span>
-      <span class="tag t-topic">geoai</span>
+      <span class="tag t-topic" data-topic="t-fme">fme</span><span class="tag t-topic" data-topic="t-agent">agent</span>
     </div>
   </a>
-  <a class="fycard" href="https://www.reddit.com/r/ClaudeAI/comments/1sre84i/make_no_mistakes/" target="_blank" rel="noopener noreferrer" data-date="2026-04-21" data-tier="🌱 On Radar" data-tierkey="radar" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="false">
-    <div class="fycard-icon">😄</div>
-    <div class="fycard-title">Claude 'Make No Mistakes' Viral Meme — High Engagement Signal</div>
-    <div class="fycard-src"><span>r/ClaudeAI · 2026-04-21</span></div>
-    <div class="fycard-desc">Top-scoring r/ClaudeAI post this week (4,351 upvotes) — a meme image about Claude's behavior, signaling strong community engagement and likely touching on Claude's over-caution or refusal tendencies. Useful context for Daniel's audience tone and for framing practitioner frustrations around AI assistant reliability in professional workflows.</div>
-    <div class="fycard-why direct">↳ Direct: Community sentiment about Claude's behavior patterns is relevant to Daniel's Claude API usage and his Tool Critic editorial voice.</div><div class="tag-row">
+  <a class="fycard adjacent" href="https://github.com/microsoft/markitdown" target="_blank" rel="noopener noreferrer" data-date="2026-04-20" data-tier="🏗 Foundation" data-tierkey="found" data-lens="🏠 Home Hobbyist" data-lenskey="home" data-adj="true">
+    <div class="fycard-icon">📄</div>
+    <div class="fycard-title">microsoft/markitdown</div>
+    <div class="fycard-src"><span>GitHub · 2026-04-20</span></div>
+    <div class="fycard-desc">Python library for converting files and Office documents to Markdown (115k stars) — a potential upgrade to Daniel's current PDF parsing stack (pdfplumber), handling a wider range of document types for GIS report ingestion pipelines.</div>
+    <div class="fycard-why">↳ Adjacent: Directly upgrades pdfplumber in Daniel's Python stack with broader file-type support for document ingestion workflows.</div><div class="tag-row">
+      <span class="tag t-lens">🏠 Home Hobbyist</span>
+      <span class="tag t-tier t-found">🏗 Foundation</span>
+      <span class="tag t-topic" data-topic="t-data">data</span>
+    </div>
+  </a>
+  <a class="fycard" href="https://www.youtube.com/watch?v=ji08ILsXQ7M" target="_blank" rel="noopener noreferrer" data-date="2026-04-21" data-tier="🏗 Foundation" data-tierkey="found" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="false">
+    <div class="fycard-icon">📹</div>
+    <div class="fycard-title">Your mental model for AI testing: evals, LLM judges, and test layering</div>
+    <div class="fycard-src"><span>sentdex · 2026-04-21</span><span class="vid-dur">⏱ 1:46</span></div>
+    <div class="fycard-desc">Concise breakdown of AI app testing methodology — evals, LLM-as-judge, and layered test strategies — directly applicable to Daniel's Claude API Streamlit apps and the need for reliable output validation in GIS data pipelines.</div>
+    <div class="fycard-why direct">↳ Direct: Testing methodology for AI apps built with Claude API and Python (Streamlit) is a gap in most practitioners' workflows, including Daniel's.</div><div class="tag-row">
       <span class="tag t-lens">📡 Staying Current</span>
-      <span class="tag t-tier t-radar">🌱 On Radar</span>
-      <span class="tag t-topic">claude</span>
+      <span class="tag t-tier t-found">🏗 Foundation</span>
+      <span class="tag t-topic" data-topic="t-claude">claude</span><span class="tag t-topic" data-topic="t-data">data</span>
     </div>
   </a>
-  <a class="fycard adjacent" href="https://www.youtube.com/watch?v=ry2oqoDY_lA" target="_blank" rel="noopener noreferrer" data-date="2026-04-21" data-tier="🌱 On Radar" data-tierkey="radar" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="true">
-    <div class="fycard-icon">🌐</div>
-    <div class="fycard-title">Claude Coding Assistant Used by Non-Programmer to Build Complex Web App</div>
+  <a class="fycard" href="https://www.youtube.com/watch?v=ry2oqoDY_lA" target="_blank" rel="noopener noreferrer" data-date="2026-04-21" data-tier="🌱 On Radar" data-tierkey="radar" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="false">
+    <div class="fycard-icon">📹</div>
+    <div class="fycard-title">Non-Programmer Builds Web App in Minutes</div>
     <div class="fycard-src"><span>Dot CSV · 2026-04-21</span><span class="vid-dur">⏱ 13:11</span></div>
-    <div class="fycard-desc">Demonstration of Claude AI enabling a non-programmer to build a complex web application in minutes, illustrating the democratization of software development. Early signal for Daniel's Career Navigator pillar — low-code AI-assisted development lowers the barrier for GIS professionals to build their own tools without deep programming backgrounds.</div>
-    <div class="fycard-why">↳ Adjacent: Claude-driven no-code app building is directly relevant to Daniel's audience of GIS professionals adopting AI — validates his editorial thesis about AI lowering the coding barrier.</div><div class="tag-row">
+    <div class="fycard-desc">Demonstration of Claude AI enabling a non-programmer to build a complex web app rapidly — directly relevant to Daniel's Career Navigator pillar on communicating AI-assisted development to transitioning GIS professionals.</div>
+    <div class="fycard-why direct">↳ Direct: Uses Claude AI for rapid app development; mirrors the audience journey Daniel writes about in his Career Navigator editorial pillar.</div><div class="tag-row">
       <span class="tag t-lens">📡 Staying Current</span>
       <span class="tag t-tier t-radar">🌱 On Radar</span>
-      <span class="tag t-topic">claude</span><span class="tag t-topic">agent</span>
+      <span class="tag t-topic" data-topic="t-claude">claude</span>
     </div>
   </a>
-  <a class="fycard adjacent" href="https://www.reddit.com/r/LocalLLaMA/comments/1srhzii/every_time_a_new_model_comes_out_the_old_one_is/" target="_blank" rel="noopener noreferrer" data-date="2026-04-21" data-tier="🌱 On Radar" data-tierkey="radar" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="true">
-    <div class="fycard-icon">♻️</div>
-    <div class="fycard-title">Model Obsolescence Cycle Meme — Community Fatigue Signal</div>
-    <div class="fycard-src"><span>r/LocalLLaMA · 2026-04-21</span></div>
-    <div class="fycard-desc">Viral meme (1,015 upvotes) satirizing the rapid obsolescence of AI models, reflecting practitioner fatigue with constant model churn. Weak personal relevance — useful only as a community mood signal for Daniel's Industry Lens pillar on AI hype cycles.</div>
-    <div class="fycard-why">↳ Adjacent: Model release fatigue directly affects how Daniel should frame AI tool adoption advice for his GIS professional audience in his Industry Lens pillar.</div><div class="tag-row">
+  <a class="fycard" href="https://www.reddit.com/r/ClaudeAI/comments/1sspwz2/psa_anthropic_bans_organizations_without_warning/" target="_blank" rel="noopener noreferrer" data-date="2026-04-22" data-tier="🌱 On Radar" data-tierkey="radar" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="false">
+    <div class="fycard-icon">🚨</div>
+    <div class="fycard-title">PSA: Anthropic bans organizations without warning</div>
+    <div class="fycard-src"><span>r/ClaudeAI · 2026-04-22</span></div>
+    <div class="fycard-desc">An agricultural tech company had 110 user accounts suspended without warning — a vendor risk signal relevant to Daniel's stack dependency on Anthropic and a potential Industry Lens story about AI platform reliability for GIS/agtech workflows.</div>
+    <div class="fycard-why direct">↳ Direct: Vendor reliability risk for Daniel's Claude API dependency; the agtech context ties directly to his GIS/environmental monitoring editorial beat.</div><div class="tag-row">
       <span class="tag t-lens">📡 Staying Current</span>
       <span class="tag t-tier t-radar">🌱 On Radar</span>
-      <span class="tag t-topic">model</span>
+      <span class="tag t-topic" data-topic="t-claude">claude</span>
+    </div>
+  </a>
+  <a class="fycard adjacent" href="https://www.reddit.com/r/LocalLLaMA/comments/1ssl1xh/qwen_36_27b_is_out/" target="_blank" rel="noopener noreferrer" data-date="2026-04-22" data-tier="🌱 On Radar" data-tierkey="radar" data-lens="📡 Staying Current" data-lenskey="curr" data-adj="true">
+    <div class="fycard-icon">🆕</div>
+    <div class="fycard-title">Qwen 3.6 27B is out</div>
+    <div class="fycard-src"><span>r/LocalLLaMA · 2026-04-22</span></div>
+    <div class="fycard-desc">Alibaba releases Qwen 3.6 27B to Hugging Face, generating significant community traction as a capable local alternative to Claude — a model release Daniel should track as a fallback option given Claude Code pricing pressure.</div>
+    <div class="fycard-why">↳ Adjacent: Competes with Claude API as a local/alternative LLM; directly relevant given Claude Code pricing changes affecting Daniel's stack.</div><div class="tag-row">
+      <span class="tag t-lens">📡 Staying Current</span>
+      <span class="tag t-tier t-radar">🌱 On Radar</span>
+      <span class="tag t-topic" data-topic="t-model">model</span><span class="tag t-topic" data-topic="t-local">local</span>
     </div>
   </a>
 </div>
@@ -357,23 +386,23 @@
 </div>
 
 <div class="world-list">
-<a class="world-row" href="https://www.reddit.com/r/singularity/comments/1srvo8i/the_new_chatgpt_images_model_is_the_new_standard/" target="_blank" rel="noopener noreferrer"><span class="world-icon">🖼️</span><span class="world-title">GPT Image 2 Sets New Standard in Photorealistic Image Generation</span><span class="world-src">r/singularity · 2026-04-21</span><span class="world-desc">Community discussion declaring GPT Image 2 a major quality leap in photorealistic AI image generation, with strong comparative praise.</span></a><a class="world-row" href="https://www.reddit.com/r/singularity/comments/1sry7k9/gpt_image_2_has_the_biggest_jump_in_quality_ever/" target="_blank" rel="noopener noreferrer"><span class="world-icon">🎨</span><span class="world-title">GPT Image 2 — 'Biggest Quality Jump Ever Recorded' in AI Image Generation</span><span class="world-src">r/singularity · 2026-04-21</span><span class="world-desc">Follow-up community post reinforcing GPT Image 2's claimed quality superiority over all existing image generation models, including Midjourney and Stable Diffusion.</span></a><a class="world-row" href="https://www.reddit.com/r/ClaudeAI/comments/1ss3asp/does_claudes_20_plan_no_longer_include_claude_code/" target="_blank" rel="noopener noreferrer"><span class="world-icon">❓</span><span class="world-title">Claude Pro Pricing Confusion — Does $20 Plan Still Include Claude Code?</span><span class="world-src">r/ClaudeAI · 2026-04-21</span><span class="world-desc">Community thread from a prospective Claude Pro subscriber confused by the Claude Code removal, generating 813 upvotes and 236 comments of pricing clarification debate.</span></a><a class="world-row" href="https://www.youtube.com/watch?v=wjztpdRBUuE" target="_blank" rel="noopener noreferrer"><span class="world-icon">📺</span><span class="world-title">Iran Reports Sign US Ready to Break Blockade — Bloomberg Daybreak Europe</span><span class="world-src">Bloomberg Television · 2026-04-22</span><span class="world-desc">Bloomberg's morning news broadcast covering geopolitical signals around Iran and US diplomatic movements — no technology or AI content.</span></a><a class="world-row" href="https://www.youtube.com/watch?v=vTkZK8PK114" target="_blank" rel="noopener noreferrer"><span class="world-icon">📈</span><span class="world-title">Claude Code Trading Assistant Setup Tutorial</span><span class="world-src">Across The Rubicon · 2026-04-20</span><span class="world-desc">Tutorial connecting Claude Code to TradingView to build an AI-powered trading assistant — finance-domain application with no geospatial or data engineering relevance.</span></a>
+<a class="world-row" href="https://www.youtube.com/watch?v=dUhFfGTM9d0" target="_blank" rel="noopener noreferrer"><span class="world-icon">📹</span><span class="world-title">Local LLMs: The Hardware Showdown Nobody Talks About</span><span class="world-src">DSA & AI by Aman Shekhar · 2026-04-22</span><span class="world-desc">Benchmarks across hardware configurations for running local LLMs — informative background on local inference viability as Claude Code pricing changes raise the question of self-hosted alternatives.</span></a><a class="world-row" href="https://www.reddit.com/r/singularity/comments/1srvo8i/the_new_chatgpt_images_model_is_the_new_standard/" target="_blank" rel="noopener noreferrer"><span class="world-icon">🖼️</span><span class="world-title">The new ChatGPT images model is the new standard in photorealistic image generation</span><span class="world-src">r/singularity · 2026-04-21</span><span class="world-desc">Community reaction to GPT Image 2 claiming a major quality leap in photorealistic image generation, generating significant discussion about OpenAI's multimodal roadmap.</span></a><a class="world-row" href="https://www.youtube.com/watch?v=DsnYYl0y4dk" target="_blank" rel="noopener noreferrer"><span class="world-icon">📹</span><span class="world-title">MiniMax M2.7 Review — Multi-Agent System Built in Cursor</span><span class="world-src">Daniel Davidson · 2026-04-22</span><span class="world-desc">Review of MiniMax M2.7 model with a multi-agent workflow demo built in Cursor IDE, showcasing a Chinese LLM alternative in an agentic context.</span></a><a class="world-row" href="https://www.youtube.com/watch?v=Gw3TLPXHfyI" target="_blank" rel="noopener noreferrer"><span class="world-icon">📹</span><span class="world-title">Kimi K2.6: China's New Autonomous AI Agent</span><span class="world-src">Julian Goldie SEO · 2026-04-21</span><span class="world-desc">Overview of Kimi K2.6 as an autonomous AI agent from Moonshot AI, positioned as a Claude Code alternative following pricing changes, with discussion of its agentic capabilities.</span></a><a class="world-row" href="https://www.reddit.com/r/singularity/comments/1sry7k9/gpt_image_2_has_the_biggest_jump_in_quality_ever/" target="_blank" rel="noopener noreferrer"><span class="world-icon">📣</span><span class="world-title">GPT Image 2 has the biggest jump in quality ever recorded</span><span class="world-src">r/singularity · 2026-04-21</span><span class="world-desc">Viral community post claiming GPT Image 2 represents an unprecedented quality leap in AI image generation, with broad discussion on OpenAI's multimodal trajectory.</span></a>
 </div>
 
 <div class="g3">
   <div class="panel p-pink">
     <div class="plabel">Weekly Themes</div>
-    <div class="theme-wrap"><span class="tpill tp-econ"><span class="tpill-dot"></span>Claude Code Monetization Shift — Anthropic moves Claude Code toward higher tiers</span><span class="tpill tp-agent"><span class="tpill-dot"></span>Spec-Driven AI Dev — Structured specs replacing ad-hoc vibe coding with Claude</span><span class="tpill tp-infra"><span class="tpill-dot"></span>Local LLM as Cost Hedge — Ollama/LM Studio gaining momentum as Claude pricing rises</span><span class="tpill tp-gis"><span class="tpill-dot"></span>QGIS Market Expansion — Community confidence in open-source GIS displacing proprietary tools</span><span class="tpill tp-gis"><span class="tpill-dot"></span>GeoAI Prediction Systems — AI moving from mapping to predictive spatial modeling</span><span class="tpill tp-curr"><span class="tpill-dot"></span>AI Eval Culture — Testing and eval frameworks maturing as a required discipline</span></div>
+    <div class="theme-wrap"><span class="tpill tp-econ"><span class="tpill-dot"></span>Claude Code pricing fracture — access changes and community backlash signal a platform trust inflection point</span><span class="tpill tp-agent"><span class="tpill-dot"></span>Agent harness maturation — memory, spec-driven dev, and orchestration layers becoming standard</span><span class="tpill tp-infra"><span class="tpill-dot"></span>Local LLM momentum accelerates as Claude pricing pressure grows</span><span class="tpill tp-gis"><span class="tpill-dot"></span>QGIS vs. Esri market debate resurfaces with AI as the new differentiator</span><span class="tpill tp-curr"><span class="tpill-dot"></span>Google Cloud Next '26 reframes enterprise AI around agentic workflows</span><span class="tpill tp-infra"><span class="tpill-dot"></span>Document-to-Markdown pipelines emerging as a data prep primitive for RAG and LLM workflows</span></div>
     <div class="plabel">Signal Mix (Your Stack)</div>
-    <div class="sig"><div class="sig-icon">🎥</div><div class="sig-lbl">Videos</div><div class="sig-bar-bg"><div class="sig-bar" style="width:53%;background:var(--blue);"></div></div><div class="sig-ct">8</div></div><div class="sig"><div class="sig-icon">📦</div><div class="sig-lbl">Repos</div><div class="sig-bar-bg"><div class="sig-bar" style="width:0%;background:var(--purple);"></div></div><div class="sig-ct">0</div></div><div class="sig"><div class="sig-icon">📰</div><div class="sig-lbl">Signals</div><div class="sig-bar-bg"><div class="sig-bar" style="width:46%;background:var(--teal);"></div></div><div class="sig-ct">7</div></div><div class="sig"><div class="sig-icon">🔀</div><div class="sig-lbl">Adjacent</div><div class="sig-bar-bg"><div class="sig-bar" style="width:46%;background:var(--orange);"></div></div><div class="sig-ct">7</div></div><div class="sig"><div class="sig-icon">🗺</div><div class="sig-lbl">GIS picks</div><div class="sig-bar-bg"><div class="sig-bar" style="width:20%;background:var(--green);"></div></div><div class="sig-ct">3</div></div>
+    <div class="sig"><div class="sig-icon">🎥</div><div class="sig-lbl">Videos</div><div class="sig-bar-bg"><div class="sig-bar" style="width:29%;background:var(--blue);"></div></div><div class="sig-ct">5</div></div><div class="sig"><div class="sig-icon">📦</div><div class="sig-lbl">Repos</div><div class="sig-bar-bg"><div class="sig-bar" style="width:35%;background:var(--purple);"></div></div><div class="sig-ct">6</div></div><div class="sig"><div class="sig-icon">📰</div><div class="sig-lbl">Signals</div><div class="sig-bar-bg"><div class="sig-bar" style="width:35%;background:var(--teal);"></div></div><div class="sig-ct">6</div></div><div class="sig"><div class="sig-icon">🔀</div><div class="sig-lbl">Adjacent</div><div class="sig-bar-bg"><div class="sig-bar" style="width:35%;background:var(--orange);"></div></div><div class="sig-ct">6</div></div><div class="sig"><div class="sig-icon">🗺</div><div class="sig-lbl">GIS picks</div><div class="sig-bar-bg"><div class="sig-bar" style="width:17%;background:var(--green);"></div></div><div class="sig-ct">3</div></div>
   </div>
   <div class="panel p-teal">
     <div class="plabel">Model Tracker</div>
-    <div class="model-row"><div><div class="model-name">claude-sonnet-4-6</div><div class="model-co">Anthropic · 2026-04-21</div></div><span class="model-status ms-tool">TOOL</span></div><div class="model-row"><div><div class="model-name">claude-haiku-4-5</div><div class="model-co">Anthropic · 2026-04-21</div></div><span class="model-status ms-tool">TOOL</span></div><div class="model-row"><div><div class="model-name">Claude Design (new capability)</div><div class="model-co">Anthropic · 2026-04-21</div></div><span class="model-status ms-new">NEW</span></div><div class="model-row"><div><div class="model-name">GPT Image 2</div><div class="model-co">OpenAI · 2026-04-21</div></div><span class="model-status ms-new">NEW</span></div><div class="model-row"><div><div class="model-name">Kimi k2.6</div><div class="model-co">Moonshot AI · 2026-04-21</div></div><span class="model-status ms-watch">WATCH</span></div><div class="model-row"><div><div class="model-name">Hermes (via Ollama)</div><div class="model-co">NousResearch · 2026-04-20</div></div><span class="model-status ms-tool">TOOL</span></div>
+    <div class="model-row"><div><div class="model-name">Qwen 3.6 27B</div><div class="model-co">Alibaba · 2026-04-22</div></div><span class="model-status ms-new">NEW</span></div><div class="model-row"><div><div class="model-name">Kimi K2.6</div><div class="model-co">Moonshot AI · 2026-04-21</div></div><span class="model-status ms-watch">WATCH</span></div><div class="model-row"><div><div class="model-name">MiniMax M2.7</div><div class="model-co">MiniMax · 2026-04-22</div></div><span class="model-status ms-watch">WATCH</span></div><div class="model-row"><div><div class="model-name">GPT Image 2</div><div class="model-co">OpenAI · 2026-04-21</div></div><span class="model-status ms-new">NEW</span></div><div class="model-row"><div><div class="model-name">Claude Code (Pro plan test)</div><div class="model-co">Anthropic · 2026-04-21</div></div><span class="model-status ms-infra">INFRA</span></div><div class="model-row"><div><div class="model-name">Gemini CLI (open-source agent)</div><div class="model-co">Google · 2026-04-22</div></div><span class="model-status ms-tool">TOOL</span></div>
   </div>
   <div class="panel p-yellow">
     <div class="plabel">The Lab — Apply This Week</div>
-    <div style="font-size:9.5px;color:var(--text3);margin-bottom:10px;font-style:italic;">3 items · one per ✅ Adopt Now artifact</div><div class="apply-card"><div class="apply-head"><div class="apply-title">Audit Your Claude Code Plan & Document Current Usage</div><span class="effort e-low">Low effort</span></div><div class="apply-desc">Log into claude.com/pricing today and document exactly which plan tier you're on and what features are confirmed. Screenshot your current plan, then write a 200-word Tool Critic note on how this pricing change affects your recommendation to GIS practitioners — this becomes ready-to-publish content for Globe & Atlas.</div><a href="curricula/audit-your-claude-code-plan-document-current-usage.html" target="_blank" class="cur-link">📖 View tutorial →</a></div><div class="apply-card"><div class="apply-head"><div class="apply-title">Publish a Tool Critic Take: Anthropic's Claude Code Monetization Strategy</div><span class="effort e-med">Med effort</span></div><div class="apply-desc">Using Anthropic's official response + the community open letter + the LocalLLaMA migration thread, draft a 600-word Tool Critic essay for Globe & Atlas analyzing Anthropic's decision to move Claude Code up-market. Include your personal cost math as a practitioner and a recommendation matrix for GIS professionals at different budget levels (free / $20 / $100+).</div><a href="curricula/publish-a-tool-critic-take-anthropic-s-claude-code-monetization-strategy.html" target="_blank" class="cur-link">📖 View tutorial →</a></div><div class="apply-card"><div class="apply-head"><div class="apply-title">Apply Spec-Driven Development to One FME Workflow with Claude Code</div><span class="effort e-med">Med effort</span></div><div class="apply-desc">Pick one recurring FME workflow (e.g., a Sentinel Hub data pull or a GeoJSON transformation pipeline) and write a formal spec document before touching Claude Code — define inputs, outputs, error conditions, and acceptance criteria. Then use Traycer's Epic Mode approach to drive Claude Code with the spec rather than free-form prompting. Compare output quality and reliability to your baseline vibe-coding approach and document the delta for a Build column entry.</div><a href="curricula/apply-spec-driven-development-to-one-fme-workflow-with-claude-code.html" target="_blank" class="cur-link">📖 View tutorial →</a></div>
+    <div style="font-size:9.5px;color:var(--text3);margin-bottom:10px;font-style:italic;">4 items · one per ✅ Adopt Now artifact</div><div class="apply-card"><div class="apply-head"><div class="apply-title">Audit your Claude Code subscription tier and document a contingency plan</div><span class="effort e-low">Low effort</span></div><div class="apply-desc">Log into claude.com/pricing and confirm your current plan still includes Claude Code. Document which of your active projects depend on Claude Code CLI and draft a one-page contingency plan naming two fallback tools (e.g., Gemini CLI, OpenCode) with estimated migration effort. Publish findings as a Tool Critic micro-post.</div><div style="margin-top:10px;font-size:9.5px;color:var(--text3);font-family:var(--font-mono);">❯ python3 execution/expand_lab.py --item 1</div></div><div class="apply-card"><div class="apply-head"><div class="apply-title">Install everything-claude-code and activate the memory + research-first instincts on a live GIS project</div><span class="effort e-med">Med effort</span></div><div class="apply-desc">Clone affaan-m/everything-claude-code and follow the setup guide to install the skills and instincts layer on top of your existing Claude Code CLI. Run it on an active FME-to-Python migration task or a Sentinel Hub data pipeline build. Document what the 'research-first' mode changes about output quality vs. vanilla Claude Code — this is direct Build pillar content.</div><div style="margin-top:10px;font-size:9.5px;color:var(--text3);font-family:var(--font-mono);">❯ python3 execution/expand_lab.py --item 2</div></div><div class="apply-card"><div class="apply-head"><div class="apply-title">Deploy claude-mem on a multi-session Streamlit/GIS project and benchmark context recall</div><span class="effort e-med">Med effort</span></div><div class="apply-desc">Install thedotmack/claude-mem as a Claude Code plugin on a Streamlit or GeoPandas project that spans multiple sessions. After 3 sessions, review what context was automatically injected and evaluate whether it reduced repeated prompting. Write up a short comparison of session quality with vs. without memory injection — suitable for The Build pillar.</div><div style="margin-top:10px;font-size:9.5px;color:var(--text3);font-family:var(--font-mono);">❯ python3 execution/expand_lab.py --item 3</div></div><div class="apply-card"><div class="apply-head"><div class="apply-title">Compare Gemini CLI against Claude Code on a geospatial Python task</div><span class="effort e-med">Med effort</span></div><div class="apply-desc">Install google-gemini/gemini-cli and run the same GIS-adjacent coding task (e.g., a rasterio band extraction script or a GeoPandas spatial join) using both Gemini CLI and Claude Code CLI. Score on output accuracy, token cost, and developer ergonomics. Publish as a head-to-head Tool Critic piece for Globe & Atlas.</div><div style="margin-top:10px;font-size:9.5px;color:var(--text3);font-family:var(--font-mono);">❯ python3 execution/expand_lab.py --item 4</div></div>
   </div>
 </div>
 
@@ -392,16 +421,23 @@ STACK (direct):
 - Languages: Python 3, TypeScript, JavaScript
 - Python libs: Streamlit, python-dotenv, pathlib, pdfplumber, Playwright, requests, rasterio, geopandas, GDAL
 - Frontend: React 19, Vite, TypeScript
-- AI/LLM: Claude API (Anthropic), claude-sonnet-4-6, claude-haiku-4-5, Anthropic SDK
-- GIS/Geospatial: FME (Safe Software), Sentinel Hub API, QGIS, ArcGIS Pro, WMS/WMTS, H3, GeoJSON
+- AI/LLM: Claude API (Anthropic), claude-sonnet-4-6, claude-haiku-4-5, Anthropic SDK; also monitoring ChatGPT/OpenAI, Gemini/Google AI
+- GIS/Geospatial: FME (Safe Software), Sentinel Hub API, QGIS, ArcGIS Pro (Esri), WMS/WMTS, H3, GeoJSON
+- Imagery: Sentinel-2, Sentinel-1 SAR, drone imagery, thermal imagery, multispectral imagery, hyperspectral imagery
+- Imagery services: Planet Labs, Maxar, Airbus Defence & Space, SkyWatch, UP42, Google Earth Engine
 - Deployment: Vercel, GitHub Actions, GitHub Pages
 - Data: JSON, PDF parsing, REST APIs, YouTube Data API, GitHub API, Reddit API
 - Dev tools: Claude Code CLI, VS Code, tmux, git, zsh
 
 ADJACENT (one step away — tools that could replace or significantly enhance direct stack items):
 - Any Python library that replaces or meaningfully upgrades something above
-- Any LLM model or API that competes with or extends Claude API usage
-- Any geospatial AI tool that works with or replaces FME/Sentinel Hub/QGIS workflows
+- Any LLM model or API that competes with or extends Claude API usage (OpenAI, Google Gemini, Mistral, etc.)
+- Any geospatial AI tool that works with or replaces FME/Sentinel Hub/QGIS/ArcGIS workflows
+- Esri/ArcGIS AI features, Esri Living Atlas updates, ArcGIS Python API changes
+- Google Maps Platform AI features, Google Earth Engine updates, Google DeepMind geospatial work
+- Satellite or aerial imagery AI: object detection, change detection, land cover classification, SAR processing
+- Drone/UAV AI: flight planning AI, automated image analysis, photogrammetry AI tools
+- Thermal or multispectral AI: anomaly detection, agricultural AI, environmental monitoring
 - Any frontend framework evolution affecting React 19 + Vite
 - Any agent orchestration tool relevant to the 3-layer architecture (directives/orchestration/execution)
 - Any deployment tooling that affects Vercel or GitHub Actions workflows
@@ -412,7 +448,7 @@ NOT RELEVANT (filter to world section):
 - Gaming engines, Unity, Unreal
 - Blockchain, crypto, Web3
 - Enterprise SaaS platforms (Salesforce, SAP, etc.)
-- Tools with no clear connection to Python, GIS, LLMs, or React
+- Tools with no clear connection to Python, GIS, LLMs, React, or imagery
 </pre>
     </div>
     <div class="sc-col">

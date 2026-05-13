@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add claude-mem Persistence to Your Sentinel Hub Scripting Sessions — Lab Tutorial</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080b12; --bg2: #0e1220; --bg3: #151c2e; --bg4: #1d2540;
+    --border: #252e4a; --border2: #36416a; --text: #e6eaf4;
+    --text2: #8e9ab8; --text3: #58678e; --blue: #5b8af7;
+    --green: #34d89a; --orange: #f97c3c; --yellow: #f5c842;
+    --teal: #38c9d4; --cyan: #4fd9f5; --purple: #7c5cfc;
+    --font-sans: 'Inter', -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:var(--font-sans); line-height:1.7; }
+  .page { max-width:780px; margin:0 auto; padding:48px 32px 80px; }
+  .back { margin-bottom:32px; }
+  .back a { font-size:12px; font-family:var(--font-mono); color:var(--text3); text-decoration:none; border:1px solid var(--border); padding:6px 14px; border-radius:6px; transition:.15s; }
+  .back a:hover { color:var(--blue); border-color:var(--blue); }
+  .page-title { font-size:26px; font-weight:900; letter-spacing:-.4px; color:var(--text); margin-bottom:10px; line-height:1.25; }
+  .page-meta { font-size:11px; font-family:var(--font-mono); color:var(--text3); margin-bottom:40px; padding-bottom:24px; border-bottom:1px solid var(--border); }
+  h2.cur-h2 { font-size:19px; font-weight:800; color:var(--text); margin:40px 0 10px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+  h3.cur-h3 { font-size:15px; font-weight:700; color:var(--text2); margin:28px 0 8px; }
+  h4.cur-h4 { font-size:12.5px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.6px; margin:20px 0 6px; }
+  p.cur-p { font-size:14px; color:var(--text2); margin-bottom:12px; }
+  ul.cur-list { font-size:14px; color:var(--text2); margin:8px 0 14px 20px; }
+  ul.cur-list li { margin-bottom:6px; line-height:1.6; }
+  ul.cur-ol { list-style:decimal; }
+  pre { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:18px 20px; margin:14px 0 20px; overflow-x:auto; }
+  pre code { font-family:var(--font-mono); font-size:12px; color:var(--green); white-space:pre; line-height:1.6; }
+  code.cur-inline { font-family:var(--font-mono); font-size:12px; background:var(--bg4); color:var(--cyan); padding:2px 6px; border-radius:4px; }
+  strong { color:var(--text); font-weight:700; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="back"><a href="../latest.html">← Back to Hub</a></div>
+  <div class="page-title">Add claude-mem Persistence to Your Sentinel Hub Scripting Sessions</div>
+  <div class="page-meta">AI Discovery Hub · Lab Tutorial</div>
+  <h2 class="cur-h2">Add `claude-mem` Persistence to Your Sentinel Hub Scripting Sessions</h2>
+<h3 class="cur-h3">A Hands-On Curriculum for GIS Practitioners Using Claude Code CLI</h3>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">1. Introduction & Context</h3>
+<h4 class="cur-h4">The Problem: Every Session Starts Blind</h4>
+<p class="cur-p">If you've used <strong>Claude Code CLI</strong> for Sentinel Hub API scripting, you've experienced the friction firsthand. Every new session, you re-explain:</p>
+<ul class="cur-list">
+<li>Your Sentinel Hub instance ID and preferred endpoint patterns</li>
+<li>Which EvalScript conventions you follow (band normalization, output formats)</li>
+<li>Your project's coordinate reference systems and AOI definitions</li>
+<li>Past mistakes Claude already helped you fix — and shouldn't repeat</li>
+</ul>
+<p class="cur-p">This is the <strong>stateless memory problem</strong>. Claude is powerful, but without cross-session context, you're constantly re-onboarding your AI assistant.</p>
+<h4 class="cur-h4">The Solution: `claude-mem`</h4>
+<p class="cur-p">[<code class="cur-inline">claude-mem</code>](https://github.com/thedotmack/claude-mem) is a lightweight persistence layer that:</p>
+<ul class="cur-list cur-ol">
+<li><strong>Captures</strong> what your Claude agent does across sessions</li>
+<li><strong>Compresses</strong> that history using AI summarization</li>
+<li><strong>Injects</strong> relevant context back into future sessions automatically</li>
+</ul>
+<p class="cur-p">For GIS practitioners doing iterative Sentinel Hub scripting — tuning EvalScripts, debugging API calls, refining cloud-masking logic — this means Claude remembers your conventions, your errors, and your progress.</p>
+<h4 class="cur-h4">Why This Exercise Matters</h4>
+<p class="cur-p">This exercise has a concrete, measurable goal: <strong>reduce correction prompts by 30% or more</strong> across three Sentinel Hub scripting sessions. You'll instrument, measure, and evaluate — and if it works, you'll document a replicable setup for other GIS practitioners.</p>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">2. Prerequisites</h3>
+<h4 class="cur-h4">Required Knowledge</h4>
+<ul class="cur-list">
+<li>Basic familiarity with the <strong>Sentinel Hub API</strong> (Process API, EvalScripts, BYOC)</li>
+<li>Comfort using a <strong>terminal / shell</strong> (bash, zsh, or PowerShell)</li>
+<li>Basic <strong>Python</strong> (for scripting sessions) or JavaScript (for EvalScripts)</li>
+<li>Understanding of what <strong>Claude Code CLI</strong> is and how to invoke it</li>
+</ul>
+<h4 class="cur-h4">Required Software & Accounts</h4>
+<p class="cur-p">| Requirement | Version / Notes |</p>
+<p class="cur-p">|---|---|</p>
+<p class="cur-p">| Node.js | v18+ (for <code class="cur-inline">claude-mem</code>) |</p>
+<p class="cur-p">| npm or npx | Comes with Node.js |</p>
+<p class="cur-p">| Claude Code CLI | Latest — [install guide](https://docs.anthropic.com/en/docs/claude-code) |</p>
+<p class="cur-p">| Python | 3.9+ |</p>
+<p class="cur-p">| Sentinel Hub account | Free trial acceptable — [sentinel-hub.com](https://www.sentinel-hub.com/) |</p>
+<p class="cur-p">| <code class="cur-inline">sentinelhub-py</code> library | <code class="cur-inline">pip install sentinelhub</code> |</p>
+<p class="cur-p">| A text editor | VS Code recommended |</p>
+<h4 class="cur-h4">Pre-Exercise Setup Checklist</h4>
+<p class="cur-p">Before starting the timed sessions, confirm:</p>
+<pre><code># Verify Claude Code CLI
+claude --version
+
+# Verify Node.js
+node --version   # Should show v18+
+
+# Verify Python environment
+python --version
+pip show sentinelhub
+
+# Verify Sentinel Hub credentials are accessible
+echo $SH_CLIENT_ID
+echo $SH_CLIENT_SECRET
+echo $SH_INSTANCE_ID</code></pre>
+<p class="cur-p">If any of these fail, resolve them before continuing.</p>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">3. Step-by-Step Guide</h3>
+<h4 class="cur-h4">Phase 0: Baseline Measurement (Before `claude-mem`)</h4>
+<p class="cur-p">Before installing <code class="cur-inline">claude-mem</code>, you need a <strong>baseline</strong>. This is what makes the 30% improvement claim measurable.</p>
+<p class="cur-p">#### 0.1 Define What You're Measuring</p>
+<p class="cur-p">A <strong>"correction prompt"</strong> is any follow-up message you send because Claude:</p>
+<ul class="cur-list">
+<li>Forgot your project's CRS or AOI</li>
+<li>Repeated a mistake you already corrected</li>
+<li>Asked you to re-explain Sentinel Hub auth patterns</li>
+<li>Generated code inconsistent with conventions you've established</li>
+</ul>
+<p class="cur-p">Create a simple tally sheet:</p>
+<pre><code># Session Correction Tally
+
+## Session 1 (Baseline — No claude-mem)
+- Correction prompts: ___
+- Total prompts: ___
+- Correction ratio: ___
+
+## Session 2 (With claude-mem)
+- Correction prompts: ___
+- Total prompts: ___
+- Correction ratio: ___
+
+## Session 3 (With claude-mem, mature memory)
+- Correction prompts: ___
+- Total prompts: ___
+- Correction ratio: ___</code></pre>
+<p class="cur-p">Save this as <code class="cur-inline">~/sentinel-claudemem-eval/tally.md</code>.</p>
+<p class="cur-p">#### 0.2 Run Your Baseline Session (Session 1)</p>
+<p class="cur-p">Pick a <strong>real scripting task</strong> you'd normally do. Suggested tasks that generate natural correction opportunities:</p>
+<p class="cur-p">> <strong>Task for Session 1:</strong> Write a Python script using <code class="cur-inline">sentinelhub-py</code> that fetches a True Color (B04, B03, B02) Sentinel-2 image for a custom AOI, saves it as a GeoTIFF, and applies a basic cloud mask using the CLM band.</p>
+<p class="cur-p">Open Claude Code CLI without any memory tooling:</p>
+<pre><code># Start a fresh session — no memory injection
+claude</code></pre>
+<p class="cur-p">Work through the task naturally. <strong>Tally every correction prompt honestly.</strong> When done:</p>
+<pre><code># Note your totals in tally.md
+# Example:
+# Session 1: 7 correction prompts / 22 total prompts = 31.8% correction ratio</code></pre>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 1: Install and Configure `claude-mem`</h4>
+<p class="cur-p">#### 1.1 Install <code class="cur-inline">claude-mem</code></p>
+<pre><code># Install globally via npm
+npm install -g claude-mem
+
+# Verify installation
+claude-mem --version</code></pre>
+<p class="cur-p">If you prefer not to install globally, use <code class="cur-inline">npx</code>:</p>
+<pre><code>npx claude-mem --version</code></pre>
+<p class="cur-p">#### 1.2 Initialize <code class="cur-inline">claude-mem</code> for Your Project</p>
+<p class="cur-p">Create a dedicated directory for your Sentinel Hub work:</p>
+<pre><code>mkdir -p ~/sentinel-claudemem-eval
+cd ~/sentinel-claudemem-eval
+
+# Initialize claude-mem in this directory
+claude-mem init</code></pre>
+<p class="cur-p">This creates a <code class="cur-inline">.claude-mem/</code> directory with:</p>
+<pre><code>.claude-mem/
+├── config.json        # Configuration
+├── sessions/          # Raw session logs
+└── memory.md          # Compressed, injectable memory</code></pre>
+<p class="cur-p">#### 1.3 Review and Customize Configuration</p>
+<p class="cur-p">Open <code class="cur-inline">.claude-mem/config.json</code>:</p>
+<pre><code>{
+  "projectName": "sentinel-hub-scripting",
+  "compressionModel": "claude-haiku-4-5",
+  "maxMemoryTokens": 2000,
+  "autoInject": true,
+  "sessionLogPath": "./sessions",
+  "memoryPath": "./memory.md"
+}</code></pre>
+<p class="cur-p"><strong>Recommended customizations for Sentinel Hub work:</strong></p>
+<pre><code>{
+  "projectName": "sentinel-hub-gis-scripting",
+  "compressionModel": "claude-haiku-4-5",
+  "maxMemoryTokens": 2500,
+  "autoInject": true,
+  "sessionLogPath": "./.claude-mem/sessions",
+  "memoryPath": "./.claude-mem/memory.md",
+  "contextHints": [
+    "Sentinel Hub API",
+    "EvalScript",
+    "sentinelhub-py",
+    "GeoTIFF",
+    "cloud masking"
+  ]
+}</code></pre>
+<p class="cur-p">Save the file.</p>
+<p class="cur-p">#### 1.4 Seed Initial Memory (Critical Step)</p>
+<p class="cur-p">Before your first <code class="cur-inline">claude-mem</code>-assisted session, manually seed the memory file with your project conventions. This front-loads the context that you'd otherwise re-explain:</p>
+<pre><code># Create your initial memory seed
+cat &gt; .claude-mem/memory.md &lt;&lt; 'EOF'
+# Sentinel Hub Scripting — Project Memory
+
+## Project Conventions
+
+### Sentinel Hub Configuration
+- Instance ID: stored in env var $SH_INSTANCE_ID
+- Auth: OAuth2 via $SH_CLIENT_ID / $SH_CLIENT_SECRET
+- Primary endpoint: https://services.sentinel-hub.com
+- Preferred library: sentinelhub-py (Python)
+
+### Coordinate Reference Systems
+- Default CRS: EPSG:4326 for API calls, EPSG:32633 for local processing
+- AOI format: GeoJSON FeatureCollection or bbox [minLon, minLat, maxLon, maxLat]
+
+### EvalScript Conventions
+- Output format: FLOAT32 for analysis, UINT8 for visualization
+- Band order: always document in comments at top of EvalScript
+- Cloud masking: use CLM band where available; threshold SCL values 8,9,10 for L2A
+- Normalization: divide by 10000 for reflectance values
+
+### Code Conventions
+- All scripts use Python 3.9+
+- Dependencies: sentinelhub, numpy, rasterio, geopandas
+- Output files: GeoTIFF with CRS embedded, named pattern: {satellite}_{date}_{band}_{aoi}.tif
+- Error handling: always wrap API calls in try/except with sentinelhub-specific exceptions
+
+### Known Issues Resolved
+- (Will populate after Session 1)
+
+## Session History
+- (Will populate after sessions)
+EOF</code></pre>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 2: Scripting Sessions with `claude-mem`</h4>
+<p class="cur-p">#### 2.1 Session 2 — First <code class="cur-inline">claude-mem</code>-Assisted Session</p>
+<p class="cur-p"><strong>Task for Session 2:</strong> Extend your Session 1 script to support multi-temporal image fetching — retrieve Sentinel-2 True Color images for the same AOI across a date range (e.g., monthly composites for a full year), and generate a simple change detection output.</p>
+<p class="cur-p"><strong>Starting the session with memory injection:</strong></p>
+<pre><code>cd ~/sentinel-claudemem-eval
+
+# Start Claude Code with memory injection
+claude-mem start -- claude</code></pre>
+<p class="cur-p">What happens here:</p>
+<ul class="cur-list cur-ol">
+<li><code class="cur-inline">claude-mem</code> reads <code class="cur-inline">.claude-mem/memory.md</code></li>
+<li>Prepends it as context to your Claude Code session</li>
+<li>Logs everything that happens during the session</li>
+<li>Compresses and updates memory when the session ends</li>
+</ul>
+<p class="cur-p"><strong>Alternatively, inject memory manually into your first prompt:</strong></p>
+<pre><code># Generate the injection snippet
+claude-mem inject
+
+# This outputs something like:
+# --- INJECTED CONTEXT (claude-mem) ---
+# [Your memory.md contents]
+# --- END INJECTED CONTEXT ---</code></pre>
+<p class="cur-p">Copy this into your first message to Claude, then proceed with your task.</p>
+<p class="cur-p"><strong>During Session 2 — track your tally:</strong></p>
+<pre><code>Keep your tally.md open in a split window.
+Mark a tally every time you send a correction prompt.
+Note: did Claude AVOID repeating Session 1 mistakes?</code></pre>
+<p class="cur-p"><strong>After Session 2 — save the session:</strong></p>
+<pre><code># claude-mem automatically logs if started with 'claude-mem start'
+# If manual, save your session transcript
+claude-mem save --session "session-2-multitemporal"
+
+# Compress and update memory
+claude-mem compress</code></pre>
+<p class="cur-p">Inspect the updated memory:</p>
+<pre><code>cat .claude-mem/memory.md</code></pre>
+<p class="cur-p">You should see new entries like:</p>
+<pre><code>## Session History
+
+### Session 2 — Multi-temporal fetching (2024-01-XX)
+- Implemented date range iteration with SentinelHubRequest
+- Resolved: dateutil parser conflict with sentinelhub internal dates
+- Established pattern: use datetime objects, not strings, for time_interval
+- Output naming convention confirmed: S2L2A_YYYYMMDD_TrueColor_{aoi}.tif</code></pre>
+<p class="cur-p">#### 2.2 Session 3 — Mature Memory Test</p>
+<p class="cur-p"><strong>Task for Session 3:</strong> Refactor Sessions 1 and 2's scripts into a reusable <code class="cur-inline">SentinelProcessor</code> class with methods for single-image fetch, multi-temporal fetch, and cloud-masked composite generation. Add a CLI interface using <code class="cur-inline">argparse</code>.</p>
+<p class="cur-p">This session is the real test. Claude should now:</p>
+<ul class="cur-list">
+<li>Know your CRS conventions without being told</li>
+<li>Know your file naming patterns</li>
+<li>Know which errors were already resolved</li>
+<li>Know your dependency stack</li>
+</ul>
+<pre><code>cd ~/sentinel-claudemem-eval
+
+# Start with accumulated memory
+claude-mem start -- claude</code></pre>
+<p class="cur-p"><strong>Track corrections the same way.</strong> Pay special attention to whether Claude proactively applies conventions from memory without prompting.</p>
+<p class="cur-p">After Session 3:</p>
+<pre><code>claude-mem save --session "session-3-refactor"
+claude-mem compress</code></pre>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 3: Measure and Evaluate</h4>
+<p class="cur-p">#### 3.1 Calculate Your Correction Ratios</p>
+<p class="cur-p">Fill in your tally sheet:</p>
+<pre><code># Results
+
+## Session 1 (Baseline — No claude-mem)
+- Correction prompts: [X]
+- Total prompts: [Y]  
+- Correction ratio: [X/Y × 100]%
+
+## Session 2 (With claude-mem, seeded memory)
+- Correction prompts: [X]
+- Total prompts: [Y]
+- Correction ratio: [X/Y × 100]%
+- Change from baseline: [±%]
+
+## Session 3 (With claude-mem, accumulated memory)
+- Correction prompts: [X]
+- Total prompts: [Y]
+- Correction ratio: [X/Y × 100]%
+- Change from baseline: [±%]
+
+## Verdict
+- Did claude-mem reduce friction by ≥30%? YES / NO
+- Average correction ratio with claude-mem: [%]
+- Reduction from baseline: [%]</code></pre>
+<p class="cur-p">#### 3.2 Interpreting Results</p>
+<p class="cur-p">| Outcome | Interpretation |</p>
+<p class="cur-p">|---|---|</p>
+<p class="cur-p">| ≥30% reduction | Strong signal — document for Tool Critic post |</p>
+<p class="cur-p">| 15–29% reduction | Moderate — note setup quality; retry with better seed |</p>
+<p class="cur-p">| <15% reduction | Weak — check if memory is actually injecting; review config |</p>
+<p class="cur-p">| No reduction | Diagnose: is <code class="cur-inline">claude-mem inject</code> running? Is memory.md populated? |</p>
+<p class="cur-p"><strong>Common reasons for poor results:</strong></p>
+<ul class="cur-list">
+<li>Memory file not injecting (run <code class="cur-inline">claude-mem inject</code> and verify output)</li>
+<li>Seed memory too generic (add more project-specific conventions)</li>
+<li>Tasks too different across sessions (correction prompts are domain-shift noise)</li>
+<li><code class="cur-inline">maxMemoryTokens</code> too low — increase to 3000+</li>
+</ul>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 4: Document for the Tool Critic Post (If 30%+ Achieved)</h4>
+<p class="cur-p">If you hit the threshold, you've earned the documentation milestone. Here's the template:</p>
+<p class="cur-p">#### 4.1 Create Your Setup Documentation</p>
+<pre><code>cat &gt; ~/sentinel-claudemem-eval/SETUP.md &lt;&lt; 'EOF'
+# claude-mem + Claude Code CLI: Setup for Sentinel Hub GIS Practitioners
+
+## What This Solves
+[Your summary of the stateless memory problem in your workflow]
+
+## Installation</code></pre>
+<p class="cur-p">npm install -g claude-mem</p>
+<p class="cur-p">claude-mem init</p>
+<pre><code>
+## Configuration for Sentinel Hub Work
+[Paste your working config.json]
+
+## Memory Seeding Template for GIS Projects
+[Paste your memory.md template]
+
+## Measured Results
+- Baseline correction ratio: [X]%
+- Post-claude-mem correction ratio: [X]%
+- Reduction achieved: [X]%
+
+## Workflow Integration
+[Your step-by-step for starting sessions]
+
+## Limitations and Gotchas
+[What didn't work well; edge cases]
+EOF</code></pre>
+<p class="cur-p">#### 4.2 Capture Your <code class="cur-inline">memory.md</code> as a Shareable Template</p>
+<pre><code># Sanitize and export (remove any credentials or sensitive paths)
+claude-mem export --sanitize &gt; sentinel-hub-memory-template.md</code></pre>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">4. Validation</h3>
+<h4 class="cur-h4">How to Verify You Completed the Exercise Successfully</h4>
+<p class="cur-p">Work through this checklist:</p>
+<p class="cur-p">#### Installation Validation</p>
+<pre><code># 1. claude-mem is installed and functional
+claude-mem --version
+# Expected: version number printed (e.g., 1.x.x)
+
+# 2. Project is initialized
+ls -la ~/sentinel-claudemem-eval/.claude-mem/
+# Expected: config.json, sessions/, memory.md
+
+# 3. Memory file is populated
+wc -l ~/sentinel-claudemem-eval/.claude-mem/memory.md
+# Expected: &gt;20 lines after seeding
+
+# 4. Memory injection works
+cd ~/sentinel-claudemem-eval && claude-mem inject
+# Expected: Formatted context block printed to stdout</code></pre>
+<p class="cur-p">#### Session Validation</p>
+<pre><code># 5. Session logs exist for all three sessions
+ls ~/sentinel-claudemem-eval/.claude-mem/sessions/
+# Expected: 3+ session log files
+
+# 6. Memory grew across sessions (compression working)
+# Compare timestamps and content of memory.md
+git log --oneline .claude-mem/memory.md  # If using git
+# OR
+# Check that "Session History" section has entries for sessions 2 and 3
+grep "Session" ~/sentinel-claudemem-eval/.claude-mem/memory.md</code></pre>
+<p class="cur-p">#### Outcome Validation</p>
+<pre><code># 7. Tally sheet is complete
+cat ~/sentinel-claudemem-eval/tally.md
+# Expected: All three sessions with prompt counts filled in
+
+# 8. Reduction calculated
+# You should be able to state: "My correction ratio dropped from X% to Y%"</code></pre>
+<p class="cur-p">#### Content Validation</p>
+<p class="cur-p">Open each of the three scripts you produced:</p>
+<ul class="cur-list">
+<li>[ ] <strong>Session 1:</strong> Single-image True Color fetch with cloud masking — works end-to-end</li>
+<li>[ ] <strong>Session 2:</strong> Multi-temporal fetch producing dated GeoTIFFs — works end-to-end</li>
+<li>[ ] <strong>Session 3:</strong> Refactored <code class="cur-inline">SentinelProcessor</code> class with <code class="cur-inline">argparse</code> CLI — importable and runnable</li>
+</ul>
+<p class="cur-p">Run a quick smoke test:</p>
+<pre><code># Test your Session 3 output
+python sentinel_processor.py --help
+# Expected: argparse help output with your defined arguments
+
+python sentinel_processor.py \
+  --mode single \
+  --bbox "12.0,41.0,13.0,42.0" \
+  --date "2024-06-01" \
+  --output ./test_output/
+# Expected: GeoTIFF written to test_output/</code></pre>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">5. Next Steps</h3>
+<h4 class="cur-h4">Immediate Improvements</h4>
+<p class="cur-p"><strong>1. Automate memory injection via a shell alias</strong></p>
+<pre><code># Add to your ~/.bashrc or ~/.zshrc
+alias claude-sh='cd ~/sentinel-claudemem-eval && claude-mem start -- claude'
+
+# Now starting a Sentinel Hub session is just:
+claude-sh</code></pre>
+<p class="cur-p"><strong>2. Version-control your memory</strong></p>
+<pre><code>cd ~/sentinel-claudemem-eval
+git init
+echo "sessions/" &gt;&gt; .gitignore  # Raw logs can be noisy
+git add .claude-mem/memory.md .claude-mem/config.json
+git commit -m "Initial claude-mem setup for Sentinel Hub scripting"</code></pre>
+<p class="cur-p">This lets you track how your memory evolves and roll back if compression degrades important context.</p>
+<p class="cur-p"><strong>3. Create domain-specific memory templates</strong></p>
+<p class="cur-p">Consider separate memory files for different GIS workflows:</p>
+<pre><code>.claude-mem/
+├── memory-sentinel2.md      # S2-specific conventions
+├── memory-sar.md            # SAR/S1 conventions  
+├── memory-byoc.md           # Custom collections
+└── memory.md                # Active (symlink to current)</code></pre>
+<h4 class="cur-h4">Expanding the Evaluation</h4>
+<p class="cur-p"><strong>4. Test with more complex tasks</strong></p>
+<p class="cur-p">The 30% threshold is a starting bar. Push further with:</p>
+<ul class="cur-list">
+<li>Multi-sensor fusion scripts (S1 + S2)</li>
+<li>Statistical time-series analysis with <code class="cur-inline">xarray</code></li>
+<li>Batch processing pipelines with error recovery</li>
+</ul>
+<p class="cur-p"><strong>5. Evaluate memory compression quality</strong></p>
+<pre><code># After 10+ sessions, audit what was kept vs. dropped
+claude-mem audit
+
+# Ask Claude directly:
+# "Based on the injected memory, what do you know about 
+#  my Sentinel Hub project's conventions?"</code></pre>
+<h4 class="cur-h4">Publishing Your Results</h4>
+<p class="cur-p"><strong>6. Write the Tool Critic Post</strong></p>
+<p class="cur-p">If you hit ≥30%, your evaluation is worth publishing. Structure it as:</p>
+<ul class="cur-list cur-ol">
+<li><strong>The problem</strong> (stateless Claude sessions in GIS workflows)</li>
+<li><strong>The experiment</strong> (3-session controlled evaluation)</li>
+<li><strong>The results</strong> (your numbers, with honest caveats)</li>
+<li><strong>The setup</strong> (reproducible steps from your <code class="cur-inline">SETUP.md</code>)</li>
+<li><strong>Who should use this</strong> (iterative EvalScript development, long-running GIS projects)</li>
+</ul>
+<p class="cur-p"><strong>7. Contribute back to <code class="cur-inline">claude-mem</code></strong></p>
+<p class="cur-p">Your GIS-specific memory template is genuinely useful to others. Consider:</p>
+<ul class="cur-list">
+<li>Opening a PR to add a <code class="cur-inline">sentinel-hub</code> example template to the repo</li>
+<li>Filing an issue if you found edge cases in memory compression</li>
+<li>Starring the repo and sharing in GIS/remote sensing communities</li>
+</ul>
+<h4 class="cur-h4">Further Learning</h4>
+<p class="cur-p">| Resource | Why It's Relevant |</p>
+<p class="cur-p">|---|---|</p>
+<p class="cur-p">| [Sentinel Hub Process API docs](https://docs.sentinel-hub.com/api/latest/api/process/) | Master the API you're automating |</p>
+<p class="cur-p">| [sentinelhub-py documentation](https://sentinelhub-py.readthedocs.io/) | Library reference for your scripts |</p>
+<p class="cur-p">| [Claude Code CLI documentation](https://docs.anthropic.com/en/docs/claude-code) | Get more from the CLI you're augmenting |</p>
+<p class="cur-p">| [claude-mem GitHub Issues](https://github.com/thedotmack/claude-mem/issues) | See known limitations, contribute findings |</p>
+<p class="cur-p">| [Anthropic Cookbook](https://github.com/anthropics/anthropic-cookbook) | Patterns for agent memory and context management |</p>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">Appendix: Quick Reference Card</h3>
+<pre><code># Daily Workflow with claude-mem
+
+# Start a session
+cd ~/sentinel-claudemem-eval
+claude-mem start -- claude
+
+# During the session
+# → Work normally in Claude Code CLI
+# → Tally correction prompts in tally.md
+
+# End the session
+# → Exit Claude Code (Ctrl+D or 'exit')
+# → claude-mem auto-saves and compresses
+
+# Check what was remembered
+cat .claude-mem/memory.md
+
+# Manually add a critical convention
+claude-mem note "Always use EPSG:32633 for local raster processing"
+
+# See session history
+claude-mem list
+
+# Export sanitized setup for sharing
+claude-mem export --sanitize &gt; my-gis-setup.md</code></pre>
+<p class="cur-p">---</p>
+<p class="cur-p">*Exercise estimated time: 3–5 hours across multiple days (one session per day recommended for realistic memory accumulation)*</p>
+<p class="cur-p">*Curriculum version: 1.0 | Designed for claude-mem + Claude Code CLI + Sentinel Hub API*</p>
+</div>
+</body>
+</html>

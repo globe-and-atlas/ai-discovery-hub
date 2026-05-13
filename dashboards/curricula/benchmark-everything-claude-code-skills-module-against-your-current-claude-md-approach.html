@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Benchmark everything-claude-code Skills Module Against Your Current CLAUDE.md Approach — Lab Tutorial</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080b12; --bg2: #0e1220; --bg3: #151c2e; --bg4: #1d2540;
+    --border: #252e4a; --border2: #36416a; --text: #e6eaf4;
+    --text2: #8e9ab8; --text3: #58678e; --blue: #5b8af7;
+    --green: #34d89a; --orange: #f97c3c; --yellow: #f5c842;
+    --teal: #38c9d4; --cyan: #4fd9f5; --purple: #7c5cfc;
+    --font-sans: 'Inter', -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:var(--font-sans); line-height:1.7; }
+  .page { max-width:780px; margin:0 auto; padding:48px 32px 80px; }
+  .back { margin-bottom:32px; }
+  .back a { font-size:12px; font-family:var(--font-mono); color:var(--text3); text-decoration:none; border:1px solid var(--border); padding:6px 14px; border-radius:6px; transition:.15s; }
+  .back a:hover { color:var(--blue); border-color:var(--blue); }
+  .page-title { font-size:26px; font-weight:900; letter-spacing:-.4px; color:var(--text); margin-bottom:10px; line-height:1.25; }
+  .page-meta { font-size:11px; font-family:var(--font-mono); color:var(--text3); margin-bottom:40px; padding-bottom:24px; border-bottom:1px solid var(--border); }
+  h2.cur-h2 { font-size:19px; font-weight:800; color:var(--text); margin:40px 0 10px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+  h3.cur-h3 { font-size:15px; font-weight:700; color:var(--text2); margin:28px 0 8px; }
+  h4.cur-h4 { font-size:12.5px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.6px; margin:20px 0 6px; }
+  p.cur-p { font-size:14px; color:var(--text2); margin-bottom:12px; }
+  ul.cur-list { font-size:14px; color:var(--text2); margin:8px 0 14px 20px; }
+  ul.cur-list li { margin-bottom:6px; line-height:1.6; }
+  ul.cur-ol { list-style:decimal; }
+  pre { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:18px 20px; margin:14px 0 20px; overflow-x:auto; }
+  pre code { font-family:var(--font-mono); font-size:12px; color:var(--green); white-space:pre; line-height:1.6; }
+  code.cur-inline { font-family:var(--font-mono); font-size:12px; background:var(--bg4); color:var(--cyan); padding:2px 6px; border-radius:4px; }
+  strong { color:var(--text); font-weight:700; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="back"><a href="../latest.html">← Back to Hub</a></div>
+  <div class="page-title">Benchmark everything-claude-code Skills Module Against Your Current CLAUDE.md Approach</div>
+  <div class="page-meta">AI Discovery Hub · Lab Tutorial</div>
+  <h2 class="cur-h2">Benchmark everything-claude-code Skills Module Against Your Current CLAUDE.md Approach</h2>
+<h3 class="cur-h3">A Practical Curriculum for FME Workspace Authors Using Claude Code CLI</h3>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">1. Introduction & Context</h3>
+<h4 class="cur-h4">What This Is</h4>
+<p class="cur-p">[everything-claude-code](https://github.com/affaan-m/everything-claude-code) is a meta-layer harness built on top of the Claude Code CLI. It extends your existing workflow with:</p>
+<ul class="cur-list">
+<li><strong>Skills modules</strong> — reusable, structured capability definitions that guide Claude toward expert-level behaviour in specific domains</li>
+<li><strong>Instincts modules</strong> — heuristic patterns that shape how Claude approaches problems before writing a single line of code</li>
+<li><strong>Persistent memory</strong> — context that survives across sessions, reducing repetitive prompt bootstrapping</li>
+<li><strong>Research-first patterns</strong> — forcing Claude to investigate before acting, reducing hallucinated solutions</li>
+<li><strong>Security layers</strong> — guardrails to prevent destructive operations in automated pipelines</li>
+</ul>
+<h4 class="cur-h4">Why It Matters for Your Workflow</h4>
+<p class="cur-p">You already use a <code class="cur-inline">CLAUDE.md</code> directive file to orient Claude Code for FME workspace authoring tasks — things like building transformers, writing Python callouts, structuring workspace templates for Globe & Atlas pipelines. That approach works, but it has costs:</p>
+<p class="cur-p">| Pain Point | Current CLAUDE.md Approach | everything-claude-code Potential |</p>
+<p class="cur-p">|---|---|---|</p>
+<p class="cur-p">| Repetitive context-setting | Re-stated every session | Persisted in memory modules |</p>
+<p class="cur-p">| Domain skills (FME, Python, CRS) | Embedded in monolithic CLAUDE.md | Modular, composable skills |</p>
+<p class="cur-p">| Iteration count | Varies per task | Potentially reduced via instincts |</p>
+<p class="cur-p">| Token cost | Baseline | Measurable delta |</p>
+<p class="cur-p">This exercise gives you a <strong>concrete, evidence-based data point</strong>: does the skills/instincts approach actually outperform your current CLAUDE.md directive on a real FME task you've already solved?</p>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">2. Prerequisites</h3>
+<p class="cur-p">Before starting, confirm you have the following.</p>
+<h4 class="cur-h4">Hard Requirements</h4>
+<ul class="cur-list">
+<li>[ ] <strong>Claude Code CLI installed and authenticated</strong></li>
+</ul>
+<p class="cur-p"><code class="cur-inline">`</code>bash</p>
+<p class="cur-p">claude --version</p>
+<p class="cur-p"># Expected: claude-code 1.x.x or higher</p>
+<p class="cur-p"><code class="cur-inline">`</code></p>
+<ul class="cur-list">
+<li>[ ] <strong>Git installed</strong></li>
+</ul>
+<p class="cur-p"><code class="cur-inline">`</code>bash</p>
+<p class="cur-p">git --version</p>
+<p class="cur-p"><code class="cur-inline">`</code></p>
+<ul class="cur-list">
+<li>[ ] <strong>Node.js ≥ 18</strong> (required by Claude Code CLI internals)</li>
+</ul>
+<p class="cur-p"><code class="cur-inline">`</code>bash</p>
+<p class="cur-p">node --version</p>
+<p class="cur-p"><code class="cur-inline">`</code></p>
+<ul class="cur-list">
+<li>[ ] <strong>An existing CLAUDE.md file</strong> you currently use for FME workspace authoring — this is your control baseline</li>
+<li>[ ] <strong>A solved FME workspace authoring task</strong> you completed manually or with your CLAUDE.md approach. You need:</li>
+</ul>
+<p class="cur-p">- The original task description/prompt you used</p>
+<p class="cur-p">- The final output (<code class="cur-inline">.fmw</code> file, Python script, or transformer config)</p>
+<p class="cur-p">- A rough note of how many prompt iterations it took</p>
+<ul class="cur-list">
+<li>[ ] <strong>A cost-tracking baseline</strong> — either from Claude Code's built-in usage display or your Anthropic console</li>
+</ul>
+<h4 class="cur-h4">Helpful but Not Required</h4>
+<ul class="cur-list">
+<li>[ ] Familiarity with YAML or JSON (skills files use structured config)</li>
+<li>[ ] Basic understanding of what <code class="cur-inline">CLAUDE.md</code> does in Claude Code (it's injected as system context at session start)</li>
+</ul>
+<h4 class="cur-h4">Reference: Your Benchmark Task</h4>
+<p class="cur-p">Pick a task you've <strong>already solved</strong> that meets these criteria:</p>
+<pre><code>Good benchmark tasks:
+  ✓ Takes 3–10 prompt iterations to solve cleanly
+  ✓ Involves FME-specific knowledge (transformer chains, coordinate systems, reader/writer params)
+  ✓ Has a clear, verifiable output (the workspace runs, produces correct output)
+  ✓ Is representative of Globe & Atlas pipeline work
+
+Avoid for this benchmark:
+  ✗ Trivial one-shot tasks (too little signal)
+  ✗ Tasks requiring live data connections you can't reproduce
+  ✗ Tasks so complex they take 30+ iterations (too much noise)</code></pre>
+<p class="cur-p"><strong>Document your baseline now, before cloning anything:</strong></p>
+<pre><code>## My Benchmark Task Record
+
+### Task Description (the prompt I used)
+[Paste your original prompt here]
+
+### Output Produced
+[File path or description of the .fmw / script produced]
+
+### Iteration Count (baseline)
+[Number of back-and-forth prompts to reach acceptable output]
+
+### Token Cost (baseline)
+[Approximate from Claude console, or "not tracked"]
+
+### Subjective Quality Score (1–5)
+[How satisfied were you with the output?]</code></pre>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">3. Step-by-Step Guide</h3>
+<h4 class="cur-h4">Phase 1: Clone and Explore the Repository</h4>
+<p class="cur-p">#### Step 1.1 — Clone everything-claude-code</p>
+<pre><code># Navigate to your projects directory
+cd ~/projects
+
+# Clone the repo
+git clone https://github.com/affaan-m/everything-claude-code.git
+
+# Enter it
+cd everything-claude-code
+
+# List the top-level structure
+ls -la</code></pre>
+<p class="cur-p">You should see a structure similar to:</p>
+<pre><code>everything-claude-code/
+├── CLAUDE.md               ← The repo's own Claude directive (study this!)
+├── skills/                 ← Skills module definitions
+├── instincts/              ← Instincts/heuristic patterns
+├── memory/                 ← Persistent memory templates
+├── security/               ← Guardrail configurations
+├── examples/               ← Usage examples
+└── README.md</code></pre>
+<p class="cur-p">#### Step 1.2 — Read the Repository's Own CLAUDE.md</p>
+<p class="cur-p">This is the most instructive file in the repo. Before touching anything else:</p>
+<pre><code>cat CLAUDE.md</code></pre>
+<p class="cur-p"><strong>As you read, annotate mentally:</strong></p>
+<ul class="cur-list">
+<li>How is it structured differently from yours?</li>
+<li>Does it reference skills/instincts files, or does it contain everything inline?</li>
+<li>What patterns does it use that your CLAUDE.md doesn't?</li>
+</ul>
+<p class="cur-p">#### Step 1.3 — Inventory the Skills Directory</p>
+<pre><code># List all skills files
+find skills/ -type f | sort
+
+# Read each one — they're usually short
+cat skills/*.md   # or skills/*.yaml depending on the repo structure</code></pre>
+<p class="cur-p"><strong>Look for:</strong></p>
+<ul class="cur-list">
+<li>How skills are named and scoped</li>
+<li>Whether skills have input/output contracts</li>
+<li>How domain-specific knowledge is encoded (this is what you'll adapt for FME)</li>
+</ul>
+<p class="cur-p">#### Step 1.4 — Inventory the Instincts Directory</p>
+<pre><code>find instincts/ -type f | sort
+cat instincts/*</code></pre>
+<p class="cur-p">Instincts are typically short heuristic rules like:</p>
+<ul class="cur-list">
+<li>"Always read existing code before modifying it"</li>
+<li>"Prefer reversible operations"</li>
+<li>"Ask for clarification when requirements have two valid interpretations"</li>
+</ul>
+<p class="cur-p">Note which instincts would be <strong>high-value for FME workspace authoring specifically</strong>.</p>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 2: Create an FME-Specific Skills Module</h4>
+<p class="cur-p">This is where you translate your domain knowledge into the everything-claude-code format.</p>
+<p class="cur-p">#### Step 2.1 — Create a Working Directory</p>
+<pre><code># Create a local workspace for this experiment
+mkdir ~/projects/fme-claude-benchmark
+cd ~/projects/fme-claude-benchmark
+
+# Create subdirectories mirroring the everything-claude-code structure
+mkdir -p skills instincts memory</code></pre>
+<p class="cur-p">#### Step 2.2 — Write an FME Workspace Authoring Skill</p>
+<p class="cur-p">Create <code class="cur-inline">skills/fme-workspace-authoring.md</code>:</p>
+<pre><code>cat &gt; skills/fme-workspace-authoring.md &lt;&lt; 'EOF'
+# Skill: FME Workspace Authoring
+
+## Domain
+Safe Software FME (Feature Manipulation Engine) workspace design and implementation.
+
+## Capability Scope
+- Design transformer chains for spatial and tabular data transformation
+- Write Python callout scripts compatible with FME's scripting environment
+- Configure Reader and Writer parameters for common formats (GeoJSON, Shapefile, PostGIS, WFS, CSV)
+- Apply coordinate reference system (CRS) transformations using appropriate FME transformers
+- Structure workspaces for the Globe & Atlas pipeline conventions
+
+## Activation Trigger
+Activate this skill when the user's request mentions: FME, workspace, transformer, .fmw, 
+FeatureReader, FeatureWriter, FMEObjects, Python callout, CRS reprojection, 
+Safe Software, Globe & Atlas pipeline.
+
+## Research-First Protocol
+Before proposing any transformer chain:
+1. Confirm the input data format and schema
+2. Confirm the target output format and schema
+3. Identify the CRS of input and whether reprojection is needed
+4. Ask: "Does an existing transformer handle this, or is a custom Python callout needed?"
+
+## Output Contract
+All FME workspace descriptions must include:
+- Transformer list in order (Reader → [chain] → Writer)
+- For each transformer: name, key parameters, purpose in one sentence
+- Any Python callout scripts in full, with inline comments
+- Explicit CRS handling steps if projection change is involved
+- Known failure modes and how the workspace handles them
+
+## Quality Gates
+- [ ] Workspace handles null/missing geometry gracefully
+- [ ] All attribute names follow the target schema exactly (case-sensitive)
+- [ ] CRS is explicitly set at the Writer, not assumed
+- [ ] Python callouts include try/except blocks
+- [ ] Large dataset considerations noted (chunking, streaming if applicable)
+
+## Globe & Atlas Specific Conventions
+- Output CRS: EPSG:4326 unless otherwise specified
+- Attribute naming: snake_case
+- Null geometry: log and pass-through, do not discard
+- Workspace naming: [source]_to_[target]_[version].fmw
+
+## Anti-Patterns (Never Do)
+- Do not use deprecated FME transformers (check FME version compatibility)
+- Do not hardcode file paths — use Published Parameters
+- Do not assume input CRS — always read it from the data or ask
+- Do not leave Python callouts without error handling
+EOF</code></pre>
+<p class="cur-p">#### Step 2.3 — Write an FME-Specific Instincts File</p>
+<p class="cur-p">Create <code class="cur-inline">instincts/fme-instincts.md</code>:</p>
+<pre><code>cat &gt; instincts/fme-instincts.md &lt;&lt; 'EOF'
+# Instincts: FME Workspace Authoring
+
+These are fast heuristics applied before deep reasoning begins.
+
+## Instinct 1: Schema First
+Before designing any transformer chain, ask for or infer the input and output schema.
+A workspace designed against the wrong schema wastes all subsequent effort.
+
+## Instinct 2: Transformer Exists, Probably
+FME has 500+ transformers. Before suggesting a Python callout, check whether a 
+native transformer handles the transformation. Python callouts are maintenance debt.
+
+## Instinct 3: CRS Is Never Obvious
+Never assume the input CRS matches the output CRS. Always make CRS handling explicit,
+even if it's a no-op (add a CoordinateSystemSetter with "as-is" to document intent).
+
+## Instinct 4: Published Parameters Over Hardcoding
+Any file path, database connection, or environment-specific value must be a 
+Published Parameter. This is the difference between a reusable workspace and a 
+one-time script.
+
+## Instinct 5: Test With Small Data First
+When proposing a workspace design, always note which transformer is the best 
+"sample point" to run a partial test before full execution.
+
+## Instinct 6: Reversibility
+Prefer non-destructive workspace designs. Write to new output rather than 
+overwriting source. Flag any operation that modifies source data.
+EOF</code></pre>
+<p class="cur-p">#### Step 2.4 — Create a Memory Seed File</p>
+<p class="cur-p">This simulates the persistent memory feature — context that Claude loads at session start:</p>
+<pre><code>cat &gt; memory/fme-project-context.md &lt;&lt; 'EOF'
+# Project Memory: Globe & Atlas FME Pipeline
+
+## Project Overview
+Building FME workspaces for the Globe & Atlas data pipeline. Primary role:
+transform heterogeneous geospatial source data into standardised GeoJSON/PostGIS
+outputs for the Atlas web application.
+
+## Active Pipeline Components
+- Source formats in use: Shapefile, WFS, GeoJSON, CSV with WKT geometry, PostGIS
+- Target format: PostGIS (primary), GeoJSON (secondary/export)
+- Standard output CRS: EPSG:4326
+- FME version: [YOUR VERSION HERE]
+
+## Conventions Established
+- snake_case attribute names
+- Null geometry: log to feature_log table, continue processing
+- Published Parameters required for all connection strings
+- Workspace versioning in filename: v1, v2, etc.
+
+## Recently Solved Patterns
+[You will populate this as you work — add successful transformer patterns here]
+
+## Known Problem Areas
+[Add tricky edge cases you've encountered]
+EOF</code></pre>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 3: Set Up the Benchmark Experiment</h4>
+<p class="cur-p">Now you'll run your task twice — once with your original CLAUDE.md approach, once with the everything-claude-code skills/instincts approach — and measure the difference.</p>
+<p class="cur-p">#### Step 3.1 — Prepare the Control Run Environment</p>
+<pre><code># Create a directory for the control (baseline) run
+mkdir -p ~/projects/fme-claude-benchmark/runs/control
+cd ~/projects/fme-claude-benchmark/runs/control
+
+# Copy your existing CLAUDE.md here
+cp ~/path/to/your/existing/CLAUDE.md ./CLAUDE.md
+
+# Verify it's there
+cat CLAUDE.md</code></pre>
+<p class="cur-p">#### Step 3.2 — Prepare the Treatment Run Environment</p>
+<pre><code># Create a directory for the treatment (skills/instincts) run
+mkdir -p ~/projects/fme-claude-benchmark/runs/treatment
+cd ~/projects/fme-claude-benchmark/runs/treatment
+
+# Create a new CLAUDE.md that loads the skills and instincts modules
+cat &gt; CLAUDE.md &lt;&lt; 'EOF'
+# Claude Code Directive: FME Workspace Authoring (Skills/Instincts Mode)
+
+## Active Modules
+The following skill and instinct files govern your behaviour in this session.
+Read and apply all of them before responding to any task.
+
+@../../skills/fme-workspace-authoring.md
+@../../instincts/fme-instincts.md
+@../../memory/fme-project-context.md
+
+## Session Behaviour
+- Apply the Research-First Protocol from the FME skill before proposing solutions
+- Check all Quality Gates before presenting a final workspace design
+- Follow Globe & Atlas conventions without being asked
+- State which instincts you applied at the end of each major response
+
+## Meta-Instruction
+If asked to do something that conflicts with the anti-patterns list in the FME skill,
+note the conflict and propose a compliant alternative.
+EOF</code></pre>
+<p class="cur-p">> <strong>Note on <code class="cur-inline">@file</code> syntax:</strong> Claude Code supports file inclusion via <code class="cur-inline">@path/to/file</code> in CLAUDE.md. If your version doesn't support this, inline the content directly — the structure still applies, it's just less modular.</p>
+<p class="cur-p">#### Step 3.3 — Create Your Measurement Scorecard</p>
+<pre><code>cat &gt; ~/projects/fme-claude-benchmark/scorecard.md &lt;&lt; 'EOF'
+# Benchmark Scorecard: CLAUDE.md vs Skills/Instincts
+
+## Task Description
+[Paste your benchmark task description here]
+
+---
+
+## Run 1: Control (Existing CLAUDE.md)
+
+### Setup
+- CLAUDE.md approach: [describe your current approach briefly]
+- Session start time: 
+- Session end time:
+
+### Metrics
+| Metric | Value |
+|---|---|
+| Iteration count (prompts to acceptable output) | |
+| Approximate token usage (input) | |
+| Approximate token usage (output) | |
+| Estimated cost (USD) | |
+
+### Output Quality Assessment
+| Criterion | Score (1–5) | Notes |
+|---|---|---|
+| Correctness (workspace would run) | | |
+| Completeness (all requirements met) | | |
+| FME conventions followed | | |
+| Globe & Atlas conventions followed | | |
+| Code quality (Python callouts if any) | | |
+| How much manual editing needed after? | | |
+
+### Qualitative Notes
+[What did Claude get right first try? What needed correction?]
+
+---
+
+## Run 2: Treatment (Skills/Instincts Modules)
+
+### Setup  
+- Skills loaded: fme-workspace-authoring.md, fme-instincts.md, fme-project-context.md
+- Session start time:
+- Session end time:
+
+### Metrics
+| Metric | Value |
+|---|---|
+| Iteration count (prompts to acceptable output) | |
+| Approximate token usage (input) | |
+| Approximate token usage (output) | |
+| Estimated cost (USD) | |
+
+### Output Quality Assessment
+| Criterion | Score (1–5) | Notes |
+|---|---|---|
+| Correctness (workspace would run) | | |
+| Completeness (all requirements met) | | |
+| FME conventions followed | | |
+| Globe & Atlas conventions followed | | |
+| Code quality (Python callouts if any) | | |
+| How much manual editing needed after? | | |
+
+### Qualitative Notes
+[What did Claude get right first try? What needed correction?]
+[Did it explicitly invoke the Research-First Protocol?]
+[Did it check Quality Gates unprompted?]
+
+---
+
+## Delta Analysis
+
+| Metric | Control | Treatment | Delta | Verdict |
+|---|---|---|---|---|
+| Iterations | | | | |
+| Token cost | | | | |
+| Quality score (avg) | | | | |
+| Time to acceptable output | | | | |
+
+## Key Finding
+[One paragraph: what does this data point tell you about whether skills/instincts
+modules improve your FME workflow enough to justify the setup overhead?]
+
+## Decision
+- [ ] Adopt skills/instincts approach wholesale
+- [ ] Hybrid: keep CLAUDE.md but add specific skills modules for complex tasks
+- [ ] No change: existing CLAUDE.md is sufficient
+- [ ] Need more data points before deciding
+EOF</code></pre>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 4: Execute the Control Run</h4>
+<p class="cur-p">#### Step 4.1 — Start a Fresh Claude Code Session (Control)</p>
+<pre><code>cd ~/projects/fme-claude-benchmark/runs/control
+
+# Start Claude Code — it will auto-load CLAUDE.md from the current directory
+claude</code></pre>
+<p class="cur-p">#### Step 4.2 — Run Your Benchmark Task</p>
+<p class="cur-p">Use the <strong>exact same prompt</strong> you used when you originally solved the task. Do not add extra context. The goal is to reproduce the original conditions.</p>
+<pre><code># Example structure of what to paste:
+"I need an FME workspace that [your original task description]. 
+The input is [format/source]. The output should be [format/target]."</code></pre>
+<p class="cur-p">#### Step 4.3 — Track Iterations Carefully</p>
+<p class="cur-p">Keep a tally in a scratch file as you work:</p>
+<pre><code># In a separate terminal
+cat &gt; ~/projects/fme-claude-benchmark/control-log.md &lt;&lt; 'EOF'
+# Control Run — Iteration Log
+
+## Iteration 1
+Prompt: [what you sent]
+Response quality: [good/partial/wrong]
+Correction needed: [yes/no — describe]
+
+## Iteration 2
+...
+EOF</code></pre>
+<p class="cur-p">#### Step 4.4 — Record Final Metrics</p>
+<p class="cur-p">When you reach an acceptable output:</p>
+<ul class="cur-list cur-ol">
+<li>Check your Claude console (console.anthropic.com) or the session's token display for usage</li>
+<li>Count total iterations</li>
+<li>Save the final output to <code class="cur-inline">runs/control/output/</code></li>
+<li>Fill in the Control section of <code class="cur-inline">scorecard.md</code></li>
+</ul>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 5: Execute the Treatment Run</h4>
+<p class="cur-p">#### Step 5.1 — Start a Fresh Claude Code Session (Treatment)</p>
+<p class="cur-p">> <strong>Critical:</strong> Use a completely fresh session. Do not continue from the control session — you want no memory carryover.</p>
+<pre><code>cd ~/projects/fme-claude-benchmark/runs/treatment
+
+# New session — loads the skills/instincts CLAUDE.md
+claude</code></pre>
+<p class="cur-p">#### Step 5.2 — Verify Skills Were Loaded</p>
+<p class="cur-p">Before running your task, ask Claude to confirm its loaded context:</p>
+<pre><code>What skills and instincts are you operating with in this session? 
+List the key constraints and protocols you'll apply to FME workspace tasks.</code></pre>
+<p class="cur-p">A good response will demonstrate it has absorbed:</p>
+<ul class="cur-list">
+<li>The Research-First Protocol</li>
+<li>The Output Contract (transformer list format, etc.)</li>
+<li>The Quality Gates</li>
+<li>The Anti-Patterns</li>
+</ul>
+<p class="cur-p">If the response is vague or generic, check your <code class="cur-inline">@file</code> includes are working — you may need to inline the content.</p>
+<p class="cur-p">#### Step 5.3 — Run the Exact Same Benchmark Task</p>
+<p class="cur-p">Use the <strong>identical prompt</strong> as the control run. Resist the temptation to rephrase it — you're testing the harness, not the prompt quality.</p>
+<p class="cur-p">#### Step 5.4 — Observe Behavioural Differences</p>
+<p class="cur-p">Watch for:</p>
+<pre><code>Positive signals (skills/instincts working):
+  ✓ Claude asks about input schema before proposing a solution
+  ✓ Claude explicitly checks for native transformers before suggesting Python
+  ✓ Output format matches the Output Contract (transformer list, then config, then code)
+  ✓ CRS handling is explicit and unprompted
+  ✓ Published Parameters are used without being asked
+  ✓ Claude mentions which Quality Gates it checked
+
+Negative signals (skills/instincts not working):
+  ✗ Response identical to control — skills not being applied
+  ✗ More iterations needed because Research-First Protocol creates friction
+  ✗ Quality Gates flagged issues that required extra rounds of correction</code></pre>
+<p class="cur-p">#### Step 5.5 — Record Final Metrics</p>
+<p class="cur-p">Repeat the same logging process as the control run. Fill in the Treatment section of <code class="cur-inline">scorecard.md</code>.</p>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 6: Analyse the Delta</h4>
+<p class="cur-p">#### Step 6.1 — Complete the Scorecard</p>
+<pre><code># Open and complete your scorecard
+open ~/projects/fme-claude-benchmark/scorecard.md
+# or: code scorecard.md / vim scorecard.md</code></pre>
+<p class="cur-p">#### Step 6.2 — Calculate the Deltas</p>
+<p class="cur-p">Use this calculation template:</p>
+<pre><code>Iteration Delta = Control_Iterations - Treatment_Iterations
+  Positive = skills/instincts reduced iterations ✓
+  Negative = skills/instincts added friction ✗
+  Zero = no difference
+
+Cost Delta = Control_Cost - Treatment_Cost
+  Note: Treatment may have HIGHER input token cost (larger CLAUDE.md context)
+  but LOWER total cost if fewer iterations are needed.
+  Calculate: net_cost_delta = (control_total) - (treatment_total)
+
+Quality Delta = Treatment_AvgScore - Control_AvgScore
+  Positive = skills/instincts improved output quality ✓</code></pre>
+<p class="cur-p">#### Step 6.3 — Interpret Your Results</p>
+<p class="cur-p">Use this decision matrix:</p>
+<pre><code>┌─────────────────────────────────┬───────────────────────────────────┐
+│ Result Pattern                  │ Interpretation                    │
+├─────────────────────────────────┼───────────────────────────────────┤
+│ Fewer iterations + lower cost   │ Strong adopt signal               │
+│ + higher quality                │                                   │
+├─────────────────────────────────┼───────────────────────────────────┤
+│ Fewer iterations + higher cost  │ Quality/speed trade-off —        │
+│ + higher quality                │ worth it for complex tasks        │
+├─────────────────────────────────┼───────────────────────────────────┤
+│ Same iterations + higher cost   │ Skills overhead not justified     │
+│ + same quality                  │ for this task type                │
+├─────────────────────────────────┼───────────────────────────────────┤
+│ More iterations + any cost      │ Skills files need refinement      │
+│                                 │ or task is too simple to benefit  │
+├─────────────────────────────────┼───────────────────────────────────┤
+│ Fewer iterations + lower cost   │ Skills modularise value but       │
+│ + same quality                  │ quality ceiling is already met    │
+└─────────────────────────────────┴───────────────────────────────────┘</code></pre>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">4. Validation</h3>
+<h4 class="cur-h4">How to Know You Completed This Successfully</h4>
+<p class="cur-p">Work through this checklist. Every item should be checkable.</p>
+<p class="cur-p">#### Setup Validation</p>
+<ul class="cur-list">
+<li>[ ] <code class="cur-inline">everything-claude-code</code> repo cloned and explored</li>
+<li>[ ] You can articulate the difference between a <strong>skill</strong> and an <strong>instinct</strong> in this system</li>
+<li>[ ] You identified at least 3 patterns from the repo's own CLAUDE.md worth adapting</li>
+<li>[ ] <code class="cur-inline">skills/fme-workspace-authoring.md</code> created with all sections present</li>
+<li>[ ] <code class="cur-inline">instincts/fme-instincts.md</code> created with at least 4 instincts</li>
+<li>[ ] <code class="cur-inline">memory/fme-project-context.md</code> created and populated with real project context</li>
+</ul>
+<p class="cur-p">#### Execution Validation</p>
+<ul class="cur-list">
+<li>[ ] Control run completed with the original benchmark task</li>
+<li>[ ] Treatment run completed with the <strong>identical</strong> prompt</li>
+<li>[ ] Both runs logged with iteration counts</li>
+<li>[ ] Token usage captured for both runs (even if approximate)</li>
+</ul>
+<p class="cur-p">#### Analysis Validation</p>
+<ul class="cur-list">
+<li>[ ] <code class="cur-inline">scorecard.md</code> fully completed for both runs</li>
+<li>[ ] Delta row calculated for iterations, cost, and quality</li>
+<li>[ ] A written "Key Finding" paragraph exists (not a template placeholder)</li>
+<li>[ ] A decision is recorded (adopt / hybrid / no change / more data needed)</li>
+</ul>
+<p class="cur-p">#### The Acid Test</p>
+<p class="cur-p">Run this self-check:</p>
+<pre><code>Can you answer these three questions from memory?
+  1. In the treatment run, did Claude apply the Research-First Protocol? 
+     How do you know?
+  2. What was the iteration count delta?
+  3. Based on your data, would you adopt skills/instincts for your next 
+     Globe & Atlas workspace task?</code></pre>
+<p class="cur-p">If you can answer all three clearly, you've completed the exercise with full understanding.</p>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">5. Next Steps</h3>
+<h4 class="cur-h4">Immediate (This Week)</h4>
+<p class="cur-p"><strong>5.1 — Run a Second Benchmark Task</strong></p>
+<p class="cur-p">One data point is anecdote. Two starts to be pattern. Pick a different FME task — ideally one that:</p>
+<ul class="cur-list">
+<li>Is *more complex* than the first (more transformers, Python callout required)</li>
+<li>Or tests a *different task type* (debugging an existing workspace vs. building new)</li>
+</ul>
+<p class="cur-p">Add a Run 3 to your scorecard and see if the delta holds.</p>
+<p class="cur-p"><strong>5.2 — Refine Your Skills File</strong></p>
+<p class="cur-p">After the benchmark, you almost certainly noticed gaps. Update <code class="cur-inline">fme-workspace-authoring.md</code>:</p>
+<pre><code># Add to the "Patterns" section any transformer chains that worked well
+# Tighten anti-patterns based on mistakes Claude made
+# Add any Globe & Atlas-specific vocabulary that was missing</code></pre>
+<h4 class="cur-h4">Short Term (Next 2–4 Weeks)</h4>
+<p class="cur-p"><strong>5.3 — Build a Skills Library</strong></p>
+<p class="cur-p">Your FME work likely spans several recurring sub-domains. Consider separate skill files for each:</p>
+<pre><code>skills/
+├── fme-workspace-authoring.md     ← already built
+├── fme-python-callouts.md         ← Python scripting patterns
+├── fme-postgis-integration.md     ← PostGIS-specific reader/writer configs
+├── fme-coordinate-systems.md      ← CRS transformation patterns
+└── fme-debugging.md               ← Diagnosing workspace failures</code></pre>
+<p class="cur-p"><strong>5.4 — Implement Persistent Memory Properly</strong></p>
+<p class="cur-p">The memory seed file you created is static. Look at the <code class="cur-inline">memory/</code> directory in everything-claude-code for patterns on:</p>
+<ul class="cur-list">
+<li>How to structure memory for append-over-time (not just read-once)</li>
+<li>Session end prompts that extract learnings back into memory files</li>
+<li>How to avoid memory files becoming bloated/noisy</li>
+</ul>
+<p class="cur-p"><strong>5.5 — Measure Token Overhead of Skills Files</strong></p>
+<p class="cur-p">Your treatment CLAUDE.md is larger — calculate the overhead:</p>
+<pre><code># Rough token estimate: ~4 characters per token
+wc -c skills/fme-workspace-authoring.md instincts/fme-instincts.md memory/fme-project-context.md
+# Divide total chars by 4 for approximate token count
+# This is your per-session overhead cost — is it paid back in fewer iterations?</code></pre>
+<h4 class="cur-h4">Medium Term (Next Quarter)</h4>
+<p class="cur-p"><strong>5.6 — Contribute Back to everything-claude-code</strong></p>
+<p class="cur-p">Your FME skills module is genuinely novel — the repo doesn't have geospatial/ETL domain skills. Consider:</p>
+<ul class="cur-list">
+<li>Opening a PR with your FME skill as an example domain module</li>
+<li>Filing an issue if you found the harness pattern unclear or missing features</li>
+</ul>
+<p class="cur-p"><strong>5.7 — Automate the Benchmark</strong></p>
+<p class="cur-p">Once you have 5+ data points, create a lightweight benchmark runner:</p>
+<pre><code>#!/bin/bash
+# benchmark-run.sh
+# Usage: ./benchmark-run.sh "task description" control|treatment
+
+TASK="$1"
+MODE="$2"
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+LOG_FILE="runs/${MODE}_${TIMESTAMP}.log"
+
+echo "=== Benchmark Run: $MODE ===" &gt; "$LOG_FILE"
+echo "Task: $TASK" &gt;&gt; "$LOG_FILE"
+echo "Start: $(date)" &gt;&gt; "$LOG_FILE"
+
+# Launch Claude Code in the appropriate directory
+cd "runs/$MODE"
+claude --print "Benchmark task: $TASK" | tee -a "../../$LOG_FILE"
+
+echo "End: $(date)" &gt;&gt; "$LOG_FILE"</code></pre>
+<p class="cur-p"><strong>5.8 — Apply the Pattern Beyond FME</strong></p>
+<p class="cur-p">The skills/instincts/memory pattern is domain-agnostic. Once validated for FME, ask:</p>
+<ul class="cur-list">
+<li>What other recurring Claude Code tasks do you do where this pattern would help?</li>
+<li>Globe & Atlas frontend work? Data QA scripts? Documentation generation?</li>
+</ul>
+<p class="cur-p">Each new domain you apply it to is another Tool Critic data point about where structured prompting earns its overhead vs. where a simple CLAUDE.md stays leaner and faster.</p>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">Appendix: Quick Reference</h3>
+<h4 class="cur-h4">Key Files Created in This Exercise</h4>
+<pre><code>~/projects/fme-claude-benchmark/
+├── scorecard.md                          ← Your benchmark results
+├── control-log.md                        ← Control run iteration log
+├── skills/
+│   └── fme-workspace-authoring.md        ← FME domain skill
+├── instincts/
+│   └── fme-instincts.md                  ← FME heuristics
+├── memory/
+│   └── fme-project-context.md            ← Project memory seed
+└── runs/
+    ├── control/
+    │   ├── CLAUDE.md                     ← Your original directive
+    │   └── output/                       ← Control run outputs
+    └── treatment/
+        ├── CLAUDE.md                     ← Skills/instincts loader
+        └── output/                       ← Treatment run outputs</code></pre>
+<h4 class="cur-h4">The Core Insight to Carry Forward</h4>
+<p class="cur-p">> A <code class="cur-inline">CLAUDE.md</code> directive tells Claude *who it is in this session*.</p>
+<p class="cur-p">> A skills/instincts module tells Claude *how to think before it acts*.</p>
+<p class="cur-p">> Memory tells Claude *what it already knows*.</p>
+<p class="cur-p">> The delta you measured tells you *which layer of that stack is worth the overhead for your specific work*.</p>
+</div>
+</body>
+</html>
