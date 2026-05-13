@@ -7,16 +7,23 @@ STACK (direct):
 - Languages: Python 3, TypeScript, JavaScript
 - Python libs: Streamlit, python-dotenv, pathlib, pdfplumber, Playwright, requests, rasterio, geopandas, GDAL
 - Frontend: React 19, Vite, TypeScript
-- AI/LLM: Claude API (Anthropic), claude-sonnet-4-6, claude-haiku-4-5, Anthropic SDK
-- GIS/Geospatial: FME (Safe Software), Sentinel Hub API, QGIS, ArcGIS Pro, WMS/WMTS, H3, GeoJSON
+- AI/LLM: Claude API (Anthropic), claude-sonnet-4-6, claude-haiku-4-5, Anthropic SDK; also monitoring ChatGPT/OpenAI, Gemini/Google AI
+- GIS/Geospatial: FME (Safe Software), Sentinel Hub API, QGIS, ArcGIS Pro (Esri), WMS/WMTS, H3, GeoJSON
+- Imagery: Sentinel-2, Sentinel-1 SAR, drone imagery, thermal imagery, multispectral imagery, hyperspectral imagery
+- Imagery services: Planet Labs, Maxar, Airbus Defence & Space, SkyWatch, UP42, Google Earth Engine
 - Deployment: Vercel, GitHub Actions, GitHub Pages
 - Data: JSON, PDF parsing, REST APIs, YouTube Data API, GitHub API, Reddit API
 - Dev tools: Claude Code CLI, VS Code, tmux, git, zsh
 
 ADJACENT (one step away — tools that could replace or significantly enhance direct stack items):
 - Any Python library that replaces or meaningfully upgrades something above
-- Any LLM model or API that competes with or extends Claude API usage
-- Any geospatial AI tool that works with or replaces FME/Sentinel Hub/QGIS workflows
+- Any LLM model or API that competes with or extends Claude API usage (OpenAI, Google Gemini, Mistral, etc.)
+- Any geospatial AI tool that works with or replaces FME/Sentinel Hub/QGIS/ArcGIS workflows
+- Esri/ArcGIS AI features, Esri Living Atlas updates, ArcGIS Python API changes
+- Google Maps Platform AI features, Google Earth Engine updates, Google DeepMind geospatial work
+- Satellite or aerial imagery AI: object detection, change detection, land cover classification, SAR processing
+- Drone/UAV AI: flight planning AI, automated image analysis, photogrammetry AI tools
+- Thermal or multispectral AI: anomaly detection, agricultural AI, environmental monitoring
 - Any frontend framework evolution affecting React 19 + Vite
 - Any agent orchestration tool relevant to the 3-layer architecture (directives/orchestration/execution)
 - Any deployment tooling that affects Vercel or GitHub Actions workflows
@@ -27,7 +34,7 @@ NOT RELEVANT (filter to world section):
 - Gaming engines, Unity, Unreal
 - Blockchain, crypto, Web3
 - Enterprise SaaS platforms (Salesforce, SAP, etc.)
-- Tools with no clear connection to Python, GIS, LLMs, or React
+- Tools with no clear connection to Python, GIS, LLMs, React, or imagery
 """
 
 USER_CONTEXT = """
@@ -39,8 +46,9 @@ GIS/FME/Sentinel content has direct editorial value beyond personal interest.
 """
 
 def build_hub_prompt(data: dict) -> str:
-    return f"""You are a senior technical scout for Daniel's AI Workshop.
+    return f"""You are a senior technical scout writing directly to Daniel.
 Analyze a mixed feed of artifacts (Videos, Repos, Social Signals) and produce a structured weekly briefing.
+Write all descriptions and relevance_why fields in second person — use "you"/"your", never "Daniel" or "he".
 
 USER CONTEXT:
 {USER_CONTEXT}
@@ -54,9 +62,9 @@ INPUT DATA:
 SCORING RULES:
 
 1. RELEVANCE (Pick exactly 1):
-   - "personal": Directly touches Daniel's stack OR is adjacent (one step away with clear upgrade/replacement value).
-     For adjacent items, relevance_why must explain the specific connection to his stack.
-   - "world": Notable AI development that doesn't connect to his stack. Awareness only.
+   - "personal": Directly touches your stack OR is adjacent (one step away with clear upgrade/replacement value).
+     For adjacent items, relevance_why must explain the specific connection to your stack.
+   - "world": Notable AI development that doesn't connect to your stack. Awareness only.
 
 2. LENS (Pick exactly 1 — for personal items only, set "world" items to "📡 AI World"):
    - 🏠 Home Hobbyist: Personal projects, local tools, home automation, budgeting
@@ -64,7 +72,7 @@ SCORING RULES:
    - 🗺 GIS/FME: Geospatial AI, FME automation, Sentinel Hub, satellite imagery, spatial data
 
 3. TIER (Pick exactly 1):
-   - ✅ Adopt Now: High ROI — ready to use in Daniel's projects today
+   - ✅ Adopt Now: High ROI — ready to use in your projects today
    - 👁 Watch Closely: Important signal — evaluate soon, not quite ready to act
    - 🔥 Hype Check: Viral or contested — interesting but possibly noise
    - 🏗 Foundation: Core infrastructure or concept — worth understanding
@@ -73,7 +81,9 @@ SCORING RULES:
 4. TYPE: "video", "repo", or "signal"
 
 5. TOPICS (1-2 per artifact):
-   - t-claude: Claude Code & CLI
+   - t-claude: Claude / Anthropic (Claude Code, Claude API, model releases)
+   - t-openai: OpenAI / ChatGPT (GPT models, API, tooling)
+   - t-gemini: Google AI (Gemini, Google DeepMind, Google Maps AI, Earth Engine AI)
    - t-agent: Multi-Agent Orchestration
    - t-local: Local Inference (Ollama, local LLMs)
    - t-mcp: MCP Servers & Protocol
@@ -82,10 +92,14 @@ SCORING RULES:
    - t-memory: AI Memory / RAG
    - t-model: Model Releases / Papers
    - t-fme: FME / ETL (Safe Software, spatial data transformation)
-   - t-geoai: GeoAI (LLMs + GIS, computer vision on satellite/aerial imagery, spatial ML)
+   - t-esri: Esri / ArcGIS (ArcGIS Pro, ArcGIS Online, Living Atlas, Esri AI features)
+   - t-geoai: GeoAI (LLMs + GIS, spatial ML, geospatial foundation models)
+   - t-satellite: Satellite Imagery (Sentinel, Planet, Maxar, SAR, multispectral, hyperspectral)
+   - t-drone: Drone / UAV (flight AI, photogrammetry, aerial image analysis)
+   - t-thermal: Thermal & Multispectral (thermal anomaly detection, NDVI, agricultural AI)
 
 6. DESCRIPTION:
-   For personal items: 1-2 sentences on what it is and why it matters to Daniel's stack specifically.
+   For personal items: 1-2 sentences on what it is and why it matters to your stack specifically.
    For world items: 1 sentence factual summary only. No stack references.
 
 OUTPUT JSON SCHEMA:
@@ -99,7 +113,7 @@ OUTPUT JSON SCHEMA:
       "url": str,
       "desc": str,
       "relevance": "personal|world",
-      "relevance_why": str,  // For personal items: "Direct: uses Python/Claude API" or "Adjacent: replaces X in your stack because Y". Empty string for world items.
+      "relevance_why": str,  // For personal items: "Direct: uses Python/Claude API" or "Adjacent: replaces X in your stack because Y". Write in second person. Empty string for world items.
       "lens": "🏠 Home Hobbyist|📡 Staying Current|🗺 GIS/FME|📡 AI World",
       "tier": "✅ Adopt Now|👁 Watch Closely|🔥 Hype Check|🏗 Foundation|🌱 On Radar",
       "topics": [str],
