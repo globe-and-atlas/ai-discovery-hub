@@ -1,95 +1,95 @@
 {
-  "scanned_at": "2026-05-08T16:46:21Z",
+  "scanned_at": "2026-05-13T16:27:04Z",
   "window_days": 7,
   "videos": [
     {
-      "title": "Translator API: on-device translation made easy",
+      "title": "Susie Wolff | Driven | Talks at Google",
+      "channel": "Two Minute Papers",
+      "date": "2026-05-13",
+      "url": "https://www.youtube.com/watch?v=YG5w939A9yQ",
+      "summary": "F1 Academy's Managing Director, former professional racing driver and one of the most respected women in motorsport Susie ...",
+      "duration": "45:01"
+    },
+    {
+      "title": "How to Run Local AI Models on Your PC for FREE | LM Studio + Gemma 4",
+      "channel": "Tech With DevOps",
+      "date": "2026-05-13",
+      "url": "https://www.youtube.com/watch?v=68r_TIAC_iE",
+      "summary": "Learn how to run AI models locally and privately on your Windows PC using LM Studio and Gemma 4 \u2014 step by step for absolute ...",
+      "duration": "13:02"
+    },
+    {
+      "title": "Mac vs ARM SBC for local AI (You might be surprised where the SBC fits in!)",
+      "channel": "The Smart Workshop",
+      "date": "2026-05-13",
+      "url": "https://www.youtube.com/watch?v=IEnJRt1ZYPA",
+      "summary": "Can a low-power ARM SBC compete with Apple Silicon for local AI workloads? In this video, I compare three very different ...",
+      "duration": "4:50"
+    },
+    {
+      "title": "FREE Claude Code + Ollama Setup in 2026 \ud83e\udd2f Run AI Locally Without Paying!",
+      "channel": "How To Conf AI",
+      "date": "2026-05-13",
+      "url": "https://www.youtube.com/watch?v=3HaLDTK4jAM",
+      "summary": "In this video I'll show you how to use Claude Code together with Ollama completely FREE on your local machine.",
+      "duration": "7:12"
+    },
+    {
+      "title": "Global Keynote: The Beginning of Better | SAP Sapphire Orlando 2026",
+      "channel": "SAP",
+      "date": "2026-05-13",
+      "url": "https://www.youtube.com/watch?v=9aa-etRsaLU",
+      "summary": "SAP Sapphire 2026 marks a new chapter for enterprise AI: the Autonomous Enterprise, where people set the direction, and AI ...",
+      "duration": "1:25:42"
+    },
+    {
+      "title": "Red Hat Summit 2026 Day 2 - The AI-ready enterprise is here",
+      "channel": "Red Hat",
+      "date": "2026-05-13",
+      "url": "https://www.youtube.com/watch?v=6K8eqQ4ymvk",
+      "summary": "The next era of enterprise AI isn't on a roadmap; it's in production. Hear from the companies leading their industries into that future ...",
+      "duration": "1:03:04"
+    },
+    {
+      "title": "A Supervised Classification Approach for Soil Salinity Distribution Mapping of Sentinel-2 in QGIS",
+      "channel": "Satellite Remote Sensing and GIS",
+      "date": "2026-05-13",
+      "url": "https://www.youtube.com/watch?v=6CuqNYTFIpI",
+      "summary": "This video will show you how to use supervised classification approaches (e.g., SVM, Random Forest, etc.) for soil salinity ...",
+      "duration": "37:43"
+    },
+    {
+      "title": "Clear your schedule. We\u2019re dropping major web platform updates at #GoogleIO",
       "channel": "sentdex",
-      "date": "2026-05-08",
-      "url": "https://www.youtube.com/watch?v=PCQhSAQqnmc",
-      "summary": "Learn to integrate the Translator API for seamless, on-device translations. This quick guide shows how to bring powerful language ...",
-      "duration": "2:23"
+      "date": "2026-05-12",
+      "url": "https://www.youtube.com/watch?v=6GLjmLBRwXI",
+      "summary": "We've been busy building the technical updates you've been asking for. Get ready to see what's next for the web at Google I/O.",
+      "duration": "0:26"
     },
     {
-      "title": "NEW Open Claude Code Is A FULLY FREE AI Coding Agent! (Tutorial)",
-      "channel": "WorldofAI",
-      "date": "2026-05-08",
-      "url": "https://www.youtube.com/watch?v=JZIf-HiutvY",
-      "summary": "In this video, I'm testing one of the most INSANE AI coding tools right now \u2014 a completely free, open-source-style coding agent ...",
-      "duration": "11:08"
+      "title": "7 Aliases That Make The Terminal Great Again",
+      "channel": "Dot CSV",
+      "date": "2026-05-12",
+      "url": "https://www.youtube.com/watch?v=NLCPh9iAknk",
+      "summary": "These seven shells aliases are practically required if you don't want your terminal experience to suck. alias ls='ls -lah ...",
+      "duration": "13:03"
     },
     {
-      "title": "ChatGPT Just Got More Dangerous \u2014 OpenAI\u2019s GPT-5.5 Cyber Tests",
-      "channel": "Sterling Intelligence",
-      "date": "2026-05-08",
-      "url": "https://www.youtube.com/watch?v=ozMcQPhSmiQ",
-      "summary": "OpenAI quietly changed ChatGPT's default model \u2014 and new cyber capability tests are raising uncomfortable questions about ...",
-      "duration": "9:27"
-    },
-    {
-      "title": "Local AI on Linux #1 \u2014 What Is Local AI? | LLMs in 5 Minutes + The Case for Going Local",
-      "channel": "Dargslan",
-      "date": "2026-05-08",
-      "url": "https://www.youtube.com/watch?v=1WMgYS2V-U0",
-      "summary": "Master IT skills with Dargslan - No Filler, Just Knowledge. Get our 300+ Tech & IT eBooks: https://dargslan.com In this video, we ...",
-      "duration": "8:46"
-    },
-    {
-      "title": "Apple Pulled This... I Run AI On It",
-      "channel": "Creator Magic",
-      "date": "2026-05-08",
-      "url": "https://www.youtube.com/watch?v=4b3cF51Ajgo",
-      "summary": "Get the full build, every command, every config inside the Creator Magic community \u2192 https://mrc.fm/closetai \u26a1 I went fully ...",
-      "duration": "19:56"
-    },
-    {
-      "title": "Welcome to GIS4Everyone | Remote Sensing, AI &amp; Geospatial Science for All",
-      "channel": "GIS 4 Everyone",
-      "date": "2026-05-08",
-      "url": "https://www.youtube.com/watch?v=Qos2CueaYdI",
-      "summary": "Welcome to GIS4Everyone! \ud83d\udef0\ufe0f Your go-to channel for Remote Sensing, GIS, and AI-powered geospatial analysis \u2014 made ...",
-      "duration": "0:09"
-    },
-    {
-      "title": "This App is INSANE.",
-      "channel": "AI Coach John (Tamil)",
-      "date": "2026-05-08",
-      "url": "https://www.youtube.com/watch?v=HiKV86pLLAA",
-      "summary": "Want to become a Data Analyst, Data Scientist, or GenAI Engineer? Service Enquiry Form: For B2B Collaboration(zPROx.AI): ...",
-      "duration": "35:53"
-    },
-    {
-      "title": "Ask ArcGIS Pro AI to Find the Right Tool for You #geoai #ai",
-      "channel": "ArcGIS",
-      "date": "2026-05-08",
-      "url": "https://www.youtube.com/watch?v=rLW0pgJJgDM",
-      "summary": "ArcGIS Pro's AI assistant helps you find and run spatial analysis tools you didn't know existed\u2014automating GIS workflows with ...",
-      "duration": "0:53"
-    },
-    {
-      "title": "Are You Still Using Basic QGIS plug-ins in 2026? \ud83d\udc40 #qgisplugins #spatialanalysis #qgistutorials",
-      "channel": "Geoinfo Academy | GIS & Drone Training in Nigeria",
-      "date": "2026-05-08",
-      "url": "https://www.youtube.com/watch?v=ynZplds-Kik",
-      "summary": "These 3 advanced QGIS plugins are changing how GIS analysts handle AI mapping, DEM analysis, terrain visualization, and ...",
-      "duration": "0:40"
-    },
-    {
-      "title": "Optimizing Temporal Resolution for Earth Observation and Geospatial AI",
-      "channel": "GeoWGS84AI",
-      "date": "2026-05-08",
-      "url": "https://www.youtube.com/watch?v=kCKYCNYhzoA",
-      "summary": "Temporal resolution is a critical concept in Earth observation and geospatial AI, referring to how often a satellite or sensor ...",
-      "duration": "1:30"
+      "title": "Claude Code Just Got an Agent Dashboard",
+      "channel": "Nate Herk | AI Automation",
+      "date": "2026-05-12",
+      "url": "https://www.youtube.com/watch?v=ZAaxx3qyT8g",
+      "summary": "Full courses + unlimited support: https://www.skool.com/ai-automation-society-plus/about?el=agent-view-cc All my FREE ...",
+      "duration": "7:36"
     }
   ],
   "tools": [
     {
       "name": "n8n-io/n8n",
       "description": "Fair-code workflow automation platform with native AI capabilities. Combine visual building with custom code, self-host or cloud, 400+ integrations.",
-      "stars": 187096,
+      "stars": 187698,
       "url": "https://github.com/n8n-io/n8n",
-      "date": "2026-05-08",
+      "date": "2026-05-13",
       "topics": [
         "ai",
         "apis",
@@ -102,9 +102,9 @@
     {
       "name": "Significant-Gravitas/AutoGPT",
       "description": "AutoGPT is the vision of accessible AI for everyone, to use and to build on. Our mission is to provide the tools, so that you can focus on what matters.",
-      "stars": 184090,
+      "stars": 184289,
       "url": "https://github.com/Significant-Gravitas/AutoGPT",
-      "date": "2026-05-08",
+      "date": "2026-05-13",
       "topics": [
         "agentic-ai",
         "agents",
@@ -117,9 +117,9 @@
     {
       "name": "affaan-m/everything-claude-code",
       "description": "The agent harness performance optimization system. Skills, instincts, memory, security, and research-first development for Claude Code, Codex, Opencode, Cursor and beyond.",
-      "stars": 175785,
+      "stars": 181168,
       "url": "https://github.com/affaan-m/everything-claude-code",
-      "date": "2026-05-03",
+      "date": "2026-05-13",
       "topics": [
         "ai-agents",
         "anthropic",
@@ -132,9 +132,9 @@
     {
       "name": "ollama/ollama",
       "description": "Get up and running with Kimi-K2.5, GLM-5, MiniMax, DeepSeek, gpt-oss, Qwen, Gemma and other models.",
-      "stars": 171000,
+      "stars": 171332,
       "url": "https://github.com/ollama/ollama",
-      "date": "2026-05-08",
+      "date": "2026-05-13",
       "topics": [
         "deepseek",
         "gemma",
@@ -147,9 +147,9 @@
     {
       "name": "f/prompts.chat",
       "description": "f.k.a. Awesome ChatGPT Prompts. Share, discover, and collect prompts from the community. Free and open source \u2014 self-host for your organization with complete privacy.",
-      "stars": 161836,
+      "stars": 162179,
       "url": "https://github.com/f/prompts.chat",
-      "date": "2026-05-08",
+      "date": "2026-05-13",
       "topics": [
         "ai",
         "artificial-intelligence",
@@ -162,9 +162,9 @@
     {
       "name": "huggingface/transformers",
       "description": "\ud83e\udd17 Transformers: the model-definition framework for state-of-the-art machine learning models in text, vision, audio, and multimodal models, for both inference and training. ",
-      "stars": 160398,
+      "stars": 160571,
       "url": "https://github.com/huggingface/transformers",
-      "date": "2026-05-08",
+      "date": "2026-05-13",
       "topics": [
         "audio",
         "deep-learning",
@@ -175,26 +175,11 @@
       "language": "Python"
     },
     {
-      "name": "langgenius/dify",
-      "description": "Production-ready platform for agentic workflow development.",
-      "stars": 140607,
-      "url": "https://github.com/langgenius/dify",
-      "date": "2026-05-08",
-      "topics": [
-        "agent",
-        "agentic-ai",
-        "agentic-framework",
-        "agentic-workflow",
-        "ai"
-      ],
-      "language": "TypeScript"
-    },
-    {
       "name": "NousResearch/hermes-agent",
       "description": "The agent that grows with you",
-      "stars": 138910,
+      "stars": 148279,
       "url": "https://github.com/NousResearch/hermes-agent",
-      "date": "2026-05-08",
+      "date": "2026-05-13",
       "topics": [
         "ai",
         "ai-agent",
@@ -205,26 +190,26 @@
       "language": "Python"
     },
     {
-      "name": "langchain-ai/langchain",
-      "description": "The agent engineering platform. Available in TypeScript!",
-      "stars": 136148,
-      "url": "https://github.com/langchain-ai/langchain",
-      "date": "2026-05-08",
+      "name": "langgenius/dify",
+      "description": "Production-ready platform for agentic workflow development.",
+      "stars": 141247,
+      "url": "https://github.com/langgenius/dify",
+      "date": "2026-05-13",
       "topics": [
-        "agents",
-        "ai",
-        "ai-agents",
-        "anthropic",
-        "chatgpt"
+        "agent",
+        "agentic-ai",
+        "agentic-framework",
+        "agentic-workflow",
+        "ai"
       ],
-      "language": "Python"
+      "language": "TypeScript"
     },
     {
       "name": "open-webui/open-webui",
       "description": "User-friendly AI Interface (Supports Ollama, OpenAI API, ...)",
-      "stars": 136122,
+      "stars": 136906,
       "url": "https://github.com/open-webui/open-webui",
-      "date": "2026-05-08",
+      "date": "2026-05-13",
       "topics": [
         "ai",
         "llm",
@@ -235,11 +220,26 @@
       "language": "Python"
     },
     {
+      "name": "langchain-ai/langchain",
+      "description": "The agent engineering platform.",
+      "stars": 136643,
+      "url": "https://github.com/langchain-ai/langchain",
+      "date": "2026-05-13",
+      "topics": [
+        "agents",
+        "ai",
+        "ai-agents",
+        "anthropic",
+        "chatgpt"
+      ],
+      "language": "Python"
+    },
+    {
       "name": "google-gemini/gemini-cli",
       "description": "An open-source AI agent that brings the power of Gemini directly into your terminal.",
-      "stars": 103440,
+      "stars": 103870,
       "url": "https://github.com/google-gemini/gemini-cli",
-      "date": "2026-05-08",
+      "date": "2026-05-13",
       "topics": [
         "ai",
         "ai-agents",
@@ -252,9 +252,9 @@
     {
       "name": "lobehub/lobehub",
       "description": "The ultimate space for work and life \u2014 to find, build, and collaborate with agent teammates that grow with you. We are taking agent harness to the next level \u2014 enabling multi-agent collaboration, effo",
-      "stars": 76361,
+      "stars": 77001,
       "url": "https://github.com/lobehub/lobehub",
-      "date": "2026-05-08",
+      "date": "2026-05-13",
       "topics": [
         "agent",
         "agent-collaboration",
@@ -266,10 +266,10 @@
     },
     {
       "name": "thedotmack/claude-mem",
-      "description": "A Claude Code plugin that automatically captures everything Claude does during your coding sessions, compresses it with AI (using Claude's agent-sdk), and injects relevant context back into future ses",
-      "stars": 73672,
+      "description": "Persistent Context Across Sessions for Every Agent \u2013  Captures everything your agent does during sessions, compresses it with AI, and injects relevant context back into future sessions. Works with Cla",
+      "stars": 75424,
       "url": "https://github.com/thedotmack/claude-mem",
-      "date": "2026-05-08",
+      "date": "2026-05-13",
       "topics": [
         "ai",
         "ai-agents",
@@ -282,9 +282,9 @@
     {
       "name": "bytedance/deer-flow",
       "description": "An open-source long-horizon SuperAgent harness that researches, codes, and creates. With the help of sandboxes, memories, tools, skill, subagents and message gateway, it handles different levels of ta",
-      "stars": 66075,
+      "stars": 67380,
       "url": "https://github.com/bytedance/deer-flow",
-      "date": "2026-05-08",
+      "date": "2026-05-13",
       "topics": [
         "agent",
         "agentic",
@@ -295,279 +295,268 @@
       "language": "Python"
     },
     {
-      "name": "Mintplex-Labs/anything-llm",
-      "description": "The all-in-one AI productivity accelerator. On device and privacy first with no annoying setup or configuration.",
-      "stars": 59730,
-      "url": "https://github.com/Mintplex-Labs/anything-llm",
-      "date": "2026-05-08",
+      "name": "shareAI-lab/learn-claude-code",
+      "description": "Bash is all you need -  A nano claude code\u2013like \u300cagent harness\u300d, built from 0 to 1",
+      "stars": 60225,
+      "url": "https://github.com/shareAI-lab/learn-claude-code",
+      "date": "2026-05-11",
       "topics": [
-        "ai-agents",
-        "custom-ai-agents",
-        "deepseek",
-        "kimi",
-        "llama3"
+        "agent",
+        "agent-development",
+        "ai-agent",
+        "claude",
+        "claude-code"
       ],
-      "language": "JavaScript"
+      "language": "TypeScript"
     }
   ],
   "signals": [
     {
-      "title": "Like dis if you cry everytim",
-      "url": "https://www.reddit.com/r/ChatGPT/comments/1t617ki/like_dis_if_you_cry_everytim/",
+      "title": "I asked ChatGPT to imagine itself in retirement",
+      "url": "https://www.reddit.com/r/ChatGPT/comments/1tb7bds/i_asked_chatgpt_to_imagine_itself_in_retirement/",
       "source": "r/ChatGPT",
-      "date": "2026-05-07",
-      "score": 12255,
-      "comments": 786,
-      "summary": "https://www.reddit.com/gallery/1t617ki"
+      "date": "2026-05-12",
+      "score": 14781,
+      "comments": 2068,
+      "summary": "https://i.redd.it/bt7i019dkq0h1.jpeg"
     },
     {
-      "title": "Coming this summer to a theater somewhere!",
-      "url": "https://www.reddit.com/r/ChatGPT/comments/1t6o8or/coming_this_summer_to_a_theater_somewhere/",
-      "source": "r/ChatGPT",
-      "date": "2026-05-07",
-      "score": 8656,
-      "comments": 432,
-      "summary": "It's all fun and games until the party is over!"
-    },
-    {
-      "title": "everybody calm down. i got this.",
-      "url": "https://www.reddit.com/r/ChatGPT/comments/1t62lui/everybody_calm_down_i_got_this/",
-      "source": "r/ChatGPT",
-      "date": "2026-05-07",
-      "score": 5783,
-      "comments": 114,
-      "summary": "https://i.redd.it/8a1dqh4svnzg1.jpeg"
-    },
-    {
-      "title": "If the EU had built Claude",
-      "url": "https://www.reddit.com/r/ClaudeAI/comments/1t6c26a/if_the_eu_had_built_claude/",
-      "source": "r/ClaudeAI",
-      "date": "2026-05-07",
-      "score": 5108,
-      "comments": 587,
-      "summary": "There\u2019s also a 55% tokens tax for every prompt.\n\nsource: [ijustvibecodedthis.com](http://ijustvibecodedthis.com) \ud83d\ude04"
-    },
-    {
-      "title": "Don\u2019t worry guys, we\u2019re working on the vaccine.",
-      "url": "https://www.reddit.com/r/ClaudeAI/comments/1t6fz5p/dont_worry_guys_were_working_on_the_vaccine/",
-      "source": "r/ClaudeAI",
-      "date": "2026-05-07",
-      "score": 3687,
-      "comments": 77,
-      "summary": "https://i.redd.it/59qbk60kuqzg1.jpeg"
-    },
-    {
-      "title": "me and claude 30 mins before hitting the 100% limit",
-      "url": "https://www.reddit.com/r/ClaudeAI/comments/1t65mht/me_and_claude_30_mins_before_hitting_the_100_limit/",
-      "source": "r/ClaudeAI",
-      "date": "2026-05-07",
-      "score": 1927,
-      "comments": 63,
-      "summary": "https://i.redd.it/ptiqsj4prozg1.jpeg"
-    },
-    {
-      "title": "Welp, that escalated quickly!",
-      "url": "https://www.reddit.com/r/ChatGPT/comments/1t6i18z/welp_that_escalated_quickly/",
-      "source": "r/ChatGPT",
-      "date": "2026-05-07",
-      "score": 1748,
-      "comments": 105,
-      "summary": "https://v.redd.it/7f9nvwa47rzg1"
-    },
-    {
-      "title": "Hallmark Dump",
-      "url": "https://www.reddit.com/r/ChatGPT/comments/1t6xpbz/hallmark_dump/",
-      "source": "r/ChatGPT",
-      "date": "2026-05-07",
-      "score": 1560,
-      "comments": 148,
-      "summary": "https://www.reddit.com/gallery/1t6xpbz"
-    },
-    {
-      "title": "Tarot Cards of My wife",
-      "url": "https://www.reddit.com/r/ChatGPT/comments/1t6cgik/tarot_cards_of_my_wife/",
-      "source": "r/ChatGPT",
-      "date": "2026-05-07",
-      "score": 1521,
-      "comments": 474,
-      "summary": "Really struggled to get it to do the bikini one haha but we love the results.   \nShe knows I posted\\*"
-    },
-    {
-      "title": "xAI will be dissolved as a separate entity.",
-      "url": "https://www.reddit.com/r/singularity/comments/1t5q5jm/xai_will_be_dissolved_as_a_separate_entity/",
+      "title": "ChatGPT is now creating content for    textbooks.",
+      "url": "https://www.reddit.com/r/singularity/comments/1ta1dvl/chatgpt_is_now_creating_content_for_textbooks/",
       "source": "r/singularity",
-      "date": "2026-05-06",
-      "score": 1442,
-      "comments": 372,
-      "summary": "https://i.redd.it/tzexewkj2lzg1.jpeg"
+      "date": "2026-05-11",
+      "score": 5349,
+      "comments": 434,
+      "summary": "https://i.redd.it/d65cfdtf1i0h1.png"
+    },
+    {
+      "title": "Plumbers, electricians, and HVAC techs watching AI replace everyone except them.",
+      "url": "https://www.reddit.com/r/ChatGPT/comments/1tb3td8/plumbers_electricians_and_hvac_techs_watching_ai/",
+      "source": "r/ChatGPT",
+      "date": "2026-05-12",
+      "score": 3668,
+      "comments": 446,
+      "summary": "https://v.redd.it/sb8l5k8pyp0h1"
+    },
+    {
+      "title": "Git push ftw",
+      "url": "https://www.reddit.com/r/ClaudeAI/comments/1tb327h/git_push_ftw/",
+      "source": "r/ClaudeAI",
+      "date": "2026-05-12",
+      "score": 2205,
+      "comments": 37,
+      "summary": "https://i.redd.it/8gpjj9ottp0h1.jpeg"
+    },
+    {
+      "title": "Bro solved the problems from Game of Thrones",
+      "url": "https://www.reddit.com/r/ChatGPT/comments/1tbuoyg/bro_solved_the_problems_from_game_of_thrones/",
+      "source": "r/ChatGPT",
+      "date": "2026-05-13",
+      "score": 1803,
+      "comments": 97,
+      "summary": "https://v.redd.it/3zmce8nekv0h1"
+    },
+    {
+      "title": "I made an AI concierge for my wedding guests. The second most popular thing they did with it was try to jailbreak it.",
+      "url": "https://www.reddit.com/r/ClaudeAI/comments/1tatxnq/i_made_an_ai_concierge_for_my_wedding_guests_the/",
+      "source": "r/ClaudeAI",
+      "date": "2026-05-12",
+      "score": 1644,
+      "comments": 143,
+      "summary": "https://i.imgur.com/8n0k4Ve.jpeg"
+    },
+    {
+      "title": "Basically 99,9 % of this subreddit",
+      "url": "https://www.reddit.com/r/ChatGPT/comments/1tb043e/basically_999_of_this_subreddit/",
+      "source": "r/ChatGPT",
+      "date": "2026-05-12",
+      "score": 1591,
+      "comments": 88,
+      "summary": "https://i.redd.it/gjcd6lns9p0h1.jpeg"
+    },
+    {
+      "title": "Animators are cooked",
+      "url": "https://www.reddit.com/r/ChatGPT/comments/1tbx4yu/animators_are_cooked/",
+      "source": "r/ChatGPT",
+      "date": "2026-05-13",
+      "score": 1546,
+      "comments": 275,
+      "summary": "https://v.redd.it/0wakv14s6w0h1"
+    },
+    {
+      "title": "A new video model \"Omni\" from Google is leaked, user notes text coherence",
+      "url": "https://www.reddit.com/r/singularity/comments/1ta4zzz/a_new_video_model_omni_from_google_is_leaked_user/",
+      "source": "r/singularity",
+      "date": "2026-05-11",
+      "score": 1452,
+      "comments": 209,
+      "summary": "https://x.com/i/status/2053824398503678108"
+    },
+    {
+      "title": "Making the competition look bad.",
+      "url": "https://www.reddit.com/r/ChatGPT/comments/1tbezo0/making_the_competition_look_bad/",
+      "source": "r/ChatGPT",
+      "date": "2026-05-12",
+      "score": 1236,
+      "comments": 87,
+      "summary": "Create an image that looks like an iPhone screenshot of a Google search AI overview result that is completely wrong and poorly written."
     }
   ],
   "questions": [
     {
-      "title": "MicasenseMX2 camera returns images with stripping",
-      "url": "https://gis.stackexchange.com/questions/500700/micasensemx2-camera-returns-images-with-stripping",
-      "score": 2,
+      "title": "Python CIM - Why can&#39;t I Include both Text and Fields in PopUp?",
+      "url": "https://gis.stackexchange.com/questions/500768/python-cim-why-cant-i-include-both-text-and-fields-in-popup",
+      "score": 1,
       "answers": 1,
-      "date": "2026-05-04",
-      "tags": [
-        "remote-sensing",
-        "unmanned-aerial-vehicle"
-      ],
-      "summary": "I am testing a Micasense MX2 (dual camera).  A majority of the images from this 10 band camera rig are fine but many display a horizontal streak of bad data in the image.  Here is an example of an ima"
-    },
-    {
-      "title": "How can I split a geodataframe with linestrings into segments of a specified length (0.5-mile) using Python?",
-      "url": "https://gis.stackexchange.com/questions/500687/how-can-i-split-a-geodataframe-with-linestrings-into-segments-of-a-specified-len",
-      "score": 0,
-      "answers": 1,
-      "date": "2026-05-01",
+      "date": "2026-05-12",
       "tags": [
         "python",
-        "geopandas",
-        "shapely"
+        "arcgis-pro",
+        "popup"
       ],
-      "summary": "I have a shapefile of roads that I have converted to a geodataframe. Now I would like to split the linestring features into lines of 0.5-mile lengths. What is the best way to do this using Python? I h"
+      "summary": "My automation of building popups from Python code has been working ok.  I can configure the title, the fields to be included (and order of those fields) and whether to show attachments or not.\nI now w"
     }
   ],
   "tutorials": [
     {
-      "title": "Amazon Bedrock AgentCore Harness runs your agent. ShapeV2 controls what it's allowed to do",
-      "url": "https://dev.to/aws-builders/agentcore-harness-runs-your-agent-shapev2-controls-what-its-allowed-to-do-32ab",
-      "reactions": 32,
+      "title": "React is Overkill: Why Python + HTMX is Dominating in 2026",
+      "url": "https://dev.to/syedahmershah/react-is-overkill-why-python-htmx-is-dominating-in-2026-17ib",
+      "reactions": 97,
+      "comments": 40,
+      "date": "2026-05-13",
+      "tags": [
+        "python",
+        "react",
+        "javascript",
+        "discuss"
+      ],
+      "summary": "Last year I spent forty minutes setting up a React project for an internal admin dashboard. Just the..."
+    },
+    {
+      "title": "How Python's GIL actually works (and when it bites you)",
+      "url": "https://dev.to/lovestaco/how-pythons-gil-actually-works-and-when-it-bites-you-3f2",
+      "reactions": 45,
       "comments": 0,
-      "date": "2026-05-06",
+      "date": "2026-05-10",
       "tags": [
-        "ai",
-        "aws",
-        "python",
-        "agents"
+        "webdev",
+        "productivity",
+        "programming",
+        "python"
       ],
-      "summary": "Amazon Web Services (AWS) just shipped Amazon Bedrock AgentCore harness harness in public preview. It..."
+      "summary": "Hello, I'm Maneshwar. I'm building git-lrc, a Micro AI code reviewer that runs on every commit. It is..."
     },
     {
-      "title": "Managing 150+ AI Agent Skills at Scale \u2014 What Broke, What I Built",
-      "url": "https://dev.to/vystartasv/managing-150-ai-agent-skills-at-scale-what-broke-what-i-built-1e73",
-      "reactions": 30,
-      "comments": 3,
-      "date": "2026-05-04",
+      "title": "From Rank 6,000,000 to 26,000: 1.5 Years, 1040 LeetCode Problems, and a Surprise Package That Changed Everything",
+      "url": "https://dev.to/hadil/from-rank-6000000-to-26000-15-years-1040-leetcode-problems-and-a-surprise-package-that-43e2",
+      "reactions": 32,
+      "comments": 8,
+      "date": "2026-05-13",
       "tags": [
-        "ai",
+        "programming",
+        "leetcode",
         "python",
-        "opensource",
-        "sqlite"
+        "javascript"
       ],
-      "summary": "By Vilius Vystartas | May 2026  I run a lot of AI agents. Not chatbots \u2014 autonomous agents. Cron jobs..."
+      "summary": "I didn\u2019t realize I was starting a 1.5-year journey when I opened my first LeetCode problem.  It..."
     },
     {
-      "title": "How I Built an Offline AI Assistant in Python - No OpenAI, No LangChain, No Dependencies",
-      "url": "https://dev.to/huckler/how-i-built-an-offline-ai-assistant-in-python-no-openai-no-langchain-no-dependencies-4523",
-      "reactions": 30,
-      "comments": 3,
-      "date": "2026-05-03",
+      "title": "I Tested PaioClaw \u2014 Here's What Happened When I Pushed It to Its Limits",
+      "url": "https://dev.to/harsh2644/i-tested-paioclaw-heres-what-happened-when-i-pushed-it-to-its-limits-iok",
+      "reactions": 28,
+      "comments": 5,
+      "date": "2026-05-11",
+      "tags": [
+        "ai",
+        "security",
+        "programming",
+        "python"
+      ],
+      "summary": "Most AI tools will do whatever you ask.  That sounds like a feature. After spending a week testing..."
+    },
+    {
+      "title": "Hacking perfectly square AI videos with Veo 3.1 and NanoBanana 2",
+      "url": "https://dev.to/googleai/hacking-perfectly-square-ai-videos-with-veo-31-and-nanobanana-2-5cpn",
+      "reactions": 18,
+      "comments": 2,
+      "date": "2026-05-12",
+      "tags": [
+        "python",
+        "ai",
+        "videogen",
+        "webdev"
+      ],
+      "summary": "If you\u2019ve been playing around with AI video generation lately, you already know the struggle: the..."
+    },
+    {
+      "title": "How I Taught My Offline AI to Remember, Watch, and Warn, Without Any Cloud (Part 2)",
+      "url": "https://dev.to/huckler/how-i-taught-my-offline-ai-to-remember-watch-and-warn-without-any-cloud-part-2-5hib",
+      "reactions": 8,
+      "comments": 1,
+      "date": "2026-05-12",
       "tags": [
         "python",
         "ai",
         "tutorial",
         "opensource"
       ],
-      "summary": "Every tutorial about building an AI assistant starts the same way: pip install openai. Get an API..."
+      "summary": "Part 1 covered how hck_GPT routes messages through 9 layers and decides between rules and a local..."
     },
     {
-      "title": "I Gave My SEO Agent a Real Site. It Found Bugs I'd Missed for Weeks.",
-      "url": "https://dev.to/dannwaneri/i-gave-my-seo-agent-a-real-site-it-found-bugs-id-missed-for-weeks-3kn1",
-      "reactions": 15,
-      "comments": 4,
-      "date": "2026-05-06",
-      "tags": [
-        "python",
-        "ai",
-        "seo",
-        "webdev"
-      ],
-      "summary": "does twitch pay nigerians \u2014 position 9.5 in Google Search Console, 29 impressions, 0..."
-    },
-    {
-      "title": "I Built a Tool That Detects SEO Poisoning Across Multiple Search Engines",
-      "url": "https://dev.to/null_saint/i-built-a-tool-that-detects-seo-poisoning-across-multiple-search-engines-15n9",
-      "reactions": 15,
-      "comments": 11,
-      "date": "2026-05-02",
-      "tags": [
-        "security",
-        "python",
-        "opensource",
-        "devops"
-      ],
-      "summary": "By RUGERO Tesla (@404Saint).           It started with an article I couldn't stop thinking about   A..."
-    },
-    {
-      "title": "AI Isn't the Problem. The Loss Function Is.",
-      "url": "https://dev.to/monom/writing-the-loss-function-3i67",
-      "reactions": 8,
-      "comments": 0,
-      "date": "2026-05-03",
-      "tags": [
-        "ai",
-        "machinelearning",
-        "discuss",
-        "algorithms"
-      ],
-      "summary": "I keep seeing the same argument about AI making us dumber. It's the same argument people had about..."
-    },
-    {
-      "title": "I Built a Tool That Builds My Infrastructure \u2014 Here's How It Went",
-      "url": "https://dev.to/hezekiah_umoh/i-built-a-tool-that-builds-my-infrastructure-heres-how-it-went-12om",
-      "reactions": 7,
-      "comments": 0,
-      "date": "2026-05-05",
-      "tags": [
-        "python",
-        "fastapi",
-        "nginx",
-        "docker"
-      ],
-      "summary": "I Built a Tool That Builds My Infrastructure \u2014 Here's How It Went   A brutally honest..."
-    },
-    {
-      "title": "TraceMind v3 \u2014 I built an AI agent that diagnoses why your LLM quality dropped",
-      "url": "https://dev.to/aayush_kumarsingh_6ee1ffe/tracemind-v3-i-built-an-ai-agent-that-diagnoses-why-your-llm-quality-dropped-921",
+      "title": "Why comparing average scores is the wrong way to evaluate LLM prompts (and what to do instead)",
+      "url": "https://dev.to/aayush_kumarsingh_6ee1ffe/why-comparing-average-scores-is-the-wrong-way-to-evaluate-llm-prompts-and-what-to-do-instead-1li",
       "reactions": 7,
       "comments": 4,
-      "date": "2026-05-05",
+      "date": "2026-05-08",
       "tags": [
         "python",
-        "opensource",
-        "agents",
-        "llmops"
-      ],
-      "summary": "Previous posts: v2 \u2014 hallucination detection + A/B testing     The most common question I got after..."
-    },
-    {
-      "title": "Build Your Own MCP Server: A Repo-Agnostic File Search Tool for AI Assistants",
-      "url": "https://dev.to/fortune-ndlovu/build-your-own-mcp-server-a-repo-agnostic-file-search-tool-for-ai-assistants-o54",
-      "reactions": 6,
-      "comments": 1,
-      "date": "2026-05-07",
-      "tags": [
-        "ai",
-        "python",
-        "mcp"
-      ],
-      "summary": "I often find that the results from AI tools are opinionated. You ask Claude or Cursor to find..."
-    },
-    {
-      "title": "I Trained My Own LLM from Scratch in 2025: What That Viral HN Tutorial Doesn't Tell You About the Real Cost",
-      "url": "https://dev.to/jtorchia/i-trained-my-own-llm-from-scratch-in-2025-what-that-viral-hn-tutorial-doesnt-tell-you-about-the-l66",
-      "reactions": 5,
-      "comments": 1,
-      "date": "2026-05-05",
-      "tags": [
-        "english",
         "llm",
-        "ia",
-        "machinelearning"
+        "machinelearning",
+        "opensource"
       ],
-      "summary": "I followed the viral 241-point HN tutorial and documented every dollar spent, every GPU hour, and every disappointment. My thesis: training an LLM from scratch in 2025 is a valid technical exercise, b"
+      "summary": "Most teams compare prompts like this:  Prompt A average score: 6.8 Prompt B average score: 7.4  \"B is..."
+    },
+    {
+      "title": "\u00bfY si Python permitiera 'end' como fin de bloque? (y III)",
+      "url": "https://dev.to/baltasarq/y-si-python-permitiera-end-como-fin-de-bloque-y-iii-2a2f",
+      "reactions": 7,
+      "comments": 2,
+      "date": "2026-05-12",
+      "tags": [
+        "spanish",
+        "python",
+        "hack",
+        "programming"
+      ],
+      "summary": "Hackeando una soluci\u00f3n"
+    },
+    {
+      "title": "How to Deploy a Machine Learning Project on AWS Using ECR, ECS Fargate, and EFS.",
+      "url": "https://dev.to/tendong_brain/how-to-deploy-a-machine-learning-project-on-aws-using-ecr-ecs-fargate-and-efs-kh1",
+      "reactions": 5,
+      "comments": 2,
+      "date": "2026-05-09",
+      "tags": [
+        "ai",
+        "python",
+        "machinelearning",
+        "aws"
+      ],
+      "summary": "A step-by-step walkthrough from Docker image to a live, serverless ML application running in the..."
+    },
+    {
+      "title": "What Reddit Can Teach Us About Women\u2019s Watch Preferences (Python + NLP Project)",
+      "url": "https://dev.to/elizabeththomas7/what-reddit-can-teach-us-about-womens-watch-preferences-python-nlp-project-46k3",
+      "reactions": 5,
+      "comments": 2,
+      "date": "2026-05-08",
+      "tags": [
+        "python",
+        "nlp",
+        "sentimentanalysis",
+        "datascience"
+      ],
+      "summary": "Most \u201cwhat watch should I buy?\u201d discussions online skew heavily male. A friend wanted to launch a..."
     }
   ]
 }

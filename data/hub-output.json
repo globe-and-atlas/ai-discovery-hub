@@ -6,427 +6,421 @@
   },
   "artifacts": [
     {
-      "title": "Ask ArcGIS Pro AI to Find the Right Tool for You",
+      "title": "Claude Code Just Got an Agent Dashboard",
       "type": "video",
-      "source": "ArcGIS (YouTube)",
-      "url": "https://www.youtube.com/watch?v=rLW0pgJJgDM",
-      "desc": "Esri's ArcGIS Pro now embeds an AI assistant that discovers and runs spatial analysis tools on your behalf, automating GIS workflows. This is a direct signal for Daniel's ArcGIS Pro usage and a strong editorial angle for the Tool Critic and Industry Lens pillars.",
+      "source": "Nate Herk | AI Automation",
+      "url": "https://www.youtube.com/watch?v=ZAaxx3qyT8g",
+      "desc": "Covers the new Agent Dashboard feature in Claude Code, providing a visual interface for monitoring and managing multi-agent runs \u2014 directly relevant to Daniel's Claude Code CLI workflows and his 3-layer agent architecture.",
       "relevance": "personal",
-      "relevance_why": "Direct: ArcGIS Pro is in Daniel's stack; this AI-native feature changes how spatial workflows are initiated and is editorially relevant to Globe & Atlas readers.",
-      "lens": "\ud83d\uddfa GIS/FME",
-      "tier": "\u2705 Adopt Now",
-      "topics": [
-        "t-esri",
-        "t-geoai"
-      ],
-      "date": "2026-05-08",
-      "icon": "\ud83d\uddfa\ufe0f"
-    },
-    {
-      "title": "Build Your Own MCP Server: A Repo-Agnostic File Search Tool for AI Assistants",
-      "type": "video",
-      "source": "dev.to",
-      "url": "https://dev.to/fortune-ndlovu/build-your-own-mcp-server-a-repo-agnostic-file-search-tool-for-ai-assistants-o54",
-      "desc": "Step-by-step tutorial for building a Python-based MCP server that gives Claude and other AI assistants repo-agnostic file search capability. Directly applicable to Daniel's Claude Code CLI + Python stack and his 3-layer agent architecture.",
-      "relevance": "personal",
-      "relevance_why": "Direct: uses Python and Claude API; MCP servers extend Claude Code CLI, which is in Daniel's direct stack.",
-      "lens": "\ud83d\udce1 Staying Current",
-      "tier": "\u2705 Adopt Now",
-      "topics": [
-        "t-mcp",
-        "t-claude"
-      ],
-      "date": "2026-05-07",
-      "icon": "\ud83d\udd0c"
-    },
-    {
-      "title": "everything-claude-code \u2014 Agent Harness Performance Optimization System",
-      "type": "repo",
-      "source": "GitHub / affaan-m",
-      "url": "https://github.com/affaan-m/everything-claude-code",
-      "desc": "A comprehensive harness for Claude Code, Codex, and Cursor adding skills, persistent memory, security layers, and research-first development patterns \u2014 directly supercharging Daniel's Claude Code CLI workflow with structured agent improvements.",
-      "relevance": "personal",
-      "relevance_why": "Direct: Claude Code CLI is in Daniel's direct stack; this repo systematically extends it with memory and skill management.",
+      "relevance_why": "Direct: uses Claude Code CLI, which is in Daniel's dev tools stack.",
       "lens": "\ud83d\udce1 Staying Current",
       "tier": "\u2705 Adopt Now",
       "topics": [
         "t-claude",
         "t-agent"
       ],
-      "date": "2026-05-03",
-      "icon": "\u26a1"
+      "date": "2026-05-12",
+      "icon": "\ud83e\udd16"
     },
     {
-      "title": "claude-mem \u2014 Claude Code Plugin for Persistent Session Memory",
-      "type": "repo",
-      "source": "GitHub / thedotmack",
-      "url": "https://github.com/thedotmack/claude-mem",
-      "desc": "Automatically captures Claude Code session context, compresses it with Claude's agent SDK, and injects relevant memory into future sessions \u2014 solving the context-loss problem Daniel faces when working on long FME/Python pipelines across sessions.",
-      "relevance": "personal",
-      "relevance_why": "Direct: Claude Code CLI is in Daniel's stack; this plugin adds persistent memory that persists across the coding sessions he uses daily.",
-      "lens": "\ud83d\udce1 Staying Current",
-      "tier": "\u2705 Adopt Now",
-      "topics": [
-        "t-memory",
-        "t-claude"
-      ],
-      "date": "2026-05-08",
-      "icon": "\ud83e\udde0"
-    },
-    {
-      "title": "Optimizing Temporal Resolution for Earth Observation and Geospatial AI",
+      "title": "A Supervised Classification Approach for Soil Salinity Distribution Mapping of Sentinel-2 in QGIS",
       "type": "video",
-      "source": "GeoWGS84AI (YouTube)",
-      "url": "https://www.youtube.com/watch?v=kCKYCNYhzoA",
-      "desc": "Explains how revisit frequency decisions in satellite constellation selection impact geospatial AI model quality \u2014 directly relevant to Daniel's Sentinel Hub API workflows and his editorial lens on satellite imagery decision-making.",
+      "source": "Satellite Remote Sensing and GIS",
+      "url": "https://www.youtube.com/watch?v=6CuqNYTFIpI",
+      "desc": "Step-by-step walkthrough of SVM and Random Forest supervised classification on Sentinel-2 imagery for soil salinity mapping inside QGIS \u2014 directly applicable to Daniel's Sentinel Hub API and QGIS workflows and a strong editorial fit for The Build pillar.",
       "relevance": "personal",
-      "relevance_why": "Direct: Sentinel Hub API and Sentinel-2/SAR imagery are in Daniel's stack; temporal resolution strategy governs how he queries and processes imagery.",
+      "relevance_why": "Direct: uses Sentinel-2 and QGIS, both core stack items.",
       "lens": "\ud83d\uddfa GIS/FME",
-      "tier": "\ud83d\udc41 Watch Closely",
+      "tier": "\u2705 Adopt Now",
       "topics": [
         "t-satellite",
         "t-geoai"
       ],
-      "date": "2026-05-08",
-      "icon": "\ud83d\udef0\ufe0f"
+      "date": "2026-05-13",
+      "icon": "\ud83d\udef0"
     },
     {
-      "title": "Amazon Bedrock AgentCore Harness + ShapeV2 \u2014 Runtime Control for Agents",
-      "type": "video",
-      "source": "dev.to / AWS Builders",
-      "url": "https://dev.to/aws-builders/agentcore-harness-runs-your-agent-shapev2-controls-what-its-allowed-to-do-32ab",
-      "desc": "AWS public-preview launch of AgentCore \u2014 a managed agent runtime paired with ShapeV2 for policy-based tool permissions. Adjacent to Daniel's 3-layer agent architecture as a potential orchestration-layer alternative to his current Claude API + GitHub Actions setup.",
-      "relevance": "personal",
-      "relevance_why": "Adjacent: replaces or competes with the orchestration layer Daniel builds manually with Claude API; ShapeV2 policy model is directly comparable to his directives layer.",
-      "lens": "\ud83d\udce1 Staying Current",
-      "tier": "\ud83d\udc41 Watch Closely",
-      "topics": [
-        "t-agent",
-        "t-model"
-      ],
-      "date": "2026-05-06",
-      "icon": "\u2601\ufe0f"
-    },
-    {
-      "title": "Managing 150+ AI Agent Skills at Scale \u2014 What Broke, What I Built",
-      "type": "video",
-      "source": "dev.to / Vilius Vystartas",
-      "url": "https://dev.to/vystartasv/managing-150-ai-agent-skills-at-scale-what-broke-what-i-built-1e73",
-      "desc": "Practitioner post on managing large autonomous agent skill libraries with Python and SQLite \u2014 including failure patterns at scale. Directly relevant to Daniel's agent orchestration work and provides concrete lessons for the Career Navigator pillar.",
-      "relevance": "personal",
-      "relevance_why": "Direct: Python and agent orchestration are in Daniel's stack; the SQLite-based skill registry pattern is applicable to his multi-agent builds.",
-      "lens": "\ud83d\udce1 Staying Current",
-      "tier": "\ud83d\udc41 Watch Closely",
-      "topics": [
-        "t-agent",
-        "t-data"
-      ],
-      "date": "2026-05-04",
-      "icon": "\ud83e\udd16"
-    },
-    {
-      "title": "n8n \u2014 Fair-Code Workflow Automation with Native AI and 400+ Integrations",
+      "title": "everything-claude-code",
       "type": "repo",
-      "source": "GitHub / n8n-io",
+      "source": "affaan-m/everything-claude-code",
+      "url": "https://github.com/affaan-m/everything-claude-code",
+      "desc": "Agent harness performance optimization system covering skills, memory, security, and research-first development patterns for Claude Code \u2014 directly extends Daniel's Claude Code CLI usage with structured patterns for persistent context and safer autonomous execution.",
+      "relevance": "personal",
+      "relevance_why": "Direct: targets Claude Code CLI, which is an active tool in Daniel's dev stack.",
+      "lens": "\ud83d\udce1 Staying Current",
+      "tier": "\u2705 Adopt Now",
+      "topics": [
+        "t-claude",
+        "t-agent"
+      ],
+      "date": "2026-05-13",
+      "icon": "\u2699\ufe0f"
+    },
+    {
+      "title": "claude-mem",
+      "type": "repo",
+      "source": "thedotmack/claude-mem",
+      "url": "https://github.com/thedotmack/claude-mem",
+      "desc": "Persistent memory layer for Claude Code agents \u2014 captures session activity, compresses it with AI, and injects relevant context into future sessions, solving the stateless session problem Daniel faces when building multi-step GIS automation pipelines with Claude.",
+      "relevance": "personal",
+      "relevance_why": "Direct: plugs into Claude Code CLI and the Claude API, both active in Daniel's stack.",
+      "lens": "\ud83d\udce1 Staying Current",
+      "tier": "\u2705 Adopt Now",
+      "topics": [
+        "t-claude",
+        "t-memory"
+      ],
+      "date": "2026-05-13",
+      "icon": "\ud83e\udde0"
+    },
+    {
+      "title": "FREE Claude Code + Ollama Setup in 2026 \u2014 Run AI Locally Without Paying!",
+      "type": "video",
+      "source": "How To Conf AI",
+      "url": "https://www.youtube.com/watch?v=3HaLDTK4jAM",
+      "desc": "Shows how to wire Claude Code to a local Ollama backend, enabling offline agent execution without API costs \u2014 useful for Daniel when prototyping FME/GIS automation scripts that don't need cloud inference.",
+      "relevance": "personal",
+      "relevance_why": "Direct: combines Claude Code CLI (direct stack) with Ollama as a cost-free local inference backend.",
+      "lens": "\ud83d\udce1 Staying Current",
+      "tier": "\ud83d\udc41 Watch Closely",
+      "topics": [
+        "t-claude",
+        "t-local"
+      ],
+      "date": "2026-05-13",
+      "icon": "\ud83d\udcbb"
+    },
+    {
+      "title": "dify",
+      "type": "repo",
+      "source": "langgenius/dify",
+      "url": "https://github.com/langgenius/dify",
+      "desc": "Production-ready agentic workflow platform supporting multi-model orchestration, RAG pipelines, and tool calling \u2014 adjacent to Daniel's 3-layer agent architecture and could serve as a visual orchestration layer above his Python/Claude execution stack.",
+      "relevance": "personal",
+      "relevance_why": "Adjacent: replaces or complements custom orchestration code in Daniel's 3-layer architecture, with built-in Claude API and Python tool support.",
+      "lens": "\ud83d\udce1 Staying Current",
+      "tier": "\ud83d\udc41 Watch Closely",
+      "topics": [
+        "t-agent",
+        "t-claude"
+      ],
+      "date": "2026-05-13",
+      "icon": "\ud83d\udd00"
+    },
+    {
+      "title": "n8n \u2014 Fair-Code Workflow Automation with Native AI",
+      "type": "repo",
+      "source": "n8n-io/n8n",
       "url": "https://github.com/n8n-io/n8n",
-      "desc": "Self-hostable TypeScript workflow automation platform with visual builder and native AI nodes \u2014 a strong adjacent alternative to Daniel's GitHub Actions + Claude API pipeline, especially for orchestrating GIS data ingestion tasks with visual debugging.",
+      "desc": "Visual workflow automation platform with 400+ integrations and native AI node support \u2014 adjacent to FME as a lighter-weight ETL/automation layer and could handle pre/post-processing pipelines that feed into Daniel's GIS workflows.",
       "relevance": "personal",
-      "relevance_why": "Adjacent: directly replaces GitHub Actions for workflow orchestration with a visual AI-native layer; TypeScript aligns with Daniel's frontend stack.",
+      "relevance_why": "Adjacent: competes with FME for non-spatial ETL/automation tasks and integrates with REST APIs, Python, and Claude API that Daniel already uses.",
+      "lens": "\ud83d\uddfa GIS/FME",
+      "tier": "\ud83d\udc41 Watch Closely",
+      "topics": [
+        "t-fme",
+        "t-agent"
+      ],
+      "date": "2026-05-13",
+      "icon": "\ud83d\udd01"
+    },
+    {
+      "title": "Python CIM \u2014 Why Can't I Include Both Text and Fields in Popup?",
+      "type": "signal",
+      "source": "GIS Stack Exchange",
+      "url": "https://gis.stackexchange.com/questions/500768/python-cim-why-cant-i-include-both-text-and-fields-in-popup",
+      "desc": "Practitioner question about ArcGIS Pro CIM popup automation via Python \u2014 exposes a real friction point in Python ArcGIS API automation that Daniel will recognise from his own ArcGIS Pro workflows and represents a strong Tool Critic editorial angle.",
+      "relevance": "personal",
+      "relevance_why": "Direct: touches ArcGIS Pro and Python, both in Daniel's stack.",
+      "lens": "\ud83d\uddfa GIS/FME",
+      "tier": "\ud83d\udc41 Watch Closely",
+      "topics": [
+        "t-esri",
+        "t-data"
+      ],
+      "date": "2026-05-12",
+      "icon": "\ud83d\uddfa"
+    },
+    {
+      "title": "learn-claude-code \u2014 Nano Claude Code Agent Harness from Scratch",
+      "type": "repo",
+      "source": "shareAI-lab/learn-claude-code",
+      "url": "https://github.com/shareAI-lab/learn-claude-code",
+      "desc": "Minimal Bash/TypeScript implementation of a Claude Code-style agent harness built from zero \u2014 a practical reference for understanding the execution layer of Daniel's 3-layer architecture and useful for Globe & Atlas 'The Build' teardown content.",
+      "relevance": "personal",
+      "relevance_why": "Direct: implements Claude Code-style agent harness in TypeScript, matching Daniel's TypeScript stack and Claude Code CLI usage.",
       "lens": "\ud83d\udce1 Staying Current",
       "tier": "\ud83d\udc41 Watch Closely",
       "topics": [
-        "t-agent",
-        "t-data"
+        "t-claude",
+        "t-agent"
       ],
-      "date": "2026-05-08",
-      "icon": "\ud83d\udd04"
+      "date": "2026-05-11",
+      "icon": "\ud83d\udd2c"
     },
     {
-      "title": "google-gemini/gemini-cli \u2014 Open-Source AI Agent for the Terminal",
-      "type": "repo",
-      "source": "GitHub / google-gemini",
-      "url": "https://github.com/google-gemini/gemini-cli",
-      "desc": "Google's open-source terminal agent powered by Gemini, built in TypeScript \u2014 a direct competitor to Claude Code CLI that Daniel already uses daily and worth benchmarking for GIS scripting tasks.",
+      "title": "How to Run Local AI Models on Your PC for FREE | LM Studio + Gemma 4",
+      "type": "video",
+      "source": "Tech With DevOps",
+      "url": "https://www.youtube.com/watch?v=68r_TIAC_iE",
+      "desc": "Step-by-step guide to running Gemma 4 locally via LM Studio \u2014 relevant as a local inference alternative to Claude API for lightweight GIS scripting tasks and as a cost comparison benchmark for Daniel's AI-augmented workflows.",
       "relevance": "personal",
-      "relevance_why": "Adjacent: directly competes with Claude Code CLI in Daniel's stack; monitoring this is required for accurate Tool Critic coverage of the terminal AI agent space.",
+      "relevance_why": "Adjacent: LM Studio + Gemma 4 is a direct local alternative to Claude API calls in Daniel's Python scripts.",
       "lens": "\ud83d\udce1 Staying Current",
-      "tier": "\ud83d\udc41 Watch Closely",
+      "tier": "\ud83d\udd25 Hype Check",
+      "topics": [
+        "t-local",
+        "t-gemini"
+      ],
+      "date": "2026-05-13",
+      "icon": "\ud83d\udd25"
+    },
+    {
+      "title": "React is Overkill: Why Python + HTMX is Dominating in 2026",
+      "type": "signal",
+      "source": "dev.to",
+      "url": "https://dev.to/syedahmershah/react-is-overkill-why-python-htmx-is-dominating-in-2026-17ib",
+      "desc": "Argues that Python + HTMX outperforms React for internal dashboards \u2014 a credible counter-signal to Daniel's React 19 + Vite frontend stack, worth evaluating for Streamlit-first GIS dashboard projects where React overhead may not be justified.",
+      "relevance": "personal",
+      "relevance_why": "Adjacent: directly challenges Daniel's React 19 + Vite frontend choice, with Python + HTMX being closer to his existing Streamlit usage.",
+      "lens": "\ud83d\udce1 Staying Current",
+      "tier": "\ud83d\udd25 Hype Check",
+      "topics": [
+        "t-data",
+        "t-agent"
+      ],
+      "date": "2026-05-13",
+      "icon": "\u26a1"
+    },
+    {
+      "title": "gemini-cli \u2014 Google Gemini in Your Terminal",
+      "type": "repo",
+      "source": "google-gemini/gemini-cli",
+      "url": "https://github.com/google-gemini/gemini-cli",
+      "desc": "Open-source TypeScript CLI that brings Gemini AI directly into the terminal as an agent \u2014 a direct competitor to Claude Code CLI in Daniel's dev workflow, worth benchmarking for GIS scripting and file-manipulation tasks.",
+      "relevance": "personal",
+      "relevance_why": "Adjacent: directly competes with Claude Code CLI in Daniel's terminal workflow, built in TypeScript matching his stack.",
+      "lens": "\ud83d\udce1 Staying Current",
+      "tier": "\ud83c\udf31 On Radar",
       "topics": [
         "t-gemini",
         "t-agent"
       ],
-      "date": "2026-05-08",
-      "icon": "\ud83d\udc8e"
+      "date": "2026-05-13",
+      "icon": "\ud83d\udd2d"
     },
     {
-      "title": "TraceMind v3 \u2014 AI Agent That Diagnoses LLM Quality Drops",
-      "type": "video",
-      "source": "dev.to / Aayush Kumar Singh",
-      "url": "https://dev.to/aayush_kumarsingh_6ee1ffe/tracemind-v3-i-built-an-ai-agent-that-diagnoses-why-your-llm-quality-dropped-921",
-      "desc": "Python-based LLMOps agent that detects hallucination regressions, runs A/B tests, and traces root causes of quality drops in LLM pipelines. Relevant to Daniel's Claude API workflows where output quality monitoring is increasingly important at scale.",
+      "title": "deer-flow \u2014 Open-Source Long-Horizon SuperAgent Harness",
+      "type": "repo",
+      "source": "bytedance/deer-flow",
+      "url": "https://github.com/bytedance/deer-flow",
+      "desc": "ByteDance's agentic framework with sandboxes, subagents, memory, and tool integrations for long-horizon research and coding tasks \u2014 an early signal of enterprise-grade multi-agent infrastructure that could influence the design of Daniel's orchestration layer.",
       "relevance": "personal",
-      "relevance_why": "Adjacent: extends Daniel's Claude API usage with observability tooling he currently lacks; Python-native and applicable to his existing pipeline architecture.",
+      "relevance_why": "Adjacent: provides a full agent harness pattern in Python that could replace or inform Daniel's custom orchestration code in his 3-layer architecture.",
       "lens": "\ud83d\udce1 Staying Current",
-      "tier": "\ud83d\udc41 Watch Closely",
+      "tier": "\ud83c\udf31 On Radar",
+      "topics": [
+        "t-agent",
+        "t-memory"
+      ],
+      "date": "2026-05-13",
+      "icon": "\ud83e\udd8c"
+    },
+    {
+      "title": "Why Comparing Average Scores Is the Wrong Way to Evaluate LLM Prompts",
+      "type": "signal",
+      "source": "dev.to",
+      "url": "https://dev.to/aayush_kumarsingh_6ee1ffe/why-comparing-average-scores-is-the-wrong-way-to-evaluate-llm-prompts-and-what-to-do-instead-1li",
+      "desc": "Explains statistical flaws in average-score prompt evaluation and proposes better comparison methods \u2014 directly relevant to Daniel's use of Claude Sonnet/Haiku for GIS automation, where prompt quality directly affects output reliability.",
+      "relevance": "personal",
+      "relevance_why": "Direct: applies to Daniel's Claude API prompt engineering practice for GIS automation scripts.",
+      "lens": "\ud83d\udce1 Staying Current",
+      "tier": "\ud83c\udf31 On Radar",
       "topics": [
         "t-claude",
-        "t-agent"
-      ],
-      "date": "2026-05-05",
-      "icon": "\ud83d\udd0d"
-    },
-    {
-      "title": "Welcome to GIS4Everyone \u2014 Remote Sensing, AI & Geospatial Science Channel",
-      "type": "video",
-      "source": "GIS 4 Everyone (YouTube)",
-      "url": "https://www.youtube.com/watch?v=Qos2CueaYdI",
-      "desc": "Launch video for a new YouTube channel dedicated to AI-powered remote sensing and GIS analysis \u2014 an emerging content creator in Daniel's direct editorial space worth tracking as a peer signal.",
-      "relevance": "personal",
-      "relevance_why": "Direct: GIS/remote sensing AI content is Daniel's editorial territory; this channel is a potential competitor and collaboration signal for Globe & Atlas.",
-      "lens": "\ud83d\uddfa GIS/FME",
-      "tier": "\ud83c\udf31 On Radar",
-      "topics": [
-        "t-satellite",
-        "t-geoai"
+        "t-model"
       ],
       "date": "2026-05-08",
-      "icon": "\ud83c\udf0d"
+      "icon": "\ud83d\udcca"
     },
     {
-      "title": "MicasenseMX2 Camera Returns Images with Striping \u2014 Stack Exchange GIS",
-      "type": "signal",
-      "source": "GIS Stack Exchange",
-      "url": "https://gis.stackexchange.com/questions/500700/micasensemx2-camera-returns-images-with-stripping",
-      "desc": "Practitioner question about horizontal data artifacts in a 10-band multispectral drone camera \u2014 a real-world sensor calibration and data quality issue directly in Daniel's multispectral imagery and drone imagery coverage area.",
-      "relevance": "personal",
-      "relevance_why": "Direct: multispectral and drone imagery are in Daniel's stack; this is a practitioner signal about data quality issues that resonate with Globe & Atlas readers.",
-      "lens": "\ud83d\uddfa GIS/FME",
-      "tier": "\ud83c\udf31 On Radar",
-      "topics": [
-        "t-drone",
-        "t-thermal"
-      ],
-      "date": "2026-05-04",
-      "icon": "\ud83d\udce1"
-    },
-    {
-      "title": "How to Split GeoPandas LineStrings into 0.5-Mile Segments in Python",
-      "type": "signal",
-      "source": "GIS Stack Exchange",
-      "url": "https://gis.stackexchange.com/questions/500687/how-can-i-split-a-geodataframe-with-linestrings-into-segments-of-a-specified-len",
-      "desc": "Community question with an answer about using GeoPandas and Shapely for road network segmentation \u2014 a practical Python/GeoPandas pattern directly applicable to Daniel's spatial data workflows and a potential short-form tutorial angle.",
-      "relevance": "personal",
-      "relevance_why": "Direct: GeoPandas is in Daniel's Python library stack; this segmentation pattern is reusable across road, pipeline, and utility network analysis workflows.",
-      "lens": "\ud83d\uddfa GIS/FME",
-      "tier": "\ud83c\udf31 On Radar",
-      "topics": [
-        "t-data",
-        "t-geoai"
-      ],
-      "date": "2026-05-01",
-      "icon": "\ud83d\udcd0"
-    },
-    {
-      "title": "NEW Open Claude Code \u2014 Fully Free Open-Source AI Coding Agent Tutorial",
-      "type": "video",
-      "source": "WorldofAI (YouTube)",
-      "url": "https://www.youtube.com/watch?v=JZIf-HiutvY",
-      "desc": "Reviews an open-source, free alternative to Claude Code CLI \u2014 important competitive signal for Daniel who relies on Claude Code daily and needs to assess whether free alternatives offer comparable capability for GIS scripting.",
-      "relevance": "personal",
-      "relevance_why": "Direct: Claude Code CLI is in Daniel's stack; evaluating open alternatives informs both his personal tooling decisions and Tool Critic content.",
-      "lens": "\ud83d\udce1 Staying Current",
-      "tier": "\ud83d\udd25 Hype Check",
-      "topics": [
-        "t-claude",
-        "t-agent"
-      ],
-      "date": "2026-05-08",
-      "icon": "\ud83c\udd93"
-    },
-    {
-      "title": "xAI Will Be Dissolved as a Separate Entity",
+      "title": "ChatGPT Is Now Creating Content for Textbooks",
       "type": "signal",
       "source": "r/singularity",
-      "url": "https://www.reddit.com/r/singularity/comments/1t5q5jm/xai_will_be_dissolved_as_a_separate_entity/",
-      "score": 1442,
-      "desc": "Widely shared report that xAI (Grok) is being folded back into X/Twitter as a unified entity \u2014 a market structure signal relevant to understanding the competitive LLM landscape Daniel monitors for Globe & Atlas.",
-      "relevance": "personal",
-      "relevance_why": "Adjacent: Daniel monitors competing LLM providers relative to his Claude API primary stack; xAI restructuring affects the competitive dynamics he covers in Industry Lens.",
-      "lens": "\ud83d\udce1 Staying Current",
+      "url": "https://www.reddit.com/r/singularity/comments/1ta1dvl/chatgpt_is_now_creating_content_for_textbooks/",
+      "desc": "Viral discussion about AI-generated textbook content signals accelerating AI adoption in knowledge work \u2014 awareness signal for Daniel's Career Navigator editorial pillar.",
+      "relevance": "world",
+      "relevance_why": "",
+      "lens": "\ud83d\udce1 AI World",
       "tier": "\ud83d\udd25 Hype Check",
       "topics": [
-        "t-model",
+        "t-openai"
+      ],
+      "date": "2026-05-11",
+      "icon": "\ud83d\udcda"
+    },
+    {
+      "title": "Plumbers, Electricians, and HVAC Techs Watching AI Replace Everyone Except Them",
+      "type": "signal",
+      "source": "r/ChatGPT",
+      "url": "https://www.reddit.com/r/ChatGPT/comments/1tb3td8/plumbers_electricians_and_hvac_techs_watching_ai/",
+      "desc": "Viral meme post highlighting trades workers' perceived immunity to AI displacement, sparking broad economic displacement discussion.",
+      "relevance": "world",
+      "relevance_why": "",
+      "lens": "\ud83d\udce1 AI World",
+      "tier": "\ud83d\udd25 Hype Check",
+      "topics": [
+        "t-openai"
+      ],
+      "date": "2026-05-12",
+      "icon": "\ud83d\udd27"
+    },
+    {
+      "title": "A New Video Model 'Omni' from Google Is Leaked",
+      "type": "signal",
+      "source": "r/singularity",
+      "url": "https://www.reddit.com/r/singularity/comments/1ta4zzz/a_new_video_model_omni_from_google_is_leaked_user/",
+      "desc": "Leaked footage of an unreleased Google video generation model showing strong text coherence in generated video.",
+      "relevance": "world",
+      "relevance_why": "",
+      "lens": "\ud83d\udce1 AI World",
+      "tier": "\ud83d\udd25 Hype Check",
+      "topics": [
+        "t-gemini",
+        "t-model"
+      ],
+      "date": "2026-05-11",
+      "icon": "\ud83c\udfac"
+    },
+    {
+      "title": "SAP Sapphire 2026 Global Keynote: The Beginning of Better",
+      "type": "video",
+      "source": "SAP",
+      "url": "https://www.youtube.com/watch?v=9aa-etRsaLU",
+      "desc": "SAP's Sapphire 2026 keynote introducing the Autonomous Enterprise vision with embedded AI across enterprise workflows.",
+      "relevance": "world",
+      "relevance_why": "",
+      "lens": "\ud83d\udce1 AI World",
+      "tier": "\ud83c\udfd7 Foundation",
+      "topics": [
         "t-agent"
       ],
-      "date": "2026-05-06",
-      "icon": "\ud83d\udcf0"
+      "date": "2026-05-13",
+      "icon": "\ud83c\udfe2"
     },
     {
-      "title": "ChatGPT Just Got More Dangerous \u2014 OpenAI's GPT-5.5 Cyber Tests",
+      "title": "Red Hat Summit 2026 Day 2 \u2014 The AI-Ready Enterprise Is Here",
       "type": "video",
-      "source": "Sterling Intelligence (YouTube)",
-      "url": "https://www.youtube.com/watch?v=ozMcQPhSmiQ",
-      "desc": "Reports on OpenAI quietly switching ChatGPT's default model and new cybersecurity capability benchmarks raising safety questions.",
-      "relevance": "world",
-      "relevance_why": "",
-      "lens": "\ud83d\udce1 AI World",
-      "tier": "\ud83d\udd25 Hype Check",
-      "topics": [
-        "t-openai",
-        "t-model"
-      ],
-      "date": "2026-05-08",
-      "icon": "\u26a0\ufe0f"
-    },
-    {
-      "title": "If the EU Had Built Claude \u2014 Reddit Satire Thread",
-      "type": "signal",
-      "source": "r/ClaudeAI",
-      "url": "https://www.reddit.com/r/ClaudeAI/comments/1t6c26a/if_the_eu_had_built_claude/",
-      "desc": "High-engagement satirical post imagining EU AI regulation applied to Claude \u2014 cultural signal about AI governance sentiment in the practitioner community.",
-      "relevance": "world",
-      "relevance_why": "",
-      "lens": "\ud83d\udce1 AI World",
-      "tier": "\ud83d\udd25 Hype Check",
-      "topics": [
-        "t-claude",
-        "t-model"
-      ],
-      "date": "2026-05-07",
-      "icon": "\ud83d\ude04"
-    },
-    {
-      "title": "Local AI on Linux \u2014 What Is Local AI? LLMs in 5 Minutes",
-      "type": "video",
-      "source": "Dargslan (YouTube)",
-      "url": "https://www.youtube.com/watch?v=1WMgYS2V-U0",
-      "desc": "Introductory explainer on running local LLMs on Linux, aimed at IT practitioners new to the concept.",
+      "source": "Red Hat",
+      "url": "https://www.youtube.com/watch?v=6K8eqQ4ymvk",
+      "desc": "Red Hat Summit session showcasing enterprise AI production deployments across industries.",
       "relevance": "world",
       "relevance_why": "",
       "lens": "\ud83d\udce1 AI World",
       "tier": "\ud83c\udfd7 Foundation",
       "topics": [
-        "t-local",
-        "t-model"
+        "t-agent"
       ],
-      "date": "2026-05-08",
-      "icon": "\ud83d\udc27"
-    },
-    {
-      "title": "AutoGPT \u2014 Accessible Autonomous Agent Platform",
-      "type": "repo",
-      "source": "GitHub / Significant-Gravitas",
-      "url": "https://github.com/Significant-Gravitas/AutoGPT",
-      "desc": "Long-running autonomous agent platform that pioneered the agentic-AI concept; now a mature Python framework with tooling for building and running self-directed agents.",
-      "relevance": "world",
-      "relevance_why": "",
-      "lens": "\ud83d\udce1 AI World",
-      "tier": "\ud83c\udfd7 Foundation",
-      "topics": [
-        "t-agent",
-        "t-model"
-      ],
-      "date": "2026-05-08",
-      "icon": "\ud83e\udd16"
-    },
-    {
-      "title": "Dify \u2014 Production-Ready Agentic Workflow Development Platform",
-      "type": "repo",
-      "source": "GitHub / langgenius",
-      "url": "https://github.com/langgenius/dify",
-      "desc": "Open-source TypeScript/Python platform for building and deploying agentic workflows in production with visual tooling and multi-model support.",
-      "relevance": "world",
-      "relevance_why": "",
-      "lens": "\ud83d\udce1 AI World",
-      "tier": "\ud83c\udfd7 Foundation",
-      "topics": [
-        "t-agent",
-        "t-data"
-      ],
-      "date": "2026-05-08",
+      "date": "2026-05-13",
       "icon": "\ud83c\udfd7"
+    },
+    {
+      "title": "Susie Wolff | Driven | Talks at Google",
+      "type": "video",
+      "source": "Two Minute Papers",
+      "url": "https://www.youtube.com/watch?v=YG5w939A9yQ",
+      "desc": "F1 Academy Managing Director Susie Wolff discusses her career in motorsport at a Talks at Google event.",
+      "relevance": "world",
+      "relevance_why": "",
+      "lens": "\ud83d\udce1 AI World",
+      "tier": "\ud83c\udfd7 Foundation",
+      "topics": [
+        "t-model"
+      ],
+      "date": "2026-05-13",
+      "icon": "\ud83c\udfce"
     }
   ],
   "themes": [
     {
-      "label": "Claude Code Ecosystem Maturing Fast \u2014 Memory, Skills, and Open Alternatives Emerging",
+      "label": "Claude Code agent harness ecosystem is exploding \u2014 memory, dashboards, and open implementations all arrived this week",
       "type": "curr"
     },
     {
-      "label": "Esri AI-Native Workflows Arriving in ArcGIS Pro \u2014 GIS Practitioners Must Re-Evaluate Daily Habits",
+      "label": "Sentinel-2 + supervised ML classification gaining traction as a practitioner workflow in QGIS",
       "type": "gis"
     },
     {
-      "label": "Terminal AI Agents Heating Up \u2014 Claude Code vs Gemini CLI vs Open Alternatives",
-      "type": "agent"
-    },
-    {
-      "label": "Agent Orchestration Moving to Managed Runtimes \u2014 AWS AgentCore Signals Platform Consolidation",
+      "label": "Local LLM inference (Ollama, LM Studio) maturing as a credible zero-cost alternative to cloud APIs for scripting tasks",
       "type": "infra"
     },
     {
-      "label": "Satellite Temporal Resolution Strategy Is Now a Core Geospatial AI Design Decision",
-      "type": "gis"
+      "label": "Agentic orchestration platforms (Dify, n8n, deer-flow) converging toward production-ready multi-agent pipelines",
+      "type": "agent"
     },
     {
-      "label": "LLMOps Tooling Filling the Gap \u2014 Quality Monitoring for Claude API Pipelines at Scale",
+      "label": "Terminal-native AI agents (Gemini CLI vs Claude Code) emerging as a new competitive battleground",
       "type": "curr"
+    },
+    {
+      "label": "React vs Python-native frontends debate resurfacing \u2014 relevant for Streamlit-heavy GIS dashboard builders",
+      "type": "design"
     }
   ],
   "model_tracker": [
     {
-      "name": "GPT-5.5",
-      "company": "OpenAI",
-      "date": "2026-05-08",
-      "status": "new"
-    },
-    {
-      "name": "Gemini CLI Agent",
+      "name": "Gemma 4",
       "company": "Google DeepMind",
-      "date": "2026-05-08",
-      "status": "tool"
-    },
-    {
-      "name": "Kimi-K2.5 / GLM-5 / MiniMax (via Ollama)",
-      "company": "Various (via Ollama)",
-      "date": "2026-05-08",
+      "date": "2026-05-13",
       "status": "new"
     },
     {
-      "name": "Hermes Agent (NousResearch)",
-      "company": "NousResearch",
-      "date": "2026-05-08",
+      "name": "Google Omni (video)",
+      "company": "Google",
+      "date": "2026-05-11",
       "status": "watch"
     },
     {
-      "name": "AgentCore Runtime (Bedrock)",
-      "company": "Amazon Web Services",
-      "date": "2026-05-06",
-      "status": "infra"
+      "name": "claude-sonnet-4-6",
+      "company": "Anthropic",
+      "date": "2026-05-13",
+      "status": "tool"
+    },
+    {
+      "name": "claude-haiku-4-5",
+      "company": "Anthropic",
+      "date": "2026-05-13",
+      "status": "tool"
     }
   ],
   "exercises": [
     {
-      "title": "Test ArcGIS Pro AI Tool Finder on a Real FME-to-ArcGIS Workflow",
+      "title": "Wire the Claude Code Agent Dashboard into your FME debug loop",
       "effort": "low",
-      "desc": "Open ArcGIS Pro and use the new AI assistant to find and run a spatial analysis tool you'd normally configure manually (e.g., zonal statistics on a Sentinel-2 raster). Document what it gets right and wrong \u2014 this is direct content for a Tool Critic post comparing AI-assisted vs manual ArcGIS Pro workflows.",
-      "source_artifact": "Ask ArcGIS Pro AI to Find the Right Tool for You"
+      "desc": "Update your Claude Code CLI setup to use the new Agent Dashboard. Run one of your existing FME workspace generation scripts as an agent task and use the dashboard to inspect tool calls and intermediate states. Document what the dashboard reveals that was previously invisible.",
+      "source_artifact": "Claude Code Just Got an Agent Dashboard"
     },
     {
-      "title": "Build a Minimal MCP Server That Exposes Your FME Workspace Catalog to Claude",
+      "title": "Replicate the Sentinel-2 soil salinity workflow and adapt it for a land cover use case",
       "effort": "med",
-      "desc": "Follow the dev.to MCP server tutorial to scaffold a Python MCP server, then instead of file search, expose your local FME workspace directory so Claude Code can list, read, and query .fmw files. This makes Claude Code a genuine co-pilot for FME workflow authoring \u2014 a high-value Build pillar post.",
-      "source_artifact": "Build Your Own MCP Server: A Repo-Agnostic File Search Tool for AI Assistants"
+      "desc": "Follow the QGIS tutorial to run SVM and Random Forest classification on a Sentinel-2 scene from your Sentinel Hub API. Swap the soil salinity training labels for a land cover class relevant to a Globe & Atlas article. Compare classifier accuracy and write up the workflow as a 'The Build' post draft.",
+      "source_artifact": "A Supervised Classification Approach for Soil Salinity Distribution Mapping of Sentinel-2 in QGIS"
     },
     {
-      "title": "Install everything-claude-code and claude-mem, Then Run a Multi-Session GIS Script Build",
-      "effort": "med",
-      "desc": "Install both repos into your Claude Code CLI environment. Run a realistic multi-session task \u2014 e.g., building a Sentinel Hub API raster downloader across 3 separate Claude Code sessions \u2014 and measure how much context is recovered automatically by claude-mem vs a bare session. Write up results for a Build pillar post on 'Making Claude Code Remember Your GIS Projects.'",
-      "source_artifact": "everything-claude-code \u2014 Agent Harness Performance Optimization System"
+      "title": "Install everything-claude-code and benchmark it against your current Claude Code CLAUDE.md setup",
+      "effort": "low",
+      "desc": "Clone the everything-claude-code repo and apply its skills and instincts configuration to one of your active Python GIS projects. Run the same task with your current CLAUDE.md and the new harness, then compare output quality, tool call efficiency, and error recovery. Note any patterns worth sharing in a Tool Critic review.",
+      "source_artifact": "everything-claude-code"
+    },
+    {
+      "title": "Add claude-mem persistence to your Sentinel Hub scripting session",
+      "effort": "low",
+      "desc": "Install claude-mem and attach it to a Claude Code session where you're writing Sentinel Hub API queries. Run a multi-step imagery analysis workflow across two separate sessions and verify that context is correctly injected. Measure whether cross-session memory reduces repeated prompting overhead.",
+      "source_artifact": "claude-mem"
     }
   ],
   "metadata": {
-    "generated_at": "2026-05-08T11:52:27.603762",
+    "generated_at": "2026-05-13T11:28:34.063517",
     "model": "claude-sonnet-4-6",
     "provider": "anthropic"
   }
