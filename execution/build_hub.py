@@ -1,3 +1,4 @@
+import atexit
 import os
 import re
 import sys
@@ -7,10 +8,23 @@ from datetime import datetime
 from pathlib import Path
 from dotenv import load_dotenv
 import anthropic
+import openlit
 
 # Load environment variables
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 load_dotenv(PROJECT_ROOT / ".env")
+openlit.init(application_name="ai-discovery-hub")
+
+sys.path.insert(0, str(Path(__file__).parent))
+import kb
+
+_run_status = {"success": False, "notes": ""}
+
+def _on_exit():
+    if not _run_status["success"]:
+        kb.log_session_event(PROJECT_ROOT, "build_hub.py", "exited_unexpectedly", _run_status["notes"])
+
+atexit.register(_on_exit)
 
 # Model Backend Selection (Transparent)
 DEFAULT_MODEL = os.getenv("HUB_MODEL", "claude-3-5-sonnet-latest")
@@ -110,6 +124,8 @@ def _render_curriculum_page(title, md_content):
   pre code {{ font-family:var(--font-mono); font-size:12px; color:var(--green); white-space:pre; line-height:1.6; }}
   code.cur-inline {{ font-family:var(--font-mono); font-size:12px; background:var(--bg4); color:var(--cyan); padding:2px 6px; border-radius:4px; }}
   strong {{ color:var(--text); font-weight:700; }}
+  .disclaimer {{ background:rgba(249,124,60,.07); border:1px solid rgba(249,124,60,.3); border-radius:8px; padding:14px 18px; margin-bottom:32px; font-size:13px; color:var(--orange); line-height:1.6; }}
+  .disclaimer strong {{ color:var(--orange); }}
 </style>
 </head>
 <body>
@@ -117,6 +133,7 @@ def _render_curriculum_page(title, md_content):
   <div class="back"><a href="../latest.html">← Back to Hub</a></div>
   <div class="page-title">{title}</div>
   <div class="page-meta">AI Discovery Hub · Lab Tutorial</div>
+  <div class="disclaimer">⚠️ <strong>AI-generated tutorial.</strong> Steps and commands are synthesised from source material and model knowledge — verify against official documentation before running anything in a production environment.</div>
   {body}
 </div>
 </body>
@@ -125,6 +142,8 @@ def _render_curriculum_page(title, md_content):
 
 def _build_curriculum_pages(exercises, output_dir):
     """Generate a standalone HTML page for each exercise that has a matching curriculum .md.
+    Prefers the curriculum_path stored in hub-output.json (written by expand_lab.py).
+    Falls back to slug-glob for backward compatibility.
     Returns dict of {exercise_title: relative_url_from_dashboards_dir}."""
     cur_dir = PROJECT_ROOT / "curriculums"
     pages_dir = output_dir / "curricula"
@@ -133,8 +152,18 @@ def _build_curriculum_pages(exercises, output_dir):
     if not cur_dir.exists():
         return links
     for ex in exercises:
-        slug = _slugify(ex['title'])
+        # Primary: use stored curriculum_path (slug from when it was generated)
+        stored_path = ex.get("curriculum_path")  # e.g. "curricula/2026-04-23-slug.html"
+        if stored_path:
+            slug = stored_path.replace("curricula/", "").replace(".html", "")
+        else:
+            slug = _slugify(ex['title'])
+
         matches = sorted(cur_dir.glob(f"*-{slug}.md"), reverse=True)
+        if not matches:
+            # Last resort: slug from current title
+            slug = _slugify(ex['title'])
+            matches = sorted(cur_dir.glob(f"*-{slug}.md"), reverse=True)
         if not matches:
             continue
         md = matches[0].read_text(encoding="utf-8")
@@ -281,10 +310,10 @@ def render_html(data, duration_map=None, curriculum_links=None, stack_profile=""
     exercises  = data.get('exercises', [])
     n_exercises = len(exercises)
     lab_count_note = (
-        f'<div style="font-size:9.5px;color:var(--text3);margin-bottom:10px;font-style:italic;">'
+        f'<div style="font-size:11px;color:var(--text3);margin-bottom:10px;font-style:italic;">'
         f'{n_exercises} item{"s" if n_exercises != 1 else ""} · one per ✅ Adopt Now artifact</div>'
         if n_exercises <= 3 else
-        f'<div style="font-size:9.5px;color:var(--text3);margin-bottom:10px;font-style:italic;">'
+        f'<div style="font-size:11px;color:var(--text3);margin-bottom:10px;font-style:italic;">'
         f'{n_exercises} items · one per ✅ Adopt Now artifact</div>'
     )
     def _lab_card(i, ex):
@@ -292,7 +321,7 @@ def render_html(data, duration_map=None, curriculum_links=None, stack_profile=""
         guide_block = (
             f'<a href="{link}" target="_blank" class="cur-link">📖 View tutorial →</a>'
         ) if link else (
-            f'<div style="margin-top:10px;font-size:9.5px;color:var(--text3);font-family:var(--font-mono);">'
+            f'<div style="margin-top:10px;font-size:11px;color:var(--text3);font-family:var(--font-mono);">'
             f'❯ python3 execution/expand_lab.py --item {i}</div>'
         )
         return (
@@ -341,22 +370,26 @@ def render_html(data, duration_map=None, curriculum_links=None, stack_profile=""
   .stat-row {{ display:grid; grid-template-columns:repeat(6,1fr); gap:10px; margin-bottom:14px; }}
   .sc {{ background:var(--bg2); border:1px solid var(--border); border-radius:11px; padding:13px 14px; text-align:center; transition:.15s; cursor:pointer; }}
   .sc:hover {{ border-color:var(--border2); background:var(--bg3); }}
+  .sc:hover .sc-lbl {{ color:var(--text2); }}
+  .sc-noclick {{ cursor:default !important; }}
+  .sc-noclick:hover {{ border-color:var(--border); background:var(--bg2); }}
+  .sc-noclick:hover .sc-lbl {{ color:var(--text3); }}
   .sc-num {{ font-size:28px; font-weight:900; line-height:1; margin-bottom:3px; }}
-  .sc-lbl {{ font-size:10px; color:var(--text3); font-weight:500; }}
+  .sc-lbl {{ font-size:11px; color:var(--text3); font-weight:500; }}
   .c-blue {{ color:var(--blue); }} .c-green {{ color:var(--green); }} .c-orange {{ color:var(--orange); }}
   .c-yellow {{ color:var(--yellow); }} .c-teal {{ color:var(--teal); }} .c-pink {{ color:var(--pink); }} .c-text3 {{ color:var(--text3); }}
   .section-header {{ display:flex; align-items:center; gap:10px; margin:20px 0 12px; }}
   .section-title {{ font-size:13px; font-weight:800; color:var(--text); }}
-  .section-badge {{ font-size:10px; font-weight:700; padding:3px 9px; border-radius:20px; font-family:var(--font-mono); }}
+  .section-badge {{ font-size:11px; font-weight:700; padding:3px 9px; border-radius:20px; font-family:var(--font-mono); }}
   .sb-personal {{ background:rgba(91,138,247,.12); color:var(--blue); border:1px solid rgba(91,138,247,.3); }}
   .sb-world {{ background:rgba(88,103,142,.12); color:var(--text3); border:1px solid rgba(88,103,142,.3); }}
   .section-line {{ flex:1; height:1px; background:var(--border); }}
   .controls {{ margin-bottom:16px; display:flex; flex-direction:column; gap:8px; }}
-  .sort-row {{ display:flex; gap:8px; align-items:center; }}
   .filter-row {{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }}
-  .row-lbl {{ font-size:9px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:var(--text3); font-family:var(--font-mono); width:38px; flex-shrink:0; }}
+  .row-lbl {{ font-size:10px; font-weight:700; letter-spacing:.8px; text-transform:uppercase; color:var(--text3); font-family:var(--font-mono); width:38px; flex-shrink:0; }}
+  .sort-group {{ margin-left:auto; display:flex; gap:6px; }}
   .sort-btn, .filter-btn {{ font-size:11px; font-weight:700; padding:4px 12px; border-radius:6px; border:1px solid var(--border); background:var(--bg2); color:var(--text3); cursor:pointer; transition:.2s; position:relative; }}
-  .filter-btn[data-tip]:hover::after {{ content:attr(data-tip); position:absolute; bottom:calc(100% + 7px); left:50%; transform:translateX(-50%); background:var(--bg4); border:1px solid var(--border2); color:var(--text2); font-size:10.5px; font-weight:400; line-height:1.45; padding:7px 11px; border-radius:7px; white-space:nowrap; pointer-events:none; z-index:200; font-family:var(--font-sans); box-shadow:0 4px 16px rgba(0,0,0,.4); }}
+  .filter-btn[data-tip]:hover::after {{ content:attr(data-tip); position:absolute; bottom:calc(100% + 7px); left:50%; transform:translateX(-50%); background:var(--bg4); border:1px solid var(--border2); color:var(--text2); font-size:11px; font-weight:400; line-height:1.45; padding:7px 11px; border-radius:7px; white-space:nowrap; pointer-events:none; z-index:200; font-family:var(--font-sans); box-shadow:0 4px 16px rgba(0,0,0,.4); }}
   .sort-btn.active {{ border-color:var(--blue); color:var(--text); background:rgba(91,138,247,.1); }}
   .filter-btn.active {{ border-color:var(--text3); color:var(--text); background:rgba(255,255,255,.05); }}
   .filter-btn.f-home.active {{ border-color:var(--yellow); color:var(--yellow); background:rgba(245,200,66,.1); }}
@@ -374,13 +407,13 @@ def render_html(data, duration_map=None, curriculum_links=None, stack_profile=""
   .fycard.adjacent:hover {{ border-color:rgba(249,124,60,.55); }}
   .fycard-icon {{ font-size:20px; margin-bottom:7px; }}
   .fycard-title {{ font-size:12.5px; font-weight:700; color:var(--text); margin-bottom:3px; line-height:1.3; }}
-  .fycard-src {{ font-size:9.5px; color:var(--text3); font-family:var(--font-mono); margin-bottom:6px; display:flex; align-items:center; gap:6px; }}
-  .vid-dur {{ background:rgba(56,201,212,.12); color:var(--teal); border-radius:4px; padding:1px 5px; font-size:9px; font-weight:700; flex-shrink:0; }}
+  .fycard-src {{ font-size:11px; color:var(--text3); font-family:var(--font-mono); margin-bottom:6px; display:flex; align-items:center; gap:6px; }}
+  .vid-dur {{ background:rgba(56,201,212,.12); color:var(--teal); border-radius:4px; padding:1px 5px; font-size:11px; font-weight:700; flex-shrink:0; }}
   .fycard-desc {{ font-size:11px; color:var(--text2); line-height:1.5; margin-bottom:6px; flex-grow:1; }}
-  .fycard-why {{ font-size:10px; color:var(--orange); font-style:italic; margin-bottom:8px; line-height:1.4; }}
+  .fycard-why {{ font-size:11px; color:var(--orange); font-style:italic; margin-bottom:8px; line-height:1.4; }}
   .fycard-why.direct {{ color:var(--teal); }}
   .tag-row {{ display:flex; flex-wrap:wrap; gap:5px; }}
-  .tag {{ padding:2px 7px; border-radius:4px; font-size:9px; font-weight:700; }}
+  .tag {{ padding:2px 7px; border-radius:4px; font-size:11px; font-weight:700; }}
   .t-lens {{ background:rgba(255,255,255,0.05); color:var(--text3); }}
   .t-tier {{ border:1px solid transparent; }}
   .t-adopt {{ color:var(--green); border-color:rgba(52,216,154,.3); }}
@@ -389,6 +422,13 @@ def render_html(data, duration_map=None, curriculum_links=None, stack_profile=""
   .t-found {{ color:var(--yellow); border-color:rgba(245,200,66,.3); }}
   .t-radar {{ color:var(--teal); border-color:rgba(56,201,212,.3); }}
   .t-topic {{ background:rgba(124,92,252,.08); color:var(--purple); border:1px solid rgba(124,92,252,.2); }}
+  [class*="t-topic"][data-topic="t-claude"]  {{ background:rgba(249,124,60,.08); color:var(--orange); border-color:rgba(249,124,60,.25); }}
+  [class*="t-topic"][data-topic="t-openai"]  {{ background:rgba(52,216,154,.08); color:var(--green);  border-color:rgba(52,216,154,.25); }}
+  [class*="t-topic"][data-topic="t-gemini"]  {{ background:rgba(91,138,247,.08); color:var(--blue);   border-color:rgba(91,138,247,.25); }}
+  [class*="t-topic"][data-topic="t-esri"]    {{ background:rgba(56,201,212,.08); color:var(--teal);   border-color:rgba(56,201,212,.25); }}
+  [class*="t-topic"][data-topic="t-satellite"]{{ background:rgba(79,217,245,.08); color:var(--cyan);  border-color:rgba(79,217,245,.25); }}
+  [class*="t-topic"][data-topic="t-drone"]   {{ background:rgba(245,200,66,.08); color:var(--yellow); border-color:rgba(245,200,66,.25); }}
+  [class*="t-topic"][data-topic="t-thermal"] {{ background:rgba(240,93,154,.08); color:var(--pink);   border-color:rgba(240,93,154,.25); }}
   .fycard.hidden {{ display:none; }}
   .world-list {{ display:flex; flex-direction:column; border:1px solid var(--border); border-radius:10px; overflow:hidden; }}
   .world-row {{ display:grid; grid-template-columns:24px 1fr 150px 2fr; gap:12px; align-items:center; padding:9px 14px; text-decoration:none; color:inherit; border-bottom:1px solid var(--border); transition:background .15s; }}
@@ -396,8 +436,8 @@ def render_html(data, duration_map=None, curriculum_links=None, stack_profile=""
   .world-row:hover {{ background:var(--bg2); }}
   .world-icon {{ font-size:13px; text-align:center; }}
   .world-title {{ font-size:11.5px; font-weight:600; color:var(--text2); line-height:1.3; }}
-  .world-src {{ font-size:9.5px; color:var(--text3); font-family:var(--font-mono); }}
-  .world-desc {{ font-size:10.5px; color:var(--text3); line-height:1.4; }}
+  .world-src {{ font-size:11px; color:var(--text3); font-family:var(--font-mono); }}
+  .world-desc {{ font-size:11px; color:var(--text3); line-height:1.4; }}
   .p-pink::before  {{ background:linear-gradient(90deg,var(--pink),var(--purple)); }}
   .p-teal::before  {{ background:linear-gradient(90deg,var(--teal),var(--cyan)); }}
   .p-yellow::before {{ background:linear-gradient(90deg,var(--yellow),var(--orange)); }}
@@ -417,12 +457,12 @@ def render_html(data, duration_map=None, curriculum_links=None, stack_profile=""
   .sig-lbl {{ font-size:11px; color:var(--text2); flex:1; }}
   .sig-bar-bg {{ width:80px; height:5px; background:var(--bg4); border-radius:3px; flex-shrink:0; overflow:hidden; }}
   .sig-bar {{ height:100%; border-radius:3px; }}
-  .sig-ct {{ font-size:10px; font-family:var(--font-mono); color:var(--text3); width:14px; text-align:right; }}
+  .sig-ct {{ font-size:11px; font-family:var(--font-mono); color:var(--text3); width:14px; text-align:right; }}
   .model-row {{ display:flex; align-items:center; justify-content:space-between; padding:7px 0; border-bottom:1px solid var(--border); }}
   .model-row:last-child {{ border-bottom:none; }}
   .model-name {{ font-size:12px; font-weight:700; color:var(--text); }}
-  .model-co {{ font-size:10px; color:var(--text3); font-family:var(--font-mono); }}
-  .model-status {{ font-size:9px; font-weight:700; padding:3px 8px; border-radius:20px; }}
+  .model-co {{ font-size:11px; color:var(--text3); font-family:var(--font-mono); }}
+  .model-status {{ font-size:11px; font-weight:700; padding:3px 8px; border-radius:20px; }}
   .ms-new  {{ background:rgba(52,216,154,.12); color:var(--green); }}
   .ms-watch {{ background:rgba(91,138,247,.12); color:var(--blue); }}
   .ms-arch {{ background:rgba(124,92,252,.12); color:var(--purple); }}
@@ -432,24 +472,41 @@ def render_html(data, duration_map=None, curriculum_links=None, stack_profile=""
   .apply-card:last-child {{ margin-bottom:0; }}
   .apply-head {{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:5px; }}
   .apply-title {{ font-size:12px; font-weight:700; color:var(--text); flex:1; line-height:1.3; }}
-  .effort {{ font-size:8.5px; font-weight:700; padding:2px 6px; border-radius:5px; margin-left:8px; flex-shrink:0; white-space:nowrap; }}
+  .effort {{ font-size:11px; font-weight:700; padding:2px 6px; border-radius:5px; margin-left:8px; flex-shrink:0; white-space:nowrap; }}
   .e-low  {{ background:rgba(52,216,154,.12); color:var(--green); }}
   .e-med  {{ background:rgba(245,200,66,.12); color:var(--yellow); }}
   .e-high {{ background:rgba(249,124,60,.12); color:var(--orange); }}
-  .apply-desc {{ font-size:10.5px; color:var(--text2); line-height:1.5; }}
+  .apply-desc {{ font-size:11px; color:var(--text2); line-height:1.5; }}
   .panel {{ background:var(--bg2); border:1px solid var(--border); border-radius:13px; padding:18px 20px; position:relative; overflow:hidden; }}
   .panel::before {{ content:''; position:absolute; top:0; left:0; right:0; height:2px; }}
   .p-blue::before {{ background:linear-gradient(90deg,var(--blue),var(--purple)); }}
-  .plabel {{ font-size:10px; font-weight:700; letter-spacing:1.1px; text-transform:uppercase; color:var(--text3); margin-bottom:11px; }}
-  .g3 {{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-top:12px; }}
+  .plabel {{ font-size:11px; font-weight:700; letter-spacing:1.1px; text-transform:uppercase; color:var(--text3); margin-bottom:11px; }}
+  .panels-toggle {{ display:flex; align-items:center; gap:8px; background:none; border:1px solid var(--border); border-radius:7px; padding:5px 14px; color:var(--text3); font-size:11px; font-weight:700; cursor:pointer; font-family:var(--font-sans); transition:.15s; margin-top:20px; }}
+  .panels-toggle:hover {{ border-color:var(--border2); color:var(--text2); }}
+  .panels-toggle .toggle-arrow {{ transition:transform .2s; display:inline-block; }}
+  .panels-toggle.open .toggle-arrow {{ transform:rotate(180deg); }}
+  .g3 {{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-top:10px; }}
   .footer {{ margin-top:20px; padding-top:14px; border-top:1px solid var(--border); font-size:10px; color:var(--text3); font-family:var(--font-mono); display:flex; justify-content:space-between; }}
-  .cur-link {{ display:inline-block; margin-top:10px; font-size:10px; font-weight:700; font-family:var(--font-mono); color:var(--blue); text-decoration:none; border:1px solid rgba(91,138,247,.3); padding:4px 10px; border-radius:5px; transition:.15s; }}
+  .cur-link {{ display:inline-block; margin-top:10px; font-size:11px; font-weight:700; font-family:var(--font-mono); color:var(--blue); text-decoration:none; border:1px solid rgba(91,138,247,.3); padding:4px 10px; border-radius:5px; transition:.15s; }}
   .cur-link:hover {{ background:rgba(91,138,247,.1); border-color:var(--blue); }}
   .system-context {{ margin-top:40px; padding:24px; background:var(--bg2); border:1px solid var(--border); border-radius:13px; font-size:11px; }}
   .sc-title {{ font-size:14px; font-weight:800; color:var(--text); margin-bottom:16px; letter-spacing:-0.2px; }}
   .sc-grid {{ display:grid; grid-template-columns:1fr 1fr; gap:24px; }}
-  .sc-col-label {{ font-size:10px; font-weight:700; text-transform:uppercase; color:var(--text3); margin-bottom:10px; letter-spacing:0.5px; }}
-  .sc-col pre {{ white-space:pre-wrap; color:var(--text2); font-family:var(--font-mono); line-height:1.6; font-size:10.5px; }}
+  .sc-col-label {{ font-size:11px; font-weight:700; text-transform:uppercase; color:var(--text3); margin-bottom:10px; letter-spacing:0.5px; }}
+  .sc-col pre {{ white-space:pre-wrap; color:var(--text2); font-family:var(--font-mono); line-height:1.6; font-size:11px; }}
+  @media (max-width:900px) {{
+    .stat-row {{ grid-template-columns:repeat(3,1fr); }}
+    .hub-grid {{ grid-template-columns:repeat(2,1fr); }}
+    .g3 {{ grid-template-columns:1fr; }}
+    .world-row {{ grid-template-columns:24px 1fr 120px; }}
+  }}
+  @media (max-width:560px) {{
+    body {{ padding:14px 16px; }}
+    .stat-row {{ grid-template-columns:repeat(2,1fr); }}
+    .hub-grid {{ grid-template-columns:1fr; }}
+    .world-row {{ grid-template-columns:24px 1fr; }}
+    .world-src, .world-desc {{ display:none; }}
+  }}
 </style>
 </head>
 <body>
@@ -462,26 +519,25 @@ def render_html(data, duration_map=None, curriculum_links=None, stack_profile=""
 </div>
 
 <div class="stat-row">
-  <div class="sc" onclick="filterTier('all')"><div class="sc-num c-blue">{n_personal}</div><div class="sc-lbl">Your Stack</div></div>
-  <div class="sc" onclick="filterTier('adopt')"><div class="sc-num c-green">{n_adopt}</div><div class="sc-lbl">✅ Adopt Now</div></div>
-  <div class="sc" onclick="filterTier('watch')"><div class="sc-num c-blue">{n_watch}</div><div class="sc-lbl">👁 Watch Closely</div></div>
-  <div class="sc" onclick="filterTier('radar')"><div class="sc-num c-teal">{n_radar}</div><div class="sc-lbl">🌱 On Radar</div></div>
-  <div class="sc" onclick="filterAdjOnly()" style="cursor:pointer;"><div class="sc-num c-orange">{n_adjacent}</div><div class="sc-lbl">🔀 Adjacent</div></div>
-  <div class="sc" style="cursor:default"><div class="sc-num c-text3">{n_world}</div><div class="sc-lbl">🌐 AI World</div></div>
+  <div class="sc" onclick="filterTier('all')" title="Show all stack signals"><div class="sc-num c-blue">{n_personal}</div><div class="sc-lbl">Your Stack</div></div>
+  <div class="sc" onclick="filterTier('adopt')" title="Filter: Adopt Now"><div class="sc-num c-green">{n_adopt}</div><div class="sc-lbl">✅ Adopt Now</div></div>
+  <div class="sc" onclick="filterTier('watch')" title="Filter: Watch Closely"><div class="sc-num c-blue">{n_watch}</div><div class="sc-lbl">👁 Watch Closely</div></div>
+  <div class="sc" onclick="filterTier('radar')" title="Filter: On Radar"><div class="sc-num c-teal">{n_radar}</div><div class="sc-lbl">🌱 On Radar</div></div>
+  <div class="sc" onclick="filterAdjOnly()" title="Filter: Adjacent signals only"><div class="sc-num c-orange">{n_adjacent}</div><div class="sc-lbl">🔀 Adjacent</div></div>
+  <div class="sc sc-noclick" title="Awareness-only signals · not filterable"><div class="sc-num c-text3">{n_world}</div><div class="sc-lbl">🌐 AI World</div></div>
 </div>
 
 <div class="controls">
-  <div class="sort-row">
-    <span class="row-lbl">SORT</span>
-    <button class="sort-btn active" id="sort-tier" onclick="sortHub('tier')">By Tier Priority</button>
-    <button class="sort-btn" id="sort-date" onclick="sortHub('date')">By Recency</button>
-  </div>
   <div class="filter-row">
     <span class="row-lbl">LENS</span>
     <button class="filter-btn active" id="f-all" onclick="filterHub('all')">All</button>
     <button class="filter-btn f-home" id="f-home" onclick="filterHub('home')" data-tip="Personal projects, home automation, local tools, budgeting">🏠 Home</button>
-    <button class="filter-btn f-curr" id="f-curr" onclick="filterHub('curr')" data-tip="Claude API, model releases, AI industry, agent tooling">📡 Current</button>
-    <button class="filter-btn f-gis"  id="f-gis"  onclick="filterHub('gis')"  data-tip="Geospatial AI, FME, Sentinel Hub, QGIS, spatial data">🗺 GIS/FME</button>
+    <button class="filter-btn f-curr" id="f-curr" onclick="filterHub('curr')" data-tip="Claude, ChatGPT, Gemini, model releases, AI industry, agent tooling">📡 Current</button>
+    <button class="filter-btn f-gis"  id="f-gis"  onclick="filterHub('gis')"  data-tip="Geospatial AI, FME, Esri/ArcGIS, Sentinel Hub, QGIS, satellite/drone/thermal imagery">🗺 GIS/FME</button>
+    <div class="sort-group">
+      <button class="sort-btn active" id="sort-tier" onclick="sortHub('tier')">Tier</button>
+      <button class="sort-btn" id="sort-date" onclick="sortHub('date')">Recent</button>
+    </div>
   </div>
   <div class="filter-row">
     <span class="row-lbl">TIER</span>
@@ -509,7 +565,7 @@ def render_html(data, duration_map=None, curriculum_links=None, stack_profile=""
         tier_class = f"t-{tier_key}"
         lens_key   = "home" if "Home" in art.get('lens','') else "gis" if "GIS" in art.get('lens','') else "curr"
         topics     = art.get('topics', [])
-        topic_tags = "".join(f'<span class="tag t-topic">{t.replace("t-","")}</span>' for t in topics)
+        topic_tags = "".join(f'<span class="tag t-topic" data-topic="{t}">{t.replace("t-","")}</span>' for t in topics)
         dur        = duration_map.get(art['url'], '') if art.get('type') == 'video' else ''
         dur_html   = f'<span class="vid-dur">⏱ {dur}</span>' if dur else ''
         why        = art.get('relevance_why', '')
@@ -532,16 +588,8 @@ def render_html(data, duration_map=None, curriculum_links=None, stack_profile=""
 
     html += f"""</div>
 
-<div class="section-header" style="margin-top:28px;">
-  <div class="section-title">AI World at Large</div>
-  <span class="section-badge sb-world">{n_world} signals · awareness only</span>
-  <div class="section-line"></div>
-</div>
-
-<div class="world-list">
-{world_rows_html}
-</div>
-
+<button class="panels-toggle open" id="panels-toggle-btn" onclick="togglePanels()">Context Panels <span class="toggle-arrow">▾</span></button>
+<div id="panels-wrapper">
 <div class="g3">
   <div class="panel p-pink">
     <div class="plabel">Weekly Themes</div>
@@ -557,6 +605,17 @@ def render_html(data, duration_map=None, curriculum_links=None, stack_profile=""
     <div class="plabel">The Lab — Apply This Week</div>
     {lab_html}
   </div>
+</div>
+</div>
+
+<div class="section-header" style="margin-top:28px;">
+  <div class="section-title">AI World at Large</div>
+  <span class="section-badge sb-world">{n_world} signals · awareness only</span>
+  <div class="section-line"></div>
+</div>
+
+<div class="world-list">
+{world_rows_html}
 </div>
 
 <div class="footer">
@@ -582,6 +641,14 @@ def render_html(data, duration_map=None, curriculum_links=None, stack_profile=""
   let currentLens = 'all';
   let currentTier = 'all';
   let currentSort = 'tier';
+
+  function togglePanels() {{
+    const wrapper = document.getElementById('panels-wrapper');
+    const btn = document.getElementById('panels-toggle-btn');
+    const isOpen = wrapper.style.display !== 'none';
+    wrapper.style.display = isOpen ? 'none' : '';
+    btn.classList.toggle('open', !isOpen);
+  }}
 
   function applyFilters() {{
     document.querySelectorAll('#hub-grid .fycard').forEach(card => {{
@@ -683,7 +750,12 @@ def main():
         duration_map = {v["url"]: v["duration"] for v in input_data.get("videos", []) if v.get("duration")}
 
         print("Generating Unified Hub Content...")
-        content = generate_hub_content(input_data)
+        try:
+            content = generate_hub_content(input_data)
+        except Exception as e:
+            kb.log_error(PROJECT_ROOT, "build_hub.py", f"LLM call failed: {type(e).__name__}", str(e)[:120])
+            kb.log_session_event(PROJECT_ROOT, "build_hub.py", "failed", str(e)[:80])
+            raise
         content["metadata"] = {
             "generated_at": datetime.now().isoformat(),
             "model": DEFAULT_MODEL,
@@ -711,6 +783,12 @@ def main():
 
     print(f"Dashboard created: {output_path}")
     print(f"Latest dashboard updated: {latest_path}")
+
+    _run_status["success"] = True
+    kb.log_session_event(
+        PROJECT_ROOT, "build_hub.py", "completed",
+        f"→ {output_path.name} | {len(content.get('artifacts', []))} artifacts"
+    )
 
 if __name__ == "__main__":
     main()

@@ -1,774 +1,668 @@
-# Replicate the Sentinel-2 Soil Salinity SVM Workflow with Claude-Assisted Classification
+# Replicate the Sentinel-2 Soil Salinity SVM Workflow and Layer in a Claude-Assisted Classification Step
 
-## A Complete Hands-On Curriculum for AI-Augmented Supervised Remote Sensing
+> **Transparency note:** The source video's transcript was not fully retrievable — only metadata was available. This tutorial reconstructs the QGIS SVM/Random Forest soil salinity workflow from established practitioner knowledge of that exact pipeline, then adds the Claude API integration layer as specified. Where steps are inferred from domain knowledge rather than the video transcript, this is flagged explicitly. Treat section headers marked **[INFERRED]** as "standard practice for this workflow type" rather than direct video instruction.
 
 ---
 
 ## 1. Introduction & Context
 
-### What You're Building
+Soil salinity mapping is one of the more practically demanding remote sensing tasks: saline soils have subtle spectral signatures that overlap with dry bare soil and mineral crusts, making visual interpretation unreliable. The standard solution — supervised classification using SVM or Random Forest on multispectral Sentinel-2 bands — gives you a repeatable, defensible workflow that scales across large agricultural areas.
 
-This tutorial walks you through replicating a professional supervised classification pipeline for **soil salinity mapping** using Sentinel-2 multispectral imagery — then extending it with an AI layer that would have been impossible a few years ago: using the **Claude API to auto-generate legend descriptions and anomaly flags** from your output raster.
+The video from *Satellite Remote Sensing and GIS* walks through this pipeline end-to-end inside QGIS. Your goal here is to:
 
-The result is a hybrid, publishable workflow that sits at the intersection of:
+1. **Replicate that workflow** using your existing `rasterio` / `geopandas` / scikit-learn stack (so it lives in Python, not just GUI clicks).
+2. **Add a Claude API layer** that reads your output classification raster statistics and auto-generates human-readable class descriptions and anomaly flags.
+3. **Publish the hybrid result** as a Build post for your GIS audience.
 
-- **Classical machine learning** (SVM, Random Forest) applied to satellite imagery
-- **Modern GIS tooling** (QGIS, rasterio, geopandas)
-- **AI augmentation** (Claude API) for interpretation and reporting
+**Why this matters for your practice:**
+- Sentinel-2 + QGIS + SVM/RF is already in your stack — this exercise closes the loop from "I know the tools" to "I have a published, reproducible workflow."
+- The Claude integration demonstrates AI-augmented GIS in a concrete, auditable way: the model doesn't *do* the classification, it *interprets* it — a framing your audience will trust.
+- The output is a Build post asset, not just a notebook exercise.
 
-### Why This Matters
-
-Soil salinity is a critical land degradation indicator affecting agricultural productivity worldwide. Traditional field surveys are expensive and spatially sparse. Sentinel-2's free, 10–20m resolution multispectral bands — particularly in the red-edge and SWIR ranges — carry strong spectral signatures for salt-affected soils, making satellite-based supervised classification both practical and impactful.
-
-More broadly, this workflow is a template. Swap the training labels and you can classify land cover, flood extent, burned area, or crop type using the same stack.
-
-### The Claude Augmentation Layer
-
-The novel piece you're adding is a **post-classification AI step** where Claude:
-
-1. Reads your classified raster statistics
-2. Auto-generates human-readable legend descriptions per class
-3. Flags spatial anomalies (e.g., unexpected salinity patches near irrigation canals)
-4. Drafts a plain-language summary suitable for a GIS audience post
-
-This is the "AI-augmented supervised classification" angle that makes this publishable as a **Build post**.
+**Time estimate:** 3–5 hours for a first run; ~2 hours for subsequent scenes.
 
 ---
 
 ## 2. Prerequisites
 
-### Knowledge Requirements
-
-| Skill | Level Needed |
-|---|---|
-| Python (numpy, pandas) | Intermediate |
-| QGIS basic navigation | Beginner–Intermediate |
-| Remote sensing concepts (bands, indices) | Basic familiarity |
-| REST APIs / JSON | Basic |
-| Git / command line | Basic |
-
-### Software & Accounts
-
-```
-✅ QGIS 3.28+ (LTR recommended) — https://qgis.org
-✅ Python 3.9+ with the following packages
-✅ Anthropic API key — https://console.anthropic.com
-✅ ESA Copernicus Open Access Hub account (free) — https://scihub.copernicus.eu
-   OR Copernicus Data Space Ecosystem — https://dataspace.copernicus.eu
-```
-
-### Python Environment Setup
+### Software & Libraries
 
 ```bash
-# Create a dedicated conda environment (recommended)
-conda create -n salinity_ml python=3.11
-conda activate salinity_ml
+# Core Python stack
+pip install rasterio geopandas scikit-learn numpy pandas matplotlib
+pip install anthropic          # Claude API client
+pip install scipy joblib       # model persistence and stats
+pip install folium              # optional: interactive map for the post
 
-# Core geospatial stack
-pip install rasterio geopandas shapely fiona pyproj
-
-# Machine learning
-pip install scikit-learn imbalanced-learn joblib
-
-# Visualization & reporting
-pip install matplotlib seaborn plotly folium
-
-# Claude API
-pip install anthropic
-
-# Utilities
-pip install numpy pandas tqdm jupyter notebook python-dotenv
-
-# Optional: QGIS Python bindings for headless scripting
-# (usually comes with QGIS installation, add to PYTHONPATH)
+# QGIS (for visual QA and training sample collection)
+# Install via your OS package manager or qgis.org
+# Recommended: QGIS 3.28 LTS or later
 ```
 
-### Data Requirements
+### Data
 
-You will need:
+| Asset | Source | Notes |
+|---|---|---|
+| Sentinel-2 L2A scene | [Copernicus Browser](https://browser.dataspace.copernicus.eu/) | Download a cloud-free scene (<10% cloud cover) over an agricultural/arid area. Bands 2,3,4,8,11,12 minimum. |
+| Training polygons | Drawn in QGIS (see Step 3) | Minimum 5 classes; minimum 30 polygons per class |
+| Field salinity data (optional) | FAO GeoNetwork or local authority | For accuracy validation; not required for the tutorial |
 
-1. **Sentinel-2 L2A scene** (atmospherically corrected, surface reflectance)
-   - Recommended: A scene over an arid/semi-arid agricultural region (Nile Delta, Indus Plain, Central Asia, Imperial Valley)
-   - Bands needed: B02, B03, B04, B05, B06, B07, B08, B8A, B11, B12
-   - Time of year: Dry season preferred (less vegetation confusion)
+### Accounts & Keys
 
-2. **Training samples** (you'll create these in QGIS):
-   - Minimum 50 points per class
-   - Classes: `non_saline`, `slightly_saline`, `moderately_saline`, `highly_saline`, `water`, `urban`, `vegetation`
-
-3. **Reference data** (optional but recommended):
-   - EC (electrical conductivity) field measurements
-   - Existing soil maps for validation
-
-### Project Directory Structure
-
+```bash
+export ANTHROPIC_API_KEY="sk-ant-..."   # add to your .env or shell profile
 ```
-salinity_project/
-├── data/
-│   ├── raw/
-│   │   └── S2A_MSIL2A_*.SAFE/          # Downloaded Sentinel-2 scene
-│   ├── processed/
-│   │   ├── stacked_bands.tif           # Band stack output
-│   │   └── indices.tif                 # Spectral indices
-│   ├── training/
-│   │   ├── training_points.gpkg        # QGIS training samples
-│   │   └── training_data.csv           # Extracted pixel values
-│   └── outputs/
-│       ├── svm_classified.tif
-│       ├── rf_classified.tif
-│       └── combined_classified.tif
-├── models/
-│   ├── svm_model.pkl
-│   └── rf_model.pkl
-├── reports/
-│   ├── classification_report.txt
-│   ├── claude_legend.json
-│   └── build_post_draft.md
-├── notebooks/
-│   └── salinity_workflow.ipynb
-├── scripts/
-│   ├── 01_prepare_bands.py
-│   ├── 02_extract_training.py
-│   ├── 03_train_classify.py
-│   ├── 04_validate.py
-│   └── 05_claude_augment.py
-├── .env                                # API keys (never commit)
-└── requirements.txt
-```
+
+### QGIS Plugins **[INFERRED — standard for this workflow type]**
+
+- **Semi-Automatic Classification Plugin (SCP)** — the most widely used QGIS plugin for supervised classification of multispectral imagery. Install via `Plugins → Manage and Install Plugins → SCP`.
+- **SAGA provider** — ships with QGIS, used for preprocessing.
 
 ---
 
 ## 3. Step-by-Step Guide
 
-### Phase 1: Data Acquisition & Preparation
+### Step 3.1 — Download and Prepare the Sentinel-2 Scene
 
-#### Step 1.1 — Download Your Sentinel-2 Scene
-
-Navigate to the **Copernicus Data Space** browser:
-
-```
-https://browser.dataspace.copernicus.eu/
-```
-
-**Search parameters:**
-- **Dataset:** SENTINEL-2 → L2A
-- **Cloud coverage:** < 10%
-- **Date range:** Dry season months for your target region
-- **Tile:** Use the Sentinel-2 tile grid to find your area
-
-Download the full `.SAFE` folder. It will be ~800MB–1.2GB.
-
-**Alternative: Use the `sentinelsat` Python library**
+**[INFERRED — standard Sentinel-2 preprocessing for classification]**
 
 ```python
-# scripts/download_scene.py
-from sentinelsat import SentinelAPI
-from datetime import date
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
-api = SentinelAPI(
-    os.getenv('COPERNICUS_USER'),
-    os.getenv('COPERNICUS_PASSWORD'),
-    'https://apihub.copernicus.eu/apihub'
-)
-
-# Example: Nile Delta, Egypt — adjust to your area
-footprint = 'POLYGON((30.5 30.0, 32.0 30.0, 32.0 31.5, 30.5 31.5, 30.5 30.0))'
-
-products = api.query(
-    footprint,
-    date=('20230601', '20230930'),
-    platformname='Sentinel-2',
-    processinglevel='Level-2A',
-    cloudcoverpercentage=(0, 10)
-)
-
-# Download the least cloudy scene
-products_df = api.to_dataframe(products)
-best = products_df.sort_values('cloudcoverpercentage').iloc[0]
-print(f"Downloading: {best['title']}")
-api.download(best.name, directory_path='data/raw/')
-```
-
-#### Step 1.2 — Stack Sentinel-2 Bands
-
-Sentinel-2 L2A delivers bands as separate `.jp2` files at different resolutions. This script resamples everything to 10m and creates a single multi-band GeoTIFF.
-
-```python
-# scripts/01_prepare_bands.py
+# file: 01_prepare_sentinel2.py
 import rasterio
-from rasterio.enums import Resampling
 from rasterio.merge import merge
+from rasterio.warp import calculate_default_transform, reproject, Resampling
 import numpy as np
-import glob
-import os
 from pathlib import Path
 
-def find_band_files(safe_dir: str) -> dict:
-    """Find Sentinel-2 band files in a .SAFE directory."""
-    
-    # Band mapping: band_name -> (filename_pattern, native_resolution)
-    bands_10m = {
-        'B02': '*B02_10m.jp2',  # Blue
-        'B03': '*B03_10m.jp2',  # Green
-        'B04': '*B04_10m.jp2',  # Red
-        'B08': '*B08_10m.jp2',  # NIR
-    }
-    bands_20m = {
-        'B05': '*B05_20m.jp2',  # Red Edge 1
-        'B06': '*B06_20m.jp2',  # Red Edge 2
-        'B07': '*B07_20m.jp2',  # Red Edge 3
-        'B8A': '*B8A_20m.jp2',  # Red Edge 4
-        'B11': '*B11_20m.jp2',  # SWIR 1
-        'B12': '*B12_20m.jp2',  # SWIR 2
-    }
-    
-    found = {}
-    for band_name, pattern in {**bands_10m, **bands_20m}.items():
-        matches = glob.glob(os.path.join(safe_dir, '**', pattern), recursive=True)
-        if matches:
-            found[band_name] = matches[0]
-        else:
-            print(f"⚠️  Could not find {band_name}")
-    
-    return found
+# --- CONFIG ---
+S2_DIR = Path("data/S2_L2A/")   # unzipped Sentinel-2 .SAFE folder contents
+OUTPUT_STACK = Path("output/s2_stack.tif")
+OUTPUT_STACK.parent.mkdir(parents=True, exist_ok=True)
 
-def stack_bands(safe_dir: str, output_path: str) -> None:
-    """Stack all bands into a single GeoTIFF at 10m resolution."""
-    
-    band_files = find_band_files(safe_dir)
-    band_order = ['B02', 'B03', 'B04', 'B05', 'B06', 'B07', 'B08', 'B8A', 'B11', 'B12']
-    
-    print("📦 Stacking bands...")
-    
-    # Use B02 (10m) as reference for spatial extent and CRS
-    with rasterio.open(band_files['B02']) as ref:
-        ref_meta = ref.meta.copy()
-        ref_transform = ref.transform
-        ref_crs = ref.crs
-        ref_width = ref.width
-        ref_height = ref.height
-    
-    ref_meta.update({
-        'count': len(band_order),
-        'dtype': 'float32',
-        'driver': 'GTiff',
-        'compress': 'lzw',
-        'nodata': -9999
-    })
-    
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    
-    with rasterio.open(output_path, 'w', **ref_meta) as dst:
-        for i, band_name in enumerate(band_order, 1):
-            filepath = band_files[band_name]
-            print(f"  Processing band {band_name} ({i}/{len(band_order)})...")
-            
-            with rasterio.open(filepath) as src:
-                # Resample 20m bands to 10m if needed
-                if src.res[0] != 10.0:
-                    data = src.read(
-                        1,
-                        out_shape=(ref_height, ref_width),
-                        resampling=Resampling.bilinear
-                    )
-                else:
-                    data = src.read(1)
-                
-                # Convert DN to surface reflectance (divide by 10000)
-                data = data.astype('float32') / 10000.0
-                data[data < 0] = -9999  # Handle nodata
-                
-                dst.write(data, i)
-    
-    print(f"✅ Band stack saved to: {output_path}")
-    print(f"   Bands: {band_order}")
-    print(f"   Shape: {ref_height} x {ref_width} x {len(band_order)}")
+# Sentinel-2 bands relevant to salinity mapping
+# B02=Blue, B03=Green, B04=Red, B08=NIR, B11=SWIR1, B12=SWIR2
+# B11 and B12 are 20m; others are 10m — resample to common 20m grid
+BAND_PATHS = {
+    "B02": sorted(S2_DIR.glob("**/B02_10m.jp2"))[0],
+    "B03": sorted(S2_DIR.glob("**/B03_10m.jp2"))[0],
+    "B04": sorted(S2_DIR.glob("**/B04_10m.jp2"))[0],
+    "B08": sorted(S2_DIR.glob("**/B08_10m.jp2"))[0],
+    "B11": sorted(S2_DIR.glob("**/B11_20m.jp2"))[0],
+    "B12": sorted(S2_DIR.glob("**/B12_20m.jp2"))[0],
+}
 
-def compute_spectral_indices(stack_path: str, output_path: str) -> None:
-    """Compute spectral indices relevant to soil salinity."""
-    
-    print("📐 Computing spectral indices...")
-    
-    with rasterio.open(stack_path) as src:
-        # Read relevant bands (1-indexed: B02=1, B03=2, B04=3, B05=4, B06=5, 
-        #                                  B07=6, B08=7, B8A=8, B11=9, B12=10)
-        B02 = src.read(1).astype('float32')  # Blue
-        B03 = src.read(2).astype('float32')  # Green
-        B04 = src.read(3).astype('float32')  # Red
-        B08 = src.read(7).astype('float32')  # NIR
-        B11 = src.read(9).astype('float32')  # SWIR1
-        B12 = src.read(10).astype('float32') # SWIR2
-        
-        meta = src.meta.copy()
-    
-    # Avoid division by zero
-    eps = 1e-10
-    
-    # NDVI - Normalized Difference Vegetation Index
-    ndvi = (B08 - B04) / (B08 + B04 + eps)
-    
-    # NDSI - Normalized Difference Salinity Index
-    ndsi = (B04 - B11) / (B04 + B11 + eps)
-    
-    # SI1 - Salinity Index 1
-    si1 = np.sqrt(np.abs(B04 * B11))
-    
-    # SI2 - Salinity Index 2 (Douaoui et al.)
-    si2 = np.sqrt(np.abs(B03 * B04))
-    
-    # SI3 - Salinity Index 3
-    si3 = np.sqrt(np.abs(B02 * B04))
-    
-    # NDWI - Normalized Difference Water Index (for water masking)
-    ndwi = (B03 - B08) / (B03 + B08 + eps)
-    
-    # EVI - Enhanced Vegetation Index
-    evi = 2.5 * ((B08 - B04) / (B08 + 6*B04 - 7.5*B02 + 1 + eps))
-    
-    indices = [ndvi, ndsi, si1, si2, si3, ndwi, evi]
-    index_names = ['NDVI', 'NDSI', 'SI1', 'SI2', 'SI3', 'NDWI', 'EVI']
-    
-    meta.update({
-        'count': len(indices),
-        'dtype': 'float32',
-        'compress': 'lzw'
-    })
-    
-    with rasterio.open(output_path, 'w', **meta) as dst:
-        for i, (index_data, name) in enumerate(zip(indices, index_names), 1):
-            # Clip to reasonable range
-            index_data = np.clip(index_data, -2, 2)
-            dst.write(index_data, i)
-    
-    print(f"✅ Indices saved: {index_names}")
-    print(f"   Output: {output_path}")
+TARGET_RESOLUTION = 20  # meters — match SWIR bands
 
-if __name__ == '__main__':
-    import sys
-    
-    safe_dir = sys.argv[1] if len(sys.argv) > 1 else 'data/raw/S2A_MSIL2A_sample.SAFE'
-    
-    stack_output = 'data/processed/stacked_bands.tif'
-    indices_output = 'data/processed/indices.tif'
-    
-    stack_bands(safe_dir, stack_output)
-    compute_spectral_indices(stack_output, indices_output)
+def resample_to_resolution(src_path, target_res, reference_transform=None, reference_crs=None, reference_shape=None):
+    """Resample a raster to a target resolution."""
+    with rasterio.open(src_path) as src:
+        if reference_shape is None:
+            # Calculate new dimensions
+            scale = src.res[0] / target_res
+            new_height = int(src.height * scale)
+            new_width = int(src.width * scale)
+            new_transform = src.transform * src.transform.scale(
+                src.width / new_width,
+                src.height / new_height
+            )
+            reference_shape = (new_height, new_width)
+            reference_transform = new_transform
+            reference_crs = src.crs
+
+        data = np.empty((src.count, reference_shape[0], reference_shape[1]), dtype=np.float32)
+        reproject(
+            source=rasterio.band(src, 1),
+            destination=data[0],
+            src_transform=src.transform,
+            src_crs=src.crs,
+            dst_transform=reference_transform,
+            dst_crs=reference_crs,
+            resampling=Resampling.bilinear,
+        )
+        return data[0], reference_transform, reference_crs, reference_shape
+
+# Build stack
+print("Building band stack...")
+stack_arrays = []
+ref_transform = ref_crs = ref_shape = None
+
+for band_name, band_path in BAND_PATHS.items():
+    print(f"  Processing {band_name}: {band_path.name}")
+    arr, ref_transform, ref_crs, ref_shape = resample_to_resolution(
+        band_path, TARGET_RESOLUTION, ref_transform, ref_crs, ref_shape
+    )
+    stack_arrays.append(arr)
+
+stack = np.stack(stack_arrays, axis=0)  # shape: (6, H, W)
+
+# Write stack
+profile = {
+    "driver": "GTiff",
+    "dtype": "float32",
+    "width": ref_shape[1],
+    "height": ref_shape[0],
+    "count": len(BAND_PATHS),
+    "crs": ref_crs,
+    "transform": ref_transform,
+    "compress": "lzw",
+    "nodata": 0,
+}
+
+with rasterio.open(OUTPUT_STACK, "w", **profile) as dst:
+    dst.write(stack)
+    dst.update_tags(
+        band_order=",".join(BAND_PATHS.keys()),
+        source="Sentinel-2 L2A",
+        resolution_m=str(TARGET_RESOLUTION),
+    )
+
+print(f"Stack written: {OUTPUT_STACK} — shape {stack.shape}")
 ```
 
-Run it:
+### Step 3.2 — Compute Salinity-Relevant Spectral Indices
 
-```bash
-python scripts/01_prepare_bands.py data/raw/S2A_MSIL2A_20230815T083601_N0509_R064_T36RUU_20230815T124301.SAFE
-```
-
----
-
-### Phase 2: Training Sample Collection in QGIS
-
-#### Step 2.1 — Load Your Data in QGIS
-
-1. Open QGIS
-2. **Layer → Add Layer → Add Raster Layer**
-3. Navigate to `data/processed/stacked_bands.tif` and load it
-4. In the **Layer Styling panel**, set:
-   - Band rendering: **Multiband color**
-   - Red: Band 3 (B04 — Red)
-   - Green: Band 7 (B08 — NIR)
-   - Blue: Band 2 (B03 — Green)
-   - This gives you a **False Color Composite** (vegetation = red, soil = cyan/blue-green)
-
-5. Load the indices layer too (`data/processed/indices.tif`)
-
-#### Step 2.2 — Create Training Points
-
-1. **Layer → Create Layer → New GeoPackage Layer**
-   - Database: `data/training/training_points.gpkg`
-   - Table name: `training_samples`
-   - Geometry type: **Point**
-   - CRS: Match your raster CRS
-   - Add a field: `class_id` (Integer)
-   - Add a field: `class_name` (Text, 50 chars)
-   - Add a field: `notes` (Text, 200 chars)
-
-2. **Toggle editing** on the new layer (pencil icon)
-
-3. Use **Add Point Feature** to digitize training samples
-
-**Class scheme:**
-
-| class_id | class_name | Visual signature in false color |
-|---|---|---|
-| 1 | non_saline | Dark tones, may have vegetation |
-| 2 | slightly_saline | Light brown, scattered white patches |
-| 3 | moderately_saline | White/grey surface crust |
-| 4 | highly_saline | Bright white, often near drainage |
-| 5 | water | Dark blue/black |
-| 6 | urban | Magenta/bright varied tones |
-| 7 | vegetation | Bright red (false color) |
-
-**Best practices:**
-- Aim for **50–100 points per class minimum**
-- Distribute samples across the full scene extent
-- Use multiple spectral windows and zoom levels
-- Cross-reference with Google Satellite (add via **XYZ Tiles** in Browser panel):
-  `https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}`
-
-4. **Save the layer** when done
-
-#### Step 2.3 — Verify Sample Distribution
-
-In QGIS:
-1. Right-click `training_samples` → **Open Attribute Table**
-2. Check class distribution
-3. **Vector → Analysis → Basic Statistics for Fields** (check class_id distribution)
-
----
-
-### Phase 3: Extract Training Data
-
-#### Step 3.1 — Extract Pixel Values at Training Points
+**[INFERRED — these indices are standard in the soil salinity literature]**
 
 ```python
-# scripts/02_extract_training.py
+# file: 02_compute_indices.py
+import rasterio
+import numpy as np
+from pathlib import Path
+
+STACK_PATH = Path("output/s2_stack.tif")
+INDICES_PATH = Path("output/s2_indices.tif")
+
+# Band order from Step 1: B02, B03, B04, B08, B11, B12 (indices 0–5)
+
+def safe_divide(a, b, fill=0.0):
+    """Division with zero-protection."""
+    with np.errstate(divide="ignore", invalid="ignore"):
+        result = np.where(b != 0, a / b, fill)
+    return result.astype(np.float32)
+
+with rasterio.open(STACK_PATH) as src:
+    blue  = src.read(1).astype(np.float32)
+    green = src.read(2).astype(np.float32)
+    red   = src.read(3).astype(np.float32)
+    nir   = src.read(4).astype(np.float32)
+    swir1 = src.read(5).astype(np.float32)
+    swir2 = src.read(6).astype(np.float32)
+    profile = src.profile.copy()
+
+# --- Spectral Indices ---
+
+# NDVI: vegetation health (saline soils show low NDVI)
+ndvi = safe_divide(nir - red, nir + red)
+
+# NDSI (Salinity Index): sensitive to salt crusts
+# Common formulation: (Green - NIR) / (Green + NIR)
+ndsi = safe_divide(green - nir, green + nir)
+
+# SI1: Salinity Index 1 = sqrt(Blue * Red)
+si1 = np.sqrt(np.abs(blue * red)).astype(np.float32)
+
+# SI2: Salinity Index 2 = sqrt(Green * Red)
+si2 = np.sqrt(np.abs(green * red)).astype(np.float32)
+
+# CRSI: Canopy Response Salinity Index = sqrt((Red*NIR) / (Green*Blue))
+crsi = np.sqrt(safe_divide(red * nir, green * blue)).astype(np.float32)
+
+# SWIR ratio: useful for mineral/crust discrimination
+swir_ratio = safe_divide(swir1, swir2)
+
+indices = {
+    "NDVI":       ndvi,
+    "NDSI":       ndsi,
+    "SI1":        si1,
+    "SI2":        si2,
+    "CRSI":       crsi,
+    "SWIR_ratio": swir_ratio,
+}
+
+# Write indices stack
+profile.update(count=len(indices), dtype="float32", nodata=np.nan)
+
+with rasterio.open(INDICES_PATH, "w", **profile) as dst:
+    for i, (name, arr) in enumerate(indices.items(), start=1):
+        dst.write(arr, i)
+    dst.update_tags(band_order=",".join(indices.keys()))
+
+print(f"Indices written: {INDICES_PATH}")
+print(f"Bands: {list(indices.keys())}")
+```
+
+### Step 3.3 — Collect Training Samples in QGIS
+
+**[INFERRED — video demonstrates this step in QGIS GUI]**
+
+This is the step the video covers in detail. Open QGIS and follow this workflow:
+
+1. **Load your band stack** (`output/s2_stack.tif`) and set a false-color composite (e.g., SWIR1/NIR/Red) to highlight saline surfaces.
+
+2. **Define your salinity classes.** A standard schema for arid agricultural areas:
+
+   | Class ID | Class Name | Visual Signature |
+   |---|---|---|
+   | 1 | Non-saline agricultural | Dense green vegetation |
+   | 2 | Slightly saline | Patchy vegetation, pale soil |
+   | 3 | Moderately saline | Sparse vegetation, white patches |
+   | 4 | Highly saline | Bare, white/light grey crust |
+   | 5 | Very highly saline | Bright white salt crust, no vegetation |
+   | 6 | Water body | Dark/blue tones |
+
+3. **Create a training polygon layer:**
+   - `Layer → Create Layer → New Shapefile Layer`
+   - Fields: `class_id` (Integer), `class_name` (String)
+   - CRS: match your raster
+
+4. **Digitize training polygons** — minimum 30 polygons per class, distributed across the scene. Aim for spatial variety (not all in one cluster).
+
+5. **Export as GeoPackage:** `data/training_samples.gpkg`
+
+**Tip — using SCP Plugin [INFERRED]:** If you installed SCP, use `SCP → Training Input → Create Training Input` to manage ROI (Region of Interest) collection with built-in spectral signature preview.
+
+### Step 3.4 — Extract Training Features from the Raster Stack
+
+```python
+# file: 03_extract_features.py
 import rasterio
 import geopandas as gpd
 import numpy as np
 import pandas as pd
-from rasterio.sample import sample_gen
+from rasterio.mask import mask
 from pathlib import Path
+from shapely.geometry import mapping
 
-def extract_pixel_values(
-    raster_path: str,
-    points_path: str,
-    layer_name: str = 'training_samples',
-    band_prefix: str = 'band'
-) -> pd.DataFrame:
-    """Extract raster values at training point locations."""
-    
-    print(f"📍 Extracting pixel values from {raster_path}")
-    
-    # Load training points
-    gdf = gpd.read_file(points_path, layer=layer_name)
-    print(f"   Loaded {len(gdf)} training points")
-    print(f"   Classes: {gdf['class_name'].value_counts().to_dict()}")
-    
+STACK_PATH  = Path("output/s2_stack.tif")
+INDICES_PATH = Path("output/s2_indices.tif")
+TRAINING_PATH = Path("data/training_samples.gpkg")
+FEATURES_CSV = Path("output/training_features.csv")
+
+STACK_BANDS  = ["B02","B03","B04","B08","B11","B12"]
+INDICES_BANDS = ["NDVI","NDSI","SI1","SI2","CRSI","SWIR_ratio"]
+
+def extract_pixels_from_raster(raster_path, band_names, polygons_gdf):
+    """Extract pixel values under each training polygon."""
+    rows = []
     with rasterio.open(raster_path) as src:
-        # Reproject points to raster CRS if needed
-        if gdf.crs != src.crs:
-            print(f"   Reprojecting from {gdf.crs} to {src.crs}")
-            gdf = gdf.to_crs(src.crs)
-        
-        # Extract coordinates
-        coords = [(geom.x, geom.y) for geom in gdf.geometry]
-        
-        # Sample raster at all coordinates
-        values = list(src.sample(coords))
-        values_array = np.array(values)
-        
-        # Create column names
-        n_bands = src.count
-        col_names = [f'{band_prefix}_{i+1}' for i in range(n_bands)]
-    
-    # Combine with metadata
-    pixel_df = pd.DataFrame(values_array, columns=col_names)
-    
-    result_df = pd.concat([
-        gdf[['class_id', 'class_name']].reset_index(drop=True),
-        pixel_df
-    ], axis=1)
-    
-    # Remove nodata points
-    nodata_mask = (values_array == -9999).any(axis=1)
-    result_df = result_df[~nodata_mask]
-    print(f"   Removed {nodata_mask.sum()} nodata points")
-    
-    return result_df
+        # Reproject polygons to raster CRS if needed
+        polys = polygons_gdf.to_crs(src.crs)
+        for _, row in polys.iterrows():
+            geom = [mapping(row.geometry)]
+            try:
+                out_image, _ = mask(src, geom, crop=True, nodata=np.nan)
+                # out_image shape: (bands, H, W)
+                n_bands, h, w = out_image.shape
+                pixels = out_image.reshape(n_bands, -1).T  # (n_pixels, n_bands)
+                # Remove nodata pixels
+                valid = ~np.isnan(pixels).any(axis=1)
+                pixels = pixels[valid]
+                for px in pixels:
+                    record = {name: val for name, val in zip(band_names, px)}
+                    record["class_id"]   = row["class_id"]
+                    record["class_name"] = row["class_name"]
+                    rows.append(record)
+            except Exception as e:
+                print(f"  Warning: could not process polygon {row.name}: {e}")
+    return pd.DataFrame(rows)
 
-def build_feature_matrix(
-    stack_path: str,
-    indices_path: str,
-    points_path: str,
-    output_csv: str
-) -> pd.DataFrame:
-    """Build complete feature matrix combining bands and indices."""
-    
-    # Extract band values
-    bands_df = extract_pixel_values(
-        stack_path, points_path, 
-        band_prefix='b'
-    )
-    
-    # Extract index values
-    indices_df = extract_pixel_values(
-        indices_path, points_path,
-        band_prefix='idx'
-    )
-    
-    # Rename index columns to be descriptive
-    index_names = ['NDVI', 'NDSI', 'SI1', 'SI2', 'SI3', 'NDWI', 'EVI']
-    indices_df = indices_df.rename(columns={
-        f'idx_{i+1}': name for i, name in enumerate(index_names)
-    })
-    
-    # Combine (drop duplicate metadata columns from indices)
-    feature_cols = [c for c in indices_df.columns if c not in ['class_id', 'class_name']]
-    combined = pd.concat([
-        bands_df,
-        indices_df[feature_cols]
-    ], axis=1)
-    
-    # Band column names
-    band_names = ['B02_Blue', 'B03_Green', 'B04_Red', 'B05_RE1', 
-                  'B06_RE2', 'B07_RE3', 'B08_NIR', 'B8A_RE4', 
-                  'B11_SWIR1', 'B12_SWIR2']
-    rename_map = {f'b_{i+1}': name for i, name in enumerate(band_names)}
-    combined = combined.rename(columns=rename_map)
-    
-    # Save
-    Path(output_csv).parent.mkdir(parents=True, exist_ok=True)
-    combined.to_csv(output_csv, index=False)
-    
-    print(f"\n✅ Feature matrix saved: {output_csv}")
-    print(f"   Shape: {combined.shape}")
-    print(f"\n📊 Class distribution:")
-    print(combined['class_name'].value_counts())
-    
-    return combined
+print("Loading training polygons...")
+gdf = gpd.read_file(TRAINING_PATH)
+print(f"  {len(gdf)} polygons, classes: {gdf['class_name'].unique()}")
 
-if __name__ == '__main__':
-    df = build_feature_matrix(
-        stack_path='data/processed/stacked_bands.tif',
-        indices_path='data/processed/indices.tif',
-        points_path='data/training/training_points.gpkg',
-        output_csv='data/training/training_data.csv'
-    )
+print("Extracting band values...")
+df_bands = extract_pixels_from_raster(STACK_PATH, STACK_BANDS, gdf)
+
+print("Extracting index values...")
+df_indices = extract_pixels_from_raster(INDICES_PATH, INDICES_BANDS, gdf)
+
+# Merge on row position (both extractions use same polygon order)
+df = pd.concat([
+    df_bands[STACK_BANDS],
+    df_indices[INDICES_BANDS],
+    df_bands[["class_id", "class_name"]]
+], axis=1)
+
+df.dropna(inplace=True)
+df.to_csv(FEATURES_CSV, index=False)
+print(f"\nFeatures written: {FEATURES_CSV}")
+print(f"Total training pixels: {len(df)}")
+print(df.groupby("class_name").size().to_string())
 ```
 
-```bash
-python scripts/02_extract_training.py
-```
-
----
-
-### Phase 4: Train & Apply SVM and Random Forest Classifiers
+### Step 3.5 — Train SVM and Random Forest Classifiers
 
 ```python
-# scripts/03_train_classify.py
-import numpy as np
+# file: 04_train_classifiers.py
 import pandas as pd
-import rasterio
-from rasterio.transform import from_bounds
+import numpy as np
 import joblib
-import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
+from pathlib import Path
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split, cross_val_score, StratifiedKFold
+from sklearn.model_selection import train_test_split, StratifiedKFold, cross_val_score
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import (
-    classification_report, confusion_matrix, 
-    accuracy_score, cohen_kappa_score
-)
-from sklearn.pipeline import Pipeline
-from sklearn.inspection import permutation_importance
+from sklearn.metrics import classification_report, confusion_matrix
+import matplotlib.pyplot as plt
 import seaborn as sns
+
+FEATURES_CSV = Path("output/training_features.csv")
+MODELS_DIR   = Path("output/models/")
+MODELS_DIR.mkdir(exist_ok=True)
+
+FEATURE_COLS = ["B02","B03","B04","B08","B11","B12",
+                "NDVI","NDSI","SI1","SI2","CRSI","SWIR_ratio"]
+LABEL_COL    = "class_id"
+NAMES_COL    = "class_name"
+
+# --- Load data ---
+df = pd.read_csv(FEATURES_CSV)
+X = df[FEATURE_COLS].values
+y = df[LABEL_COL].values
+class_names_map = df.groupby(LABEL_COL)[NAMES_COL].first().to_dict()
+
+print(f"Dataset: {X.shape[0]} samples, {X.shape[1]} features")
+print(f"Class distribution:\n{df.groupby(NAMES_COL).size()}\n")
+
+# --- Train/test split ---
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.25, stratify=y, random_state=42
+)
+
+# --- Scale features (critical for SVM) ---
+scaler = StandardScaler()
+X_train_sc = scaler.fit_transform(X_train)
+X_test_sc  = scaler.transform(X_test)
+joblib.dump(scaler, MODELS_DIR / "scaler.pkl")
+
+# ============================================================
+# SVM
+# ============================================================
+print("Training SVM (RBF kernel)...")
+# NOTE: The video uses SVM — specific kernel/C/gamma values not retrievable
+# from metadata. These are sensible defaults for this problem type.
+svm = SVC(
+    kernel="rbf",
+    C=10,
+    gamma="scale",
+    probability=True,    # needed for confidence outputs later
+    class_weight="balanced",
+    random_state=42,
+    verbose=False,
+)
+svm.fit(X_train_sc, y_train)
+
+svm_preds = svm.predict(X_test_sc)
+print("\n=== SVM Classification Report ===")
+print(classification_report(y_test, svm_preds,
+      target_names=[class_names_map[c] for c in sorted(class_names_map)]))
+
+# Cross-validation
+cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+svm_cv = cross_val_score(svm, X_train_sc, y_train, cv=cv, scoring="f1_weighted")
+print(f"SVM 5-fold CV F1 (weighted): {svm_cv.mean():.3f} ± {svm_cv.std():.3f}")
+joblib.dump(svm, MODELS_DIR / "svm_model.pkl")
+
+# ============================================================
+# Random Forest
+# ============================================================
+print("\nTraining Random Forest...")
+rf = RandomForestClassifier(
+    n_estimators=200,
+    max_depth=None,
+    min_samples_leaf=5,
+    class_weight="balanced",
+    random_state=42,
+    n_jobs=-1,
+)
+rf.fit(X_train, y_train)    # RF doesn't need scaling
+
+rf_preds = rf.predict(X_test)
+print("\n=== Random Forest Classification Report ===")
+print(classification_report(y_test, rf_preds,
+      target_names=[class_names_map[c] for c in sorted(class_names_map)]))
+
+rf_cv = cross_val_score(rf, X_train, y_train, cv=cv, scoring="f1_weighted")
+print(f"RF 5-fold CV F1 (weighted): {rf_cv.mean():.3f} ± {rf_cv.std():.3f}")
+joblib.dump(rf, MODELS_DIR / "rf_model.pkl")
+
+# ============================================================
+# Confusion matrix plots
+# ============================================================
+fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+for ax, preds, title in zip(axes,
+                             [svm_preds, rf_preds],
+                             ["SVM", "Random Forest"]):
+    cm = confusion_matrix(y_test, preds)
+    cm_norm = cm.astype(float) / cm.sum(axis=1, keepdims=True)
+    sns.heatmap(cm_norm, annot=True, fmt=".2f", ax=ax,
+                xticklabels=list(class_names_map.values()),
+                yticklabels=list(class_names_map.values()),
+                cmap="YlOrRd")
+    ax.set_title(f"{title} Confusion Matrix (normalized)")
+    ax.set_ylabel("True")
+    ax.set_xlabel("Predicted")
+
+plt.tight_layout()
+plt.savefig("output/confusion_matrices.png", dpi=150)
+print("\nConfusion matrices saved.")
+
+# ============================================================
+# Feature importance (RF only)
+# ============================================================
+fi = pd.Series(rf.feature_importances_, index=FEATURE_COLS).sort_values(ascending=False)
+print("\nRandom Forest Feature Importance:")
+print(fi.round(4).to_string())
+fi.plot(kind="bar", figsize=(10, 4), title="RF Feature Importance")
+plt.tight_layout()
+plt.savefig("output/feature_importance.png", dpi=150)
+```
+
+### Step 3.6 — Apply Classifiers to the Full Scene
+
+```python
+# file: 05_apply_classifiers.py
+import rasterio
+import numpy as np
+import joblib
 from pathlib import Path
-from tqdm import tqdm
-import warnings
-warnings.filterwarnings('ignore')
 
-# ============================================================
-# CONFIGURATION
-# ============================================================
-TRAINING_CSV = 'data/training/training_data.csv'
-STACK_PATH = 'data/processed/stacked_bands.tif'
-INDICES_PATH = 'data/processed/indices.tif'
-OUTPUT_DIR = 'data/outputs'
-MODEL_DIR = 'models'
-REPORT_DIR = 'reports'
+STACK_PATH   = Path("output/s2_stack.tif")
+INDICES_PATH = Path("output/s2_indices.tif")
+MODELS_DIR   = Path("output/models/")
+SVM_OUTPUT   = Path("output/classification_svm.tif")
+RF_OUTPUT    = Path("output/classification_rf.tif")
 
-# Class color mapping for visualization
-CLASS_COLORS = {
-    1: '#4CAF50',  # non_saline - green
-    2: '#FFEB3B',  # slightly_saline - yellow
-    3: '#FF9800',  # moderately_saline - orange
-    4: '#F44336',  # highly_saline - red
-    5: '#2196F3',  # water - blue
-    6: '#9E9E9E',  # urban - grey
-    7: '#1B5E20',  # vegetation - dark green
-}
+FEATURE_COLS = ["B02","B03","B04","B08","B11","B12",
+                "NDVI","NDSI","SI1","SI2","CRSI","SWIR_ratio"]
+
+# Load models
+scaler = joblib.load(MODELS_DIR / "scaler.pkl")
+svm    = joblib.load(MODELS_DIR / "svm_model.pkl")
+rf     = joblib.load(MODELS_DIR / "rf_model.pkl")
+
+def read_full_stack(stack_path, indices_path):
+    """Read all bands into a 2D feature matrix (n_pixels, n_features)."""
+    with rasterio.open(stack_path) as src:
+        profile = src.profile.copy()
+        profile.update(count=1, dtype="uint8", nodata=255)
+        bands = src.read().astype(np.float32)   # (6, H, W)
+        height, width = bands.shape[1], bands.shape[2]
+        nodata_mask = (bands[0] == 0)            # assume band 1 nodata = 0
+
+    with rasterio.open(indices_path) as idx_src:
+        indices = idx_src.read().astype(np.float32)  # (6, H, W)
+
+    # Stack all features: shape (12, H, W)
+    all_bands = np.concatenate([bands, indices], axis=0)
+
+    # Reshape to (H*W, 12)
+    n_features, h, w = all_bands.shape
+    flat = all_bands.reshape(n_features, -1).T   # (n_pixels, 12)
+
+    return flat, nodata_mask.flatten(), profile, height, width
+
+print("Reading full scene...")
+X_scene, nodata_flat, profile, H, W = read_full_stack(STACK_PATH, INDICES_PATH)
+
+# Valid pixels only (avoid NaN/nodata)
+valid_mask = ~nodata_flat & ~np.isnan(X_scene).any(axis=1)
+X_valid = X_scene[valid_mask]
+
+print(f"Total pixels: {H*W:,}  |  Valid: {valid_mask.sum():,}")
+
+# --- SVM prediction ---
+print("Applying SVM...")
+X_valid_sc = scaler.transform(X_valid)
+
+# Process in chunks to avoid memory issues on large scenes
+CHUNK = 100_000
+svm_result = np.zeros(H * W, dtype=np.uint8)
+svm_result[~valid_mask] = 255  # nodata
+
+for start in range(0, X_valid_sc.shape[0], CHUNK):
+    end = min(start + CHUNK, X_valid_sc.shape[0])
+    chunk_preds = svm.predict(X_valid_sc[start:end]).astype(np.uint8)
+    valid_indices = np.where(valid_mask)[0][start:end]
+    svm_result[valid_indices] = chunk_preds
+    print(f"  SVM chunk {start//CHUNK + 1}/{-(-X_valid_sc.shape[0]//CHUNK)} done")
+
+# --- RF prediction ---
+print("Applying Random Forest...")
+rf_result = np.zeros(H * W, dtype=np.uint8)
+rf_result[~valid_mask] = 255
+
+for start in range(0, X_valid.shape[0], CHUNK):
+    end = min(start + CHUNK, X_valid.shape[0])
+    chunk_preds = rf.predict(X_valid[start:end]).astype(np.uint8)
+    valid_indices = np.where(valid_mask)[0][start:end]
+    rf_result[valid_indices] = chunk_preds
+    print(f"  RF chunk {start//CHUNK + 1}/{-(-X_valid.shape[0]//CHUNK)} done")
+
+# --- Write outputs ---
+for out_path, result, label in [(SVM_OUTPUT, svm_result, "SVM"),
+                                 (RF_OUTPUT, rf_result, "RF")]:
+    with rasterio.open(out_path, "w", **profile) as dst:
+        dst.write(result.reshape(H, W), 1)
+        dst.update_tags(classifier=label, classes="1-6 + 255=nodata")
+    print(f"{label} classification written: {out_path}")
+```
+
+### Step 3.7 — Compute Classification Statistics
+
+```python
+# file: 06_compute_stats.py
+import rasterio
+import numpy as np
+import pandas as pd
+import json
+from pathlib import Path
+
+SVM_PATH = Path("output/classification_svm.tif")
+RF_PATH  = Path("output/classification_rf.tif")
+STATS_JSON = Path("output/classification_stats.json")
 
 CLASS_NAMES = {
-    1: 'Non-Saline',
-    2: 'Slightly Saline',
-    3: 'Moderately Saline',
-    4: 'Highly Saline',
-    5: 'Water',
-    6: 'Urban',
-    7: 'Vegetation',
+    1: "Non-saline agricultural",
+    2: "Slightly saline",
+    3: "Moderately saline",
+    4: "Highly saline",
+    5: "Very highly saline",
+    6: "Water body",
 }
 
-# ============================================================
-# DATA PREPARATION
-# ============================================================
-def load_training_data(csv_path: str):
-    """Load and prepare training data."""
-    
-    df = pd.read_csv(csv_path)
-    
-    # Feature columns (all except class metadata)
-    feature_cols = [c for c in df.columns if c not in ['class_id', 'class_name']]
-    
-    X = df[feature_cols].values
-    y = df['class_id'].values
-    
-    print(f"📊 Training data loaded:")
-    print(f"   Features: {feature_cols}")
-    print(f"   Samples: {len(X)}")
-    print(f"   Classes: {dict(zip(*np.unique(y, return_counts=True)))}")
-    
-    return X, y, feature_cols
+def compute_class_stats(raster_path, class_names):
+    """Compute per-class pixel counts and area estimates."""
+    with rasterio.open(raster_path) as src:
+        data = src.read(1)
+        pixel_area_m2 = abs(src.transform.a * src.transform.e)
+        pixel_area_ha = pixel_area_m2 / 10_000
+        nodata = src.nodata
 
-# ============================================================
-# MODEL TRAINING
-# ============================================================
-def train_svm(X_train, y_train) -> Pipeline:
-    """Train SVM classifier with RBF kernel."""
-    
-    print("\n🔧 Training SVM...")
-    
-    svm_pipeline = Pipeline([
-        ('scaler', StandardScaler()),
-        ('svm', SVC(
-            kernel='rbf',
-            C=100,
-            gamma='scale',
-            probability=True,
-            random_state=42,
-            class_weight='balanced'  # Handle class imbalance
-        ))
-    ])
-    
-    svm_pipeline.fit(X_train, y_train)
-    print("   ✅ SVM training complete")
-    
-    return svm_pipeline
+    total_valid = np.sum(data != nodata)
+    stats = {}
 
-def train_random_forest(X_train, y_train) -> RandomForestClassifier:
-    """Train Random Forest classifier."""
-    
-    print("\n🌲 Training Random Forest...")
-    
-    rf_model = RandomForestClassifier(
-        n_estimators=200,
-        max_depth=None,
-        min_samples_split=5,
-        min_samples_leaf=2,
-        max_features='sqrt',
-        class_weight='balanced',
-        random_state=42,
-        n_jobs=-1,
-        oob_score=True
-    )
-    
-    rf_model.fit(X_train, y_train)
-    print(f"   OOB Score: {rf_model.oob_score_:.4f}")
-    print("   ✅ Random Forest training complete")
-    
-    return rf_model
-
-def evaluate_models(models: dict, X_test: np.ndarray, y_test: np.ndarray) -> dict:
-    """Evaluate all models and return metrics."""
-    
-    results = {}
-    
-    for name, model in models.items():
-        print(f"\n📈 Evaluating {name}:")
-        
-        y_pred = model.predict(X_test)
-        
-        acc = accuracy_score(y_test, y_pred)
-        kappa = cohen_kappa_score(y_test, y_pred)
-        
-        print(f"   Overall Accuracy: {acc:.4f}")
-        print(f"   Cohen's Kappa: {kappa:.4f}")
-        
-        report = classification_report(
-            y_test, y_pred,
-            target_names=[CLASS_NAMES.get(i, str(i)) for i in sorted(np.unique(y_test))]
-        )
-        print(f"\n{report}")
-        
-        # Cross-validation
-        cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
-        cv_scores = cross_val_score(model, 
-                                     np.vstack([X_test, X_test[:50]]),  # Small CV on test
-                                     np.concatenate([y_test, y_test[:50]]),
-                                     cv=cv, scoring='accuracy')
-        
-        results[name] = {
-            'accuracy': acc,
-            'kappa': kappa,
-            'report': report,
-            'y_pred': y_pred,
-            'confusion_matrix': confusion_matrix(y_test, y_pred),
-            'cv_mean': cv_scores.mean(),
-            'cv_std': cv_scores.std()
+    for class_id, class_name in class_names.items():
+        count = int(np.sum(data == class_id))
+        area_ha = count * pixel_area_ha
+        pct = (count / total_valid * 100) if total_valid > 0 else 0
+        stats[class_id] = {
+            "class_name": class_name,
+            "pixel_count": count,
+            "area_ha": round(area_ha, 2),
+            "percent_of_valid": round(pct, 2),
         }
-    
-    return results
 
-# ============================================================
-# FULL SCENE CLASSIFICATION
-# ============================================================
-def classify_raster(
-    model,
-    stack_path: str,
-    indices_path: str,
-    output_path: str,
-    batch_size: int = 100000
-) -> np.ndarray:
-    """Apply classifier to full scene, processing in batches."""
-    
-    print(f"\n🗺️  Classifying full scene...")
-    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
-    
-    with rasterio.open(stack_path) as stack_src, \
-         rasterio.open(indices_path) as idx_src:
-        
-        # Read all bands
-        print("   Reading band stack...")
-        bands = stack_src.read().astype('float32')  # (10, H, W)
-        
-        print("   Reading indices...")
-        indices = idx_src.read().astype('float32')  # (7, H, W)
-        
-        H, W = bands.shape[1], bands.shape[2]
-        meta = stack_src.meta.copy()
-        
-        # Stack features: (17, H, W) -> (H*W, 17)
-        all_features = np.vstack([bands, indices])  # (17, H, W)
-        n_bands_total = all_features.shape[0]
-        
-        # Reshape to pixels
-        features_2d = all_features.reshape(n_bands_total, -1).T  # (H*W, 17)
-        
-        # Identify valid pixels (not nodata)
-        valid_mask = ~(features_2d == -9999).any(axis=1)
-        n_valid = valid_mask.sum()
-        
-        print(f"   Total pixels: {H*W:,}")
-        print(f"   Valid pixels: {n_valid:,} ({100*n_valid/(H*W):.1f}%)")
-        
-        # Initialize output
-        classified = np.zeros(H * W, dtype='uint8')
-        
-        # Classify in batches
-        valid_indices = np.where(valid_mask)[0]
-        n_batches = (n_valid + batch_size - 1) // batch_size
-        
-        print(f"
+    return stats, pixel_area_ha, int(total_valid)
+
+print("Computing statistics...")
+svm_stats, px_ha, n_valid = compute_class_stats(SVM_PATH, CLASS_NAMES)
+rf_stats, _, _ = compute_class_stats(RF_PATH, CLASS_NAMES)
+
+# Agreement analysis: where do SVM and RF agree?
+with rasterio.open(SVM_PATH) as s, rasterio.open(RF_PATH) as r:
+    svm_arr = s.read(1)
+    rf_arr  = r.read(1)
+
+valid_mask = (svm_arr != 255) & (rf_arr != 255)
+agreement = float(np.sum(svm_arr[valid_mask] == rf_arr[valid_mask]) / valid_mask.sum() * 100)
+
+# Saline area totals (classes 3, 4, 5)
+saline_classes = [3, 4, 5]
+svm_saline_ha = sum(svm_stats[c]["area_ha"] for c in saline_classes)
+rf_saline_ha  = sum(rf_stats[c]["area_ha"]  for c in saline_classes)
+
+output = {
+    "pixel_area_ha": round(px_ha, 6),
+    "total_valid_pixels": n_valid,
+    "classifier_agreement_pct": round(agreement, 2),
+    "svm": {
+        "total_saline_area_ha": round(svm_saline_ha, 2),
+        "classes": svm_stats,
+    },
+    "rf": {
+        "total_saline_area_ha": round(rf_saline_ha, 2),
+        "classes": rf_stats,
+    },
+}
+
+with open(STATS_JSON, "w") as f:
+    json.dump(output, f, indent=2)
+
+print(json.dumps(output, indent=2))
+print(f"\nStats written: {STATS_JSON}")
+```
+
+### Step 3.8 — Claude API: Auto-Generate Legend Descriptions and Anomaly Flags
+
+This is the AI-augmentation layer. Claude reads the classification statistics and generates:
+- Human-readable class descriptions contextualized to the actual distribution
+- Anomaly flags where the two classifiers disagree significantly
+- A ready-to-paste legend block for your Build post
+
+```python
+# file: 07_claude_legend_and_flags.py
+import anthropic
+import json
+from pathlib import Path
+
+STATS_JSON   = Path("output/classification_stats.json")
+CLAUDE_OUTPUT = Path("output/claude_legend_report.md")
+
+# Load stats
+with open(STATS_JSON) as f:
+    stats = json.load(f)
+
+# Build the prompt
+stats_summary = json.dumps(stats, indent=2)
+
+SYSTEM_PROMPT = """You are an expert remote sensing analyst and science communicator 
+specializing in soil salinity assessment and land degradation. 
+
+Your task is to interpret supervised classification output from Sentinel-2 imagery and 
+produce two deliverables:
+
+1. A CLASS LEGEND with one paragraph per class that describes:
+   - What the class represents ecologically and agronomically
+   - The spectral characteristics that distinguish it in Sentinel-2
+   - Agricultural or environmental management implications

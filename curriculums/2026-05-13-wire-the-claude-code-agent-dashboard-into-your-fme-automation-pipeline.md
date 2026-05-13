@@ -1,742 +1,412 @@
 # Wire the Claude Code Agent Dashboard into Your FME Automation Pipeline
 
-## A Hands-On Tutorial for GIS Practitioners
+> **Honest upfront note:** The source video (Nate Herk | AI Automation, YouTube) was inaccessible for content extraction — only metadata was returned. Rather than invent specific commands, flags, or UI steps I cannot verify, I'll clearly mark which sections are grounded in **established Claude Code CLI knowledge** versus what you should **confirm against the video** before running in production. Everything here is actionable, but treat the dashboard-specific steps as a starting framework to refine after you watch the video yourself.
 
 ---
 
 ## 1. Introduction & Context
 
-### What Is This?
+You're already using Claude Code CLI to generate and refactor FME workspaces, write Python Caller scripts, and orchestrate multi-step ETL logic. That works — but until now, supervising a long multi-step agent run meant staring at terminal scrollback and hoping nothing quietly derailed three steps ago.
 
-Claude Code recently shipped an **agent dashboard** — a visual supervisory layer on top of the CLI tool that lets you watch, pause, and interrogate multi-step AI agent runs in real time. Instead of staring at a scrolling terminal hoping your automation doesn't go sideways, you now have a structured view of every agent step, its status, and where it failed or stalled.
+The **Claude Code Agent Dashboard** changes the supervision model. Instead of a linear log stream, you get a visual layer over the agent's step-by-step execution: which tools it called, which steps errored, where it halted waiting for clarification, and how long each step took. For FME automation specifically, this matters because:
 
-For GIS practitioners using **FME (Feature Manipulation Engine)** to build ETL pipelines, this matters a great deal. FME workspace authoring is inherently multi-step: reading spatial data, applying transformers, writing outputs, handling coordinate systems, validating geometries. When you hand off authoring tasks to a Claude Code agent, errors are inevitable — and until now, diagnosing *which step* caused them required painful terminal archaeology.
+- FME workspace authoring via AI produces **chains of decisions** (schema mapping → transformer selection → parameter tuning → output format). Any broken link in that chain silently propagates bad output.
+- Your `CLAUDE.md` directives govern the agent's behavior, but without step visibility you're tuning blindly.
+- A **before/after Build post** showing real error patterns is exactly the kind of practitioner-credible content that resonates with the GIS community on LinkedIn or Esri Community.
 
-### Why It's Worth Learning
+**What you'll build by the end of this tutorial:**
 
-| Before Agent Dashboard | After Agent Dashboard |
-|---|---|
-| Errors buried in terminal scroll | Errors surfaced per-step, with context |
-| Guessing which directive caused a halt | Pinpoint the failing agent action |
-| Reactive CLAUDE.md tuning | Evidence-based directive refinement |
-| Hard to explain AI-assisted ETL to stakeholders | Shareable, structured session documentation |
-
-This tutorial teaches you to:
-1. Set up Claude Code with the agent dashboard for an FME session
-2. Instrument your CLAUDE.md directives for FME-specific workflows
-3. Capture and categorize agent errors
-4. Refine your directives using real evidence
-5. Write a "Build post" documenting your before/after for the GIS community
+1. A running Claude Code session with the agent dashboard active, connected to an FME workspace automation task
+2. A structured error log capturing which agent steps fail most often
+3. Refined `CLAUDE.md` directives based on observed failure patterns
+4. A draft Build post outline ready for publication
 
 ---
 
 ## 2. Prerequisites
 
-### Software & Accounts
+### Tools & Accounts
 
-- [ ] **Claude Code CLI** installed and authenticated (`claude --version` returns a result)
-- [ ] **FME Desktop** (2023.x or later) installed and licensed
-- [ ] **FME Flow** (optional, but recommended for automation scheduling)
-- [ ] A code editor — VS Code recommended
-- [ ] **Git** installed (for versioning your CLAUDE.md changes)
-- [ ] A Markdown editor or **Notion/Hashnode/Dev.to** account for the Build post
+| Requirement | Notes |
+|---|---|
+| **Claude Code CLI** | Installed and authenticated (`claude --version` returns without error) |
+| **Anthropic account** | With Claude Code access enabled |
+| **FME Form or FME Flow** | Version 2023.x or later recommended; 2024.x preferred |
+| **An existing FME workspace** | Something with at least 3–5 transformers so there's real complexity for the agent to reason about |
+| **Node.js ≥ 18** or **Python ≥ 3.10** | Depending on how you've scaffolded your Claude Code integration |
+| **A text editor** | VS Code recommended; the dashboard may integrate here |
 
-### Knowledge Assumptions
+### Files You Should Have Ready
 
-- You have run at least one Claude Code session from the CLI before
-- You understand basic FME concepts: workspaces, readers, writers, transformers
-- You are comfortable editing plain-text configuration files
-- You have a working FME workspace (`.fmw` file) you want to automate or improve — if not, we provide a sample below
-
-### Verify Your Claude Code Installation
-
-```bash
-# Check Claude Code version — should be recent enough to include agent dashboard
-claude --version
-
-# Check you can authenticate
-claude auth status
-
-# Launch a quick sanity-check session
-claude "say hello" --no-stream
+```
+your-project/
+├── CLAUDE.md                  # Your existing directives file (or create one)
+├── workspace/
+│   └── your_etl.fmw           # The FME workspace you'll use as the test target
+├── scripts/
+│   └── fme_runner.py          # Script that invokes FME Engine or FME Flow REST API
+└── logs/
+    └── .gitkeep               # Where you'll capture agent step logs
 ```
 
-If the agent dashboard is available, you should see dashboard-related flags when you run:
+### Knowledge Baseline
 
-```bash
-claude --help | grep -i dashboard
-# or
-claude --help | grep -i agent
+- You know how to run `claude` from the terminal and have previously given it multi-step instructions
+- You understand FME's basic transformer model (Readers → Transformers → Writers)
+- You've read or written at least a minimal `CLAUDE.md` file before
+
+> **If you don't have a `CLAUDE.md` yet**, create one now at the root of your project. It's just a Markdown file — Claude Code reads it automatically as persistent context. Start with this shell:
+
+```markdown
+# CLAUDE.md — FME Workspace Automation Agent
+
+## Role
+You are an FME workspace automation assistant. Your job is to generate,
+modify, and validate FME workspaces and associated Python scripts.
+
+## Constraints
+- Never remove existing Readers or Writers without explicit confirmation
+- Always preserve coordinate system definitions on all geometry features
+- When uncertain about a transformer parameter, ask before assuming
+- Output all workspace changes as FME Python API calls, not raw XML edits
+
+## FME Environment
+- FME Version: 2024.x
+- Python Environment: fme_runner.py handles all subprocess calls
+- Log output directory: ./logs/
+
+## Known Problem Areas (update this section as you learn)
+- [empty — you'll fill this in after the exercise]
 ```
 
 ---
 
 ## 3. Step-by-Step Guide
 
----
+### Step 3.1 — Verify Your Claude Code CLI Version
 
-### Phase 1: Prepare Your FME Workspace & Project Structure
-
-#### Step 1.1 — Organize Your Project Directory
-
-Create a clean working directory that Claude Code will use as its context root.
+Before enabling any dashboard features, confirm you're on a version that includes the agent dashboard. Open your terminal:
 
 ```bash
-mkdir fme-claude-pipeline
-cd fme-claude-pipeline
-
-# Create the expected folder structure
-mkdir -p workspaces
-mkdir -p logs/agent-sessions
-mkdir -p directives
-mkdir -p exports
-
-# Initialize git for tracking CLAUDE.md changes over time
-git init
+claude --version
 ```
 
-Your directory should look like this:
-
-```
-fme-claude-pipeline/
-├── CLAUDE.md                    ← Agent directives (we'll build this)
-├── workspaces/
-│   └── my_etl_workspace.fmw    ← Your FME workspace file
-├── logs/
-│   └── agent-sessions/          ← Agent run logs go here
-├── directives/
-│   └── CLAUDE.md.v1.backup      ← Versioned backups of directives
-└── exports/                     ← FME output data lands here
-```
-
-#### Step 1.2 — Place Your FME Workspace
-
-Copy your existing `.fmw` file into `workspaces/`. If you don't have one, create a minimal test workspace using the FME Workbench GUI:
-
-**Sample minimal workspace tasks for testing:**
-- Reader: CSV with latitude/longitude columns
-- Transformer: `Reprojector` (WGS84 → Web Mercator)
-- Transformer: `GeometryFilter` (filter out null geometries)
-- Writer: GeoJSON output
-
-Save it as `workspaces/test_etl.fmw`.
-
-#### Step 1.3 — Create Your Baseline CLAUDE.md
-
-This is your agent instruction file. Start with a **v1 baseline** — deliberately incomplete — so you can measure improvement later.
+> **⚠️ Source gap:** The video likely specifies the minimum version that ships with the agent dashboard. Watch the first two minutes of [the video](https://www.youtube.com/watch?v=ZAaxx3qyT8g) and note the version shown. If your version is older, run:
 
 ```bash
-touch CLAUDE.md
+# Update via npm (if installed that way)
+npm update -g @anthropic-ai/claude-code
+
+# Or check Anthropic's official install docs for your method
 ```
-
-Paste the following into `CLAUDE.md`:
-
-```markdown
-# CLAUDE.md — FME ETL Automation Directives
-
-## Project Context
-This project uses FME Desktop to build and modify spatial ETL workspaces.
-Your job is to help author, debug, and optimize FME workspaces (.fmw files).
-
-## FME Environment
-- FME version: 2023.2 (update to match yours)
-- FME CLI path: /Applications/FME/fme   # macOS example
-  # Windows: C:\Program Files\FME\fme.exe
-  # Linux: /opt/fme/fme
-- Workspace directory: ./workspaces/
-- Output directory: ./exports/
-
-## Allowed Actions
-- Read and analyze .fmw workspace XML
-- Run FME workspaces via CLI: `fme <workspace.fmw> --log-file <path>`
-- Suggest transformer additions or modifications
-- Parse FME log files for errors
-
-## Current Task
-Analyze the workspace in ./workspaces/ and report:
-1. What transformers are present
-2. Whether the workspace runs successfully
-3. Any warnings in the log output
-```
-
-> **Note:** This v1 is intentionally sparse. We will observe what breaks and improve it in Phase 3.
 
 ---
 
-### Phase 2: Launch Claude Code with the Agent Dashboard
+### Step 3.2 — Launch Claude Code with Agent Dashboard Enabled
 
-#### Step 2.1 — Start a Claude Code Agent Session
-
-Navigate to your project root and launch Claude Code in agent mode with the dashboard enabled:
+> **⚠️ Source gap:** The exact flag or command to activate the dashboard UI is in the video and I cannot confirm it from the metadata alone. The pattern is likely one of the following — **verify against the video before using**:
 
 ```bash
-cd fme-claude-pipeline
-
-# Launch Claude Code — the agent dashboard should open automatically
-# in a browser tab or separate terminal pane depending on your version
-claude
-
-# If your version requires an explicit flag:
-claude --agent-dashboard
-# or
+# Likely pattern A — dashboard flag
 claude --dashboard
+
+# Likely pattern B — UI mode
+claude --ui
+
+# Likely pattern C — it opens automatically in newer versions
+claude
 ```
 
-> **Tip:** Check the [Claude Code changelog](https://docs.anthropic.com/claude-code) for the exact flag name in your installed version, as the dashboard feature may use slightly different syntax across releases.
+Once launched, you should see a panel (either in-terminal or in a browser tab) showing:
+- A list of agent steps / tool calls
+- Status indicators (running / complete / error)
+- Token usage per step
+- Tool call details (what the agent asked, what came back)
 
-#### Step 2.2 — Understand the Dashboard Layout
+**Take a screenshot of this initial view.** You'll use it in your Build post as the "before" state.
 
-Once the dashboard opens, familiarize yourself with these sections:
+---
 
-```
-┌─────────────────────────────────────────────────────────┐
-│  CLAUDE CODE AGENT DASHBOARD                            │
-├──────────────────┬──────────────────────────────────────┤
-│  AGENT STEPS     │  STEP DETAIL                         │
-│  ─────────────── │  ───────────────────────────────────  │
-│  ✅ Step 1        │  Tool: bash                          │
-│  ✅ Step 2        │  Command: fme test_etl.fmw           │
-│  ❌ Step 3        │  Status: FAILED                      │
-│  ⏳ Step 4        │  Error: Coordinate system not found  │
-│                  │                                       │
-├──────────────────┴──────────────────────────────────────┤
-│  TOOL CALLS  │  MEMORY  │  PERMISSIONS  │  LOGS          │
-└─────────────────────────────────────────────────────────┘
-```
+### Step 3.3 — Set Up Your FME Automation Task
 
-**Key panels to watch:**
-- **Agent Steps** — the sequential list of actions the agent is taking
-- **Step Detail** — inputs, outputs, and errors for the selected step
-- **Tool Calls** — which tools (bash, file read/write, etc.) were invoked
-- **Permissions** — any actions the agent wants to take that need your approval
+You need a realistic task that will produce enough agent steps to observe meaningful patterns. Here's a good starting prompt that will generate 8–12 distinct agent steps:
 
-#### Step 2.3 — Give Claude Code Your First FME Task
-
-In the Claude Code chat input, type:
-
-```
-Analyze the FME workspace at ./workspaces/test_etl.fmw. 
-Run it using the FME CLI and capture the log output. 
-Report what transformers are present, whether it ran successfully, 
-and list any errors or warnings from the log.
-Save the log to ./logs/agent-sessions/session-001.log
-```
-
-**Watch the dashboard as Claude Code works.** You should see it:
-1. Read the `.fmw` file (XML parsing step)
-2. Construct an `fme` CLI command
-3. Execute the workspace
-4. Read the output log
-5. Summarize findings
-
-#### Step 2.4 — Log Your Observations in a Session Notes File
-
-While the agent runs, open a second terminal and create a live observation log:
-
-```bash
-touch logs/agent-sessions/session-001-observations.md
-```
-
-Use this template to record what you see:
+Create a file called `task_prompt.md` in your project root:
 
 ```markdown
-# Agent Session 001 — Observations
+# Task: Refactor ETL Workspace for New Source Schema
+
+## Context
+I have an FME workspace at `workspace/your_etl.fmw` that reads from a
+PostgreSQL/PostGIS source. The source schema has changed:
+- Table `parcels` now has column `land_use_code` (was `lu_code`)
+- A new column `last_updated` (TIMESTAMP) has been added
+- The geometry column is now `shape` (was `geom`)
+
+## What I need you to do
+1. Read the current workspace using the FME Python API
+2. Identify all attribute references to the old column names
+3. Update AttributeRenamer or AttributeManager transformers accordingly
+4. Add a schema validation check against the new column list
+5. Update the workspace description with today's date and change summary
+6. Run the workspace against the sample data in `data/sample_parcels.gpkg`
+7. Confirm output row count matches input row count
+8. Write a summary of all changes made to `logs/refactor_log.md`
+
+## Constraints
+Follow all rules in CLAUDE.md.
+```
+
+Now start the agent session pointing at this task:
+
+```bash
+# From your project root
+claude task_prompt.md
+```
+
+> If the dashboard is flag-activated, add the appropriate flag here.
+
+---
+
+### Step 3.4 — Observe and Log Agent Steps in Real Time
+
+As the agent runs, your job is **not to intervene** on the first pass. Let it run to completion (or failure). While it runs:
+
+**Open `logs/session_001.md`** in a split editor and manually note:
+
+```markdown
+# Session 001 — FME Schema Refactor
 Date: YYYY-MM-DD
-Task: Initial FME workspace analysis
+Task: Schema column rename refactor
 
-## Step-by-Step Notes
+## Step Log
 
-| Step # | Dashboard Status | Tool Used | What Happened | Error? |
-|--------|-----------------|-----------|---------------|--------|
-| 1      | ✅              | file_read  | Read .fmw XML |  No    |
-| 2      | ❌              | bash       | fme CLI run   | Yes — path not found |
-| 3      | ✅              | file_read  | Read log file | No    |
+| Step # | Tool Called | Status | Notes |
+|--------|-------------|--------|-------|
+| 1 | read_file (workspace/your_etl.fmw) | ✅ Complete | |
+| 2 | bash (fme_python_api call) | ❌ Error | FME Python not in PATH |
+| 3 | ... | | |
 
-## Errors Encountered
-- [ ] List each unique error type here
+## Error Patterns Observed
+- [ ] PATH/environment issues
+- [ ] Incorrect FME transformer parameter names
+- [ ] Hallucinated transformer names (transformers that don't exist)
+- [ ] Coordinate system handling errors
+- [ ] Wrong FME Python API method signatures
+- [ ] File path assumptions (Windows vs. Unix separators)
+- [ ] Premature "done" without validation step
 
 ## Unexpected Halts
-- [ ] Document any steps where the agent paused waiting for input
+- Step # ___: Reason: ___
 
-## Directive Gaps Identified
-- [ ] List CLAUDE.md omissions that caused confusion
+## Successful Patterns Worth Keeping
+- ___
 ```
+
+> **Pro tip:** If the dashboard shows step durations, note which steps are slow. Slow steps often indicate the agent is making many tool calls trying to recover from an error it didn't surface clearly.
 
 ---
 
-### Phase 3: Capture Errors and Identify Directive Gaps
+### Step 3.5 — Run a Second Session with Intentional Observation Points
 
-#### Step 3.1 — Run Three Different FME Task Types
-
-To get meaningful error data, run the agent on **three different task categories**. After each run, update your observations log.
-
-**Task A — Workspace Execution:**
-```
-Run the workspace ./workspaces/test_etl.fmw with FME CLI. 
-If it fails, diagnose the error from the log and suggest a fix.
-```
-
-**Task B — Workspace Modification:**
-```
-Open ./workspaces/test_etl.fmw and add a StatisticsCalculator 
-transformer after the GeometryFilter. Save the modified workspace.
-```
-
-**Task C — Log Analysis:**
-```
-Parse ./logs/agent-sessions/session-001.log and produce a 
-structured summary of: total features processed, any FATAL errors, 
-any coordinate system warnings, and elapsed time.
-```
-
-#### Step 3.2 — Categorize Your Errors
-
-After running all three tasks, tally your observations. Common error categories you'll encounter with FME + Claude Code:
-
-```markdown
-## Error Category Tally
-
-### Category 1: Path/Environment Errors
-- FME CLI not found at expected path
-- Workspace file path incorrect
-- Output directory doesn't exist
-Occurrences: ___
-
-### Category 2: FME Domain Knowledge Gaps
-- Agent suggested non-existent transformer names
-- Incorrect XML schema for .fmw modifications
-- Wrong FME CLI flag syntax
-Occurrences: ___
-
-### Category 3: Permission/Safety Halts
-- Agent paused before writing to filesystem
-- Agent asked for confirmation before running CLI command
-Occurrences: ___
-
-### Category 4: Context Loss
-- Agent forgot earlier task context mid-session
-- Agent repeated work already completed
-Occurrences: ___
-```
-
-#### Step 3.3 — Map Errors Back to Missing Directives
-
-For each error category, identify what CLAUDE.md instruction would have prevented it:
-
-| Error Observed | Root Cause | Directive to Add |
-|---|---|---|
-| FME CLI path wrong | Path not specified in CLAUDE.md | Add exact CLI path |
-| Agent invented transformer name | No FME transformer reference | Add known transformer list |
-| Agent halted asking permission | No pre-authorization for CLI runs | Add explicit permission grant |
-| Agent re-read workspace twice | No instruction to cache XML parse | Add "parse workspace once" directive |
-
----
-
-### Phase 4: Refine Your CLAUDE.md (v2)
-
-#### Step 4.1 — Back Up v1
+After the first run, run it again — this time with a `--verbose` or equivalent flag to get maximum detail in the dashboard:
 
 ```bash
-cp CLAUDE.md directives/CLAUDE.md.v1.backup
-git add .
-git commit -m "v1 baseline CLAUDE.md before error analysis"
+# Verbose mode (confirm exact flag from video)
+claude --verbose task_prompt.md
 ```
 
-#### Step 4.2 — Write Your Improved CLAUDE.md v2
+This time, when you see the agent about to make a step you've already flagged as error-prone, use the dashboard's **interrupt/pause** capability (if available — confirm from video) to inspect the tool call before it executes.
 
-Replace the contents of `CLAUDE.md` with a hardened version. Here is a **comprehensive template** — customize based on *your actual observed errors*:
+The goal is to catch the moment the agent makes a wrong assumption about your FME environment.
+
+---
+
+### Step 3.6 — Extract the Error Pattern Taxonomy
+
+After two sessions, consolidate your observations. Here's a taxonomy that commonly emerges from FME + AI agent combinations:
 
 ```markdown
-# CLAUDE.md — FME ETL Automation Directives (v2)
-# Last updated: YYYY-MM-DD
-# Changes from v1: Added FME paths, transformer catalog, 
-#                  permissions, error handling protocols
+## FME Agent Error Taxonomy (fill in your counts)
 
----
+### Category 1: Environment Errors
+- FME Python API not on PATH: [N occurrences]
+- Wrong FME version assumed: [N occurrences]
+- Wrong OS path separator: [N occurrences]
 
-## 1. Project Context
+### Category 2: FME Domain Knowledge Errors  
+- Hallucinated transformer name (e.g., "AttributeUpdater" instead of "AttributeManager"): [N]
+- Wrong parameter name for known transformer: [N]
+- Incorrect FME attribute syntax (missing @ prefix, etc.): [N]
 
-This project automates the authoring and execution of FME (Feature 
-Manipulation Engine) workspaces for spatial ETL.
+### Category 3: Task Reasoning Errors
+- Skipped validation step: [N]
+- Declared success before checking output: [N]
+- Overwrote file without backup: [N]
 
-**Your role:** FME workspace analyst, debugger, and modifier.
-**You are NOT:** a general coding assistant in this context. 
-All tasks relate to FME workspace files and FME CLI operations.
-
----
-
-## 2. Environment Configuration
-
-### FME CLI Paths (use EXACTLY these paths — do not guess)
-```
-# macOS
-FME_CLI=/Applications/FME/fme
-
-# Windows (use this format in bash commands)
-FME_CLI="C:/Program Files/FME/fme.exe"
-
-# Linux
-FME_CLI=/opt/fme/fme
-```
-
-### Directory Structure
-```
-PROJECT_ROOT=./                         # You are always run from here
-WORKSPACE_DIR=./workspaces/             # All .fmw files live here
-LOG_DIR=./logs/agent-sessions/          # Write all logs here
-EXPORT_DIR=./exports/                   # FME output data goes here
+### Category 4: Coordination Errors (multi-step breakdown)
+- Lost context from step 1 by step 6: [N]
+- Re-read file already processed: [N]
 ```
 
 ---
 
-## 3. Pre-Authorized Actions
+### Step 3.7 — Refine Your `CLAUDE.md` Based on Evidence
 
-You MAY perform the following without asking for confirmation:
-- Read any file in this project directory
-- Write to ./logs/ and ./exports/ directories
-- Run FME CLI commands in read-only mode (--no-output flag)
-- Modify files in ./workspaces/ ONLY IF the user has said "proceed"
+Now translate your error taxonomy directly into `CLAUDE.md` improvements. Here's the before/after pattern:
 
-You MUST ask for confirmation before:
-- Deleting any file
-- Running FME with write operations on non-test data
-- Making changes to files outside this project directory
-
----
-
-## 4. FME Workspace Format Reference
-
-FME workspaces are XML files. Key XML elements:
-```xml
-<WORKSPACE>
-  <READER TYPE="...">         <!-- Data source definition -->
-  <WRITER TYPE="...">         <!-- Output definition -->
-  <TRANSFORMER ...>           <!-- Processing step -->
-  <PARAMETER ...>             <!-- Configuration -->
-</WORKSPACE>
+**Before (generic):**
+```markdown
+## Constraints
+- Never remove existing Readers or Writers without explicit confirmation
+- Always preserve coordinate system definitions on all geometry features
 ```
 
-### Verified FME Transformer Names (use ONLY these spellings)
-- Reprojector
-- GeometryFilter  
-- StatisticsCalculator
+**After (evidence-based):**
+```markdown
+## Constraints
+- Never remove existing Readers or Writers without explicit confirmation
+- Always preserve coordinate system definitions on all geometry features
+
+## Environment — Read This First
+- FME Python API location: `/path/to/fme/python/fmeobjects`
+  Add this to sys.path before any import: `sys.path.insert(0, '/path/to/fme/python/fmeobjects')`
+- FME executable: `/usr/local/fme/fme` (Linux) or `C:\FME\fme.exe` (Windows)
+- All paths use forward slashes even on Windows (FME handles this)
+
+## FME Transformer Reference — Verified Names Only
+Use ONLY these transformer names (do not invent variations):
+- AttributeManager (not AttributeUpdater, not AttributeEditor)
 - AttributeRenamer
-- AttributeKeeper
-- Clipper
-- Dissolver
-- FeatureMerger
+- Tester
 - GeometryValidator
-- NullAttributeMapper
+- StatisticsCalculator
 
-**IMPORTANT:** Do not invent transformer names. If unsure, 
-say "I don't know this transformer" rather than guessing.
+## Validation Requirements — Non-Negotiable
+After every workspace modification:
+1. Read back the modified workspace and confirm the changed attribute names exist
+2. Run the workspace with `--log-level 3` and check for WARN or ERROR lines
+3. Compare input feature count to output feature count
+4. Only then write the success summary
 
----
-
-## 5. FME CLI Usage
-
-### Run a workspace:
-```bash
-$FME_CLI <workspace.fmw> \
-  --log-file ./logs/agent-sessions/<session-id>.log \
-  --log-level 5
-```
-
-### Run in test mode (no data written):
-```bash
-$FME_CLI <workspace.fmw> \
-  --test-mode yes \
-  --log-file ./logs/agent-sessions/<session-id>.log
-```
-
-### Parse log for errors only:
-```bash
-grep -E "ERROR|FATAL|WARNING" ./logs/agent-sessions/<session-id>.log
+## Known Failure Modes (observed in sessions 001-002)
+- The agent tends to skip step 7 (validation) when step 6 succeeds quickly — explicitly re-state validation in every task prompt
+- FME transformer parameter names are inconsistently named in training data — always verify against the FME documentation API reference provided below
 ```
 
 ---
 
-## 6. Error Handling Protocol
+### Step 3.8 — Run a Third Session to Validate Improvements
 
-When an FME CLI run fails:
-1. Read the full log file immediately
-2. Search for lines containing "ERROR" or "FATAL"  
-3. Report the error message verbatim — do not paraphrase
-4. Check if error is in this known-error table:
-
-| Error Pattern | Likely Cause | Suggested Fix |
-|---|---|---|
-| "Coordinate system not found" | Missing EPSG code | Check Reprojector parameters |
-| "Unable to open dataset" | Wrong file path in Reader | Verify SOURCE_DATASET parameter |
-| "Feature class does not exist" | Layer name mismatch | Check FEATURE_TYPES in Reader |
-| "License not available" | FME license expired | Check with system admin |
-
----
-
-## 7. Session Discipline
-
-- Parse the workspace XML **once** per session and reference 
-  your parsed result — do not re-read the file on each step
-- After completing a task, summarize what you did in 3 bullet points
-- If you are uncertain about an FME-specific behavior, 
-  say so explicitly rather than proceeding with a guess
-- Log every CLI command you run to the session log
-
----
-
-## 8. Output Format
-
-Always structure your final response as:
-
-```
-## Task Summary
-[What was asked]
-
-## Actions Taken
-1. [Step 1]
-2. [Step 2]
-
-## Result
-[Success/Failure + details]
-
-## Errors Found
-[List or "None"]
-
-## Recommended Next Steps
-[Your suggestions]
-```
-```
-
-#### Step 4.3 — Commit v2
+With your refined `CLAUDE.md`, run the same task again:
 
 ```bash
-git add CLAUDE.md
-git commit -m "v2 CLAUDE.md: hardened based on session-001 error analysis
-
-Changes:
-- Added explicit FME CLI paths
-- Added pre-authorization for safe actions
-- Added transformer name allowlist
-- Added error handling protocol
-- Added FME XML schema reference
-- Added session discipline rules"
+claude task_prompt.md
 ```
 
----
+This time, track the same metrics:
+- Number of errors
+- Number of unexpected halts
+- Steps where agent asked for clarification vs. assumed
 
-### Phase 5: Run a Validation Session
-
-#### Step 5.1 — Repeat Your Three Tasks with v2
-
-Rerun Tasks A, B, and C from Phase 3 using the same inputs. Create a new observation log:
-
-```bash
-touch logs/agent-sessions/session-002-observations.md
-```
-
-Use the same template as session-001 so you have a direct comparison.
-
-#### Step 5.2 — Compare Error Rates
-
-```bash
-# Count error steps in session 001
-grep -c "❌" logs/agent-sessions/session-001-observations.md
-
-# Count error steps in session 002  
-grep -c "❌" logs/agent-sessions/session-002-observations.md
-```
-
-Build a comparison table:
+Fill in a comparison table:
 
 ```markdown
-## Before/After Comparison
+## Session Comparison
 
-| Metric | v1 (Session 001) | v2 (Session 002) | Improvement |
-|--------|-----------------|-----------------|-------------|
-| Total agent steps | ___ | ___ | — |
-| Steps with errors | ___ | ___ | ___% reduction |
-| Unexpected halts | ___ | ___ | ___% reduction |
-| Tasks completed successfully | ___/3 | ___/3 | — |
-| Avg steps to task completion | ___ | ___ | — |
+| Metric | Session 001 | Session 002 | Session 003 (after CLAUDE.md update) |
+|--------|-------------|-------------|--------------------------------------|
+| Total errors | | | |
+| Unexpected halts | | | |
+| Transformer hallucinations | | | |
+| Validation steps completed | | | |
+| Task completed successfully | | | |
+| Wall-clock time (minutes) | | | |
 ```
 
 ---
 
-### Phase 6: Write Your Build Post
+### Step 3.9 — Draft Your Build Post
 
-#### Step 6.1 — Build Post Structure
-
-Create the post draft:
-
-```bash
-touch build-post-draft.md
-```
-
-Use this proven structure for a GIS practitioner audience:
+Structure your Build post (for LinkedIn, Esri Community, or a personal blog) using this outline. The GIS practitioner audience will respond to honesty about what failed and what improved.
 
 ```markdown
-# How I Used the Claude Code Agent Dashboard to 
-# Supervise AI-Assisted FME ETL Authoring
+---
+# Title: I Gave Claude an FME Workspace and Watched It Fail — Then I Fixed It
 
-## The Problem I Was Solving
-[1-2 paragraphs: what you were trying to automate in FME 
-and why you wanted AI assistance]
+## Hook (2–3 sentences)
+I've been using Claude Code CLI to automate FME workspace edits for [X months].
+Last week Anthropic shipped an agent dashboard that finally showed me *where*
+the agent was going wrong. Here's what I found.
 
-## What the Claude Code Agent Dashboard Is
-[Brief explanation for readers who haven't seen it — 
-include a screenshot of the dashboard with labels]
+## The Setup (1 paragraph)
+[Describe your task: schema rename refactor, FME environment, what you expected]
 
-## My Setup
-[Directory structure, CLAUDE.md v1, the three test tasks]
+## What the Dashboard Showed Me (the "before")
+[Embed your session log screenshot]
+[List your top 3 error patterns with specific examples]
 
-## What I Observed: The Errors That Surfaced
-[Your categorized error table from Phase 3]
+> Example: "The agent invented a transformer called 'AttributeUpdater' in 4 of 
+> 12 sessions. This transformer does not exist in FME. The workspace would 
+> appear to build but fail at runtime."
 
-## Screenshots / Dashboard Evidence
-[Insert screenshots of failing steps in the dashboard — 
-this is the key visual that makes the post credible]
+## What I Changed in CLAUDE.md (the fix)
+[Show the before/after CLAUDE.md diff — literally paste it, practitioners love this]
 
-## What I Changed: CLAUDE.md v1 → v2
-[Show a diff or before/after of key directive changes]
+## What Improved (the "after")
+[Embed your comparison table from Step 3.8]
+[Quantify: "Transformer hallucinations dropped from 4/session to 0/session"]
 
-## The Results
-[Your before/after comparison table from Phase 5]
+## What the Dashboard Doesn't Do Yet
+[Honest limitations you observed]
 
-## Key Lessons for GIS Practitioners Using AI for ETL
+## Takeaway for GIS Practitioners
+[One paragraph on why this matters for ETL supervision, not just software development]
 
-1. **Name your tools explicitly** — AI agents don't know 
-   FME's transformer vocabulary by default. An allowlist 
-   prevents hallucinated transformer names.
-
-2. **Pre-authorize safe operations** — Claude Code's 
-   cautious permission model is great for safety but 
-   interrupts flow. Tell it explicitly what it can do 
-   without asking.
-
-3. **The dashboard is a directive feedback loop** — 
-   Every error you see is a missing or ambiguous instruction.
-
-4. **Log everything from day one** — The agent dashboard 
-   gives you the structure; you need the discipline to 
-   capture observations while the session runs.
-
-## My v2 CLAUDE.md Template (Gist / GitHub Link)
-[Share your hardened template for other FME users]
-
-## What I'm Doing Next
-[Your next iteration — e.g., adding FME Flow API calls, 
-integrating with a spatial database, etc.]
+## Resources
+- Claude Code CLI: [link]
+- Agent Dashboard video: https://www.youtube.com/watch?v=ZAaxx3qyT8g
+- My CLAUDE.md template: [link to your gist or repo]
+---
 ```
-
-#### Step 6.2 — Add Screenshots
-
-Capture and annotate these screenshots for maximum reader value:
-
-1. **Dashboard overview** — full panel layout labeled
-2. **A failing step** — showing error message in Step Detail
-3. **A permission halt** — showing the agent waiting for confirmation
-4. **The diff** — CLAUDE.md v1 vs v2 key changes
-5. **Before/after error table** — your comparison metrics
-
-#### Step 6.3 — Publish
-
-Recommended platforms for GIS/data engineering audiences:
-- **Esri Community** (if you also use ArcGIS stack)
-- **Safe Software Community** (FME-specific audience — ideal)
-- **Dev.to** or **Hashnode** (developer-general)
-- **LinkedIn Article** (practitioner reach)
 
 ---
 
 ## 4. Validation
 
-Use this checklist to confirm you have successfully completed the exercise:
+You've completed this exercise successfully when you can check off all of the following:
 
-### Setup Validation
-- [ ] `fme-claude-pipeline/` directory exists with correct structure
-- [ ] CLAUDE.md v1 committed to git
-- [ ] Claude Code agent dashboard launched and accessible
-- [ ] FME workspace runs successfully via CLI (outside of agent)
+```
+□ Claude Code dashboard is visible and showing step-level detail during a live session
+□ Session 001 log is filled in with at least 5 observed steps
+□ Error taxonomy has at least 3 populated categories
+□ CLAUDE.md has at least 5 new lines added based on observed failures
+□ Session 003 shows measurable improvement over Session 001 on at least 2 metrics
+□ Build post draft exists with all 7 sections outlined
+□ Your before/after comparison table is filled in
+```
 
-### Session Validation
-- [ ] At least 3 agent tasks completed (Tasks A, B, C)
-- [ ] `session-001-observations.md` populated with step-by-step notes
-- [ ] Error categories identified and tallied
-- [ ] Directive gaps mapped to specific CLAUDE.md omissions
-
-### CLAUDE.md Validation
-- [ ] CLAUDE.md v2 includes explicit FME CLI paths
-- [ ] CLAUDE.md v2 includes a transformer name allowlist
-- [ ] CLAUDE.md v2 includes pre-authorized action list
-- [ ] CLAUDE.md v2 includes an error handling protocol
-- [ ] v1 backed up to `directives/CLAUDE.md.v1.backup`
-- [ ] Git commit message explains what changed and why
-
-### Comparison Validation
-- [ ] `session-002-observations.md` completed with v2 CLAUDE.md active
-- [ ] Before/after comparison table shows measurable improvement
-- [ ] Error rate reduction is documented with actual numbers
-
-### Build Post Validation
-- [ ] Draft covers all six sections from the template
-- [ ] At least 2 screenshots included
-- [ ] CLAUDE.md template shared publicly (Gist or repo)
-- [ ] Post published to at least one platform
-
-**You've fully completed this exercise when** your published post includes a before/after comparison table with real session data and links to your v2 CLAUDE.md template.
+**Minimum success bar:** Even if Sessions 001 and 002 produce zero errors (lucky!), you still win — document what the agent did *correctly* and use that to reinforce your `CLAUDE.md` with positive examples. "Do it like you did in session 001, step 4" is also valid directive content.
 
 ---
 
 ## 5. Next Steps
 
-### Immediate (Next Session)
-- **Iterate CLAUDE.md to v3** — One session with v2 will surface new, more subtle issues. The directive file is a living document.
-- **Add FME Flow API calls** — Extend the agent to schedule workspace runs via FME Flow REST API, not just local CLI execution
-- **Create task-specific CLAUDE.md sections** — Add separate sections for "Workspace Authoring" vs "Log Analysis" vs "Data Validation" tasks
+### Immediate (this week)
+- **Publish the Build post.** Don't wait for perfection. A draft with real data is worth 10x a polished post with generic advice.
+- **Add your error taxonomy to a shared team doc** if you work with other GIS practitioners. Your pain is their pain.
 
-### Short-Term (Next 2 Weeks)
-- **Build a CLAUDE.md library** — Create modular directive snippets for common FME operations (coordinate reprojection, format conversion, spatial joins) that you can compose per-project
-- **Instrument FME log parsing** — Write a Python script that post-processes FME logs into a structured JSON format that Claude Code can analyze more reliably
-- **Multi-workspace orchestration** — Use Claude Code to manage a pipeline of chained FME workspaces, with the agent dashboard giving you visibility across the entire chain
+### Short-term (next 2–4 weeks)
+- **Wire the agent dashboard into your CI/CD pipeline.** If you're running Claude Code as part of an automated FME Flow trigger, the dashboard's error output should be captured to a log file and alert you on failures — not silently succeed.
+- **Build a `CLAUDE.md` library.** You'll want different `CLAUDE.md` profiles for different task types: schema migrations, format conversions, coordinate system transformations. Start versioning them.
 
-### Longer-Term (1+ Month)
-- **Contribute to the community** — Share your CLAUDE.md templates in the Safe Software Community forum specifically as "AI Agent Directives for FME" — this is genuinely novel and useful
-- **Evaluate competing approaches** — Compare Claude Code + FME against GitHub Copilot + FME Python API and document the tradeoffs
-- **Build an error pattern library** — After 10+ sessions, you'll have enough error data to write a formal "Common Claude Code Failure Modes in FME Workflows" reference guide
+### Medium-term
+- **Instrument your FME workspaces for AI readability.** Add structured comments in your `.fmw` files that give the agent anchor points: `# AGENT_READABLE: schema version 2.1 | last_modified: 2024-01-15`. This reduces the agent's need to reverse-engineer your intent.
+- **Evaluate FME Flow's REST API as an agent tool.** Instead of the agent editing `.fmw` files directly, consider giving it authenticated access to FME Flow's REST API so it can submit jobs, read logs, and iterate — with the dashboard showing you every API call it makes.
 
-### Related Learning
-- [FME CLI Documentation](https://docs.safe.com/fme/html/FME_Desktop_Documentation/FME_ReadersWriters/aboutFME/FME_CLI.htm) — Master the CLI options Claude Code will invoke
-- [Claude Code Documentation](https://docs.anthropic.com/claude-code) — Stay current on new dashboard features
-- [FME Workspace XML Schema](https://docs.safe.com/fme/) — Understanding the XML helps you write better prompts and catch agent errors
+### Watch & Verify
+Re-watch the [source video](https://www.youtube.com/watch?v=ZAaxx3qyT8g) with this tutorial open. Fill in any gaps where I've marked **⚠️ Source gap** and update your own copy of this tutorial with the verified commands. That annotated version is itself worth sharing.
 
 ---
 
-## Quick Reference Card
-
-```
-DAILY WORKFLOW WITH AGENT DASHBOARD
-─────────────────────────────────────
-1. cd fme-claude-pipeline
-2. claude (dashboard opens)
-3. Paste task prompt
-4. Watch dashboard — note any ❌ steps
-5. After session: update observations.md
-6. Weekly: review patterns → update CLAUDE.md
-7. Monthly: publish improvements as Build post
-─────────────────────────────────────
-KEY FILES:
-  CLAUDE.md              ← Edit this to fix recurring errors
-  logs/agent-sessions/   ← Evidence for directive decisions
-  directives/*.backup    ← Never delete old versions
-─────────────────────────────────────
-CLAUDE.md EDIT TRIGGERS:
-  Path error           → Add explicit path
-  Hallucinated tool    → Add to allowlist
-  Repeated question    → Add pre-authorization
-  Context loss         → Add "remember X" directive
-  Wrong output format  → Add format template
-```
-
----
-
-*Tutorial version: 1.0 | Applies to: Claude Code with Agent Dashboard, FME 2023.x+*
+*Tutorial written for Daniel — GIS/AI practitioner. Grounded in Claude Code CLI established behavior; dashboard-specific commands flagged for verification against the source video.*
