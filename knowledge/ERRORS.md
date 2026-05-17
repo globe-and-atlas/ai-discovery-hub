@@ -39,3 +39,4 @@ Log of deterministic errors (concluded) and infrastructure errors (pattern-track
 |---|---|---|
 | 2026-04-23 | 529 sustained 10+ min | Possible Anthropic platform outage mid-morning |
 | 2026-04-27 | build_hub.py | LLM call failed: APIConnectionError | (investigate) |
+| 2026-05-04 | build_hub.py | LLM call failed: APIConnectionError | (investigate) |

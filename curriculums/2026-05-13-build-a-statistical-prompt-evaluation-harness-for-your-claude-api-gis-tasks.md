@@ -1,753 +1,704 @@
 # Build a Statistical Prompt Evaluation Harness for Your Claude API GIS Tasks
 
-## A Rigorous, Evidence-Based Framework for Model Selection in GIS Automation
+## Introduction & Context
+
+You've probably done this: run two Claude prompts on your FME automation task, eyeballed the outputs, picked the one that *seemed* better, and shipped it. Maybe you even computed average scores — Sonnet averaged 7.4, Haiku averaged 6.8, done.
+
+The problem? With 10–30 test runs, that 0.6-point difference is almost certainly statistical noise. You're making model-selection decisions — with real cost implications, since Sonnet is substantially more expensive than Haiku — based on random variation.
+
+This tutorial implements the methodology from [*Why Comparing Average Scores is the Wrong Way to Evaluate LLM Prompts*](https://dev.to/aayush_kumarsingh_6ee1ffe/why-comparing-average-scores-is-the-wrong-way-to-evaluate-llm-prompts-and-what-to-do-instead-1li) and applies it to your actual GIS automation workflow. You'll:
+
+1. Define three realistic FME/GIS automation prompts you already use
+2. Run each against `claude-sonnet-4-5` and `claude-haiku-4-5` across 20 runs each
+3. Score outputs programmatically
+4. Apply Mann-Whitney U (non-parametric, no normality assumption), Cohen's d (effect size), and bootstrap confidence intervals
+5. Generate a publication-ready results table for your Tool Critic post
+
+**Why this approach over a simple average?** GIS automation scores are bimodal. Either Claude correctly identifies the right FME transformer and writes valid Python — score 9 — or it hallucinates a transformer that doesn't exist — score 2. That distribution violates the normality assumption that a t-test requires. Mann-Whitney U ranks pairs and makes no distribution assumptions, giving you a valid p-value even on this spiky data.
 
 ---
 
-## 1. Introduction & Context
+## Prerequisites
 
-### What This Is
+### Accounts & API Access
 
-Most developers evaluating LLM prompts make the same mistake: they run a prompt a few times, average the scores, and declare a winner. This is statistically unsound. LLM outputs are **stochastic** — the same prompt can produce wildly different quality scores across runs due to temperature, sampling variance, and model non-determinism. Comparing averages without accounting for this variance is like comparing two coins by flipping each one three times.
+- Anthropic API key with access to both `claude-sonnet-4-5` and `claude-haiku-4-5`
+- Python 3.10+ installed
 
-This tutorial teaches you to build a **Statistical Prompt Evaluation Harness** — a Python script that:
+### Python Dependencies
 
-1. Runs your real FME/GIS automation prompts against `claude-sonnet-4-5` and `claude-haiku-4-5`
-2. Collects **20 independent samples** per prompt-model combination
-3. Applies the **Mann-Whitney U test** (a non-parametric statistical test that makes no assumptions about score distributions) to determine whether performance differences are *real* or *noise*
-4. Generates a publication-ready results table for your Tool Critic audience
-
-### Why It Matters
-
-In GIS automation workflows, model selection has real cost implications. `claude-haiku-4-5` is significantly cheaper than `claude-sonnet-4-5`. If you can't prove Sonnet is *statistically significantly better* on your specific GIS tasks, you're leaving money on the table by defaulting to the more expensive model — or worse, under-serving users by choosing cheapness over quality without evidence.
-
-### What You'll Produce
-
-- A Python script (`gis_eval_harness.py`) you can reuse and extend
-- A CSV results file with all 20×2×3 = 120 scored runs
-- A formatted Markdown/HTML table suitable for a Tool Critic blog post
-- Statistical interpretation guidance for non-technical readers
-
----
-
-## 2. Prerequisites
-
-### Knowledge
-
-| Topic | Level Required | Resource if Needed |
-|---|---|---|
-| Python 3.x | Intermediate | [Python.org tutorial](https://docs.python.org/3/tutorial/) |
-| Claude API basics | Beginner | [Anthropic quickstart](https://docs.anthropic.com/en/docs/quickstart) |
-| FME/GIS concepts | Basic familiarity | Your existing domain knowledge |
-| Statistical intuition | None required | This tutorial explains everything |
-
-### Environment
+This harness uses **only the standard library** for statistics (matching the source methodology exactly) plus `anthropic` for API calls:
 
 ```bash
-# Python 3.9+ required
-python --version
-
-# Required packages
-pip install anthropic scipy pandas numpy rich python-dotenv
+pip install anthropic
 ```
 
-### API Access
+No `scipy`, no `numpy`, no `pandas` required. The statistical functions are pure Python, validated against `scipy` to 3 decimal places as described in the source.
+
+### Environment Setup
 
 ```bash
-# Create a .env file in your project directory
-echo "ANTHROPIC_API_KEY=your_key_here" > .env
+export ANTHROPIC_API_KEY="sk-ant-..."
 ```
 
-You'll need an Anthropic API key with access to both:
-- `claude-sonnet-4-5` (or the latest Sonnet variant available to you)
-- `claude-haiku-4-5` (or the latest Haiku variant available to you)
+Or create a `.env` file:
 
-> **Cost estimate:** This harness makes ~120 API calls (20 runs × 2 models × 3 prompts). At typical Haiku/Sonnet pricing for short GIS prompts, expect $0.50–$3.00 total. Run once, get lasting insights.
-
-### Your Three GIS Prompts
-
-Before starting, identify the **three FME/GIS automation prompts** you use most often. Examples:
-- Coordinate transformation instruction generation
-- FME workspace documentation requests
-- Spatial query optimization suggestions
-- CRS mismatch diagnosis prompts
-
-We'll use placeholder prompts in this tutorial that you'll replace with your real ones.
-
----
-
-## 3. Step-by-Step Guide
-
-### Step 1: Project Structure Setup
-
-Create your project directory:
-
-```bash
-mkdir gis-eval-harness
-cd gis-eval-harness
-touch gis_eval_harness.py
-touch prompts_config.py
-touch scorer.py
-touch results_publisher.py
-touch .env
+```
+ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-Your final structure will look like:
+### Directory Structure
 
 ```
 gis-eval-harness/
-├── .env                    # API keys (never commit this)
-├── gis_eval_harness.py     # Main orchestration script
-├── prompts_config.py       # Your three GIS prompts
-├── scorer.py               # Response quality scoring logic
-├── results_publisher.py    # Table generation and statistics
-├── results/
-│   ├── raw_scores.csv      # All 120 runs
-│   └── summary_table.md    # Blog-ready output
-└── README.md
-```
-
-```bash
-mkdir results
+├── harness.py          # Main evaluation script (you'll build this)
+├── prompts.py          # Your three GIS prompt definitions
+├── scorer.py           # Output scoring logic
+├── stats.py            # Statistical functions from source
+└── results/            # Auto-created output directory
 ```
 
 ---
 
-### Step 2: Define Your Three GIS Prompts
+## Step-by-Step Guide
 
-Edit `prompts_config.py`. Replace the example prompts with your actual top-three FME/GIS automation prompts:
+### Step 1: Define Your Three GIS Prompts
+
+Create `prompts.py`. These are three real prompt patterns drawn from common FME/GIS automation work. Customize the specifics to match your actual use cases:
 
 ```python
-# prompts_config.py
+# prompts.py
 """
-Your three FME/GIS automation prompts under evaluation.
-
-HOW TO CHOOSE YOUR THREE PROMPTS:
-- Pick prompts you use repeatedly in production
-- Choose prompts where output quality genuinely varies
-- Include at least one "hard" prompt (complex reasoning)
-  and one "easy" prompt (straightforward extraction)
+Three FME/GIS automation prompts for statistical evaluation.
+These represent patterns you use regularly — edit to match your real workload.
 """
 
 PROMPTS = {
-    "prompt_1_crs_diagnosis": {
-        "name": "CRS Mismatch Diagnosis",
-        "description": "Diagnose coordinate reference system conflicts between datasets",
+    "coordinate_transform": {
+        "name": "Coordinate System Transformation Workflow",
         "system": (
-            "You are an expert GIS analyst specializing in FME (Feature Manipulation Engine) "
-            "workflows. You provide precise, actionable technical guidance. When diagnosing "
-            "spatial data issues, always specify: (1) the root cause, (2) the affected "
-            "transformers, and (3) step-by-step remediation."
+            "You are an expert FME (Feature Manipulation Engine) developer. "
+            "Provide precise, production-ready FME workspace configurations "
+            "and Python scripting solutions for spatial data transformation tasks. "
+            "Always specify exact transformer names as they appear in FME Workbench."
         ),
         "user": (
-            "I have two datasets I'm trying to join in FME:\n"
-            "- Dataset A: Municipal boundaries from city GIS portal (unknown CRS, "
-            "coordinates look like 6-digit numbers e.g. 485234.5, 5456789.2)\n"
-            "- Dataset B: Census polygons in WGS84 (EPSG:4326)\n\n"
-            "The SpatialRelator transformer returns zero matches even though visually "
-            "the features should overlap. What is the most likely cause and how do I "
-            "fix it in FME Workbench?"
+            "I need to batch-transform 847 shapefiles from NAD83 (EPSG:4269) to "
+            "Web Mercator (EPSG:3857) while preserving all attribute data and "
+            "generating a per-file transformation log. "
+            "Provide: (1) the FME transformers I need in order, "
+            "(2) the Python scripting approach using fmeobjects to iterate the file list, "
+            "and (3) the log format specification. "
+            "Be specific about transformer parameter names."
         ),
-        # What a high-quality response must include (used by scorer.py)
-        "quality_criteria": [
-            "identifies projected vs geographic CRS conflict",
-            "mentions EPSG codes or CRS detection approach",
-            "names specific FME transformer (CoordinateSystemSetter or Reprojector)",
-            "provides step-by-step workflow",
-            "addresses the SpatialRelator configuration"
-        ]
+        "scoring_keywords": [
+            "CoordinateSystemSetter", "Reprojector", "fmeobjects",
+            "FMEFeature", "EPSG:3857", "NAD83", "shapefile",
+            "FMELogFile", "openLogFile", "workspace"
+        ],
+        "max_score": 10,
     },
 
-    "prompt_2_workspace_docs": {
-        "name": "FME Workspace Documentation",
-        "description": "Generate documentation for a described FME workspace",
+    "spatial_join_automation": {
+        "name": "Automated Spatial Join with Attribute Aggregation",
         "system": (
-            "You are a technical writer specializing in FME documentation. "
-            "Generate clear, structured documentation that a new GIS analyst could "
-            "follow. Include purpose, data flow, transformer descriptions, and "
-            "any data quality considerations."
+            "You are an expert FME developer and Python GIS programmer. "
+            "When asked about FME workflows, specify exact transformer names. "
+            "When providing Python code, use industry-standard libraries "
+            "like fmeobjects, geopandas, or arcpy as appropriate. "
+            "Include error handling in all code examples."
         ),
         "user": (
-            "Document the following FME workspace pipeline:\n\n"
-            "Input: PostgreSQL/PostGIS table 'parcels' (geometry: MultiPolygon, "
-            "attributes: parcel_id, owner_name, assessed_value, zoning_code)\n\n"
-            "Transformers in order:\n"
-            "1. Tester: Filter where zoning_code IN ('R1','R2','R3')\n"
-            "2. AreaCalculator: Calculate polygon area in square meters\n"
-            "3. AttributeCreator: Create 'value_per_sqm' = assessed_value / area\n"
-            "4. StatisticsCalculator: Group by zoning_code, calculate mean/median "
-            "of value_per_sqm\n"
-            "5. JSONFormatter: Output as GeoJSON\n\n"
-            "Output: File geodatabase + summary JSON\n\n"
-            "Generate complete workspace documentation."
+            "Write an FME workspace workflow plus a standalone Python validation script "
+            "that: joins parcel polygons to census block groups using a spatial "
+            "containment test, aggregates median household income from the block group "
+            "to each parcel, flags parcels that span multiple block groups, "
+            "and writes output as GeoPackage. "
+            "I need the exact FME transformer sequence AND equivalent Python using geopandas."
         ),
-        "quality_criteria": [
-            "includes workspace purpose/overview section",
-            "documents each transformer with input/output description",
-            "mentions potential data quality issues (null values, division by zero)",
-            "describes output format and schema",
-            "includes usage notes or prerequisites"
-        ]
+        "scoring_keywords": [
+            "NeighborFinder", "SpatialFilter", "StatisticsCalculator",
+            "FeatureMerger", "GeoPackage", "gpkg", "geopandas",
+            "sjoin", "dissolve", "aggregate", "containment",
+            "AttributeCreator", "GeometryFilter"
+        ],
+        "max_score": 10,
     },
 
-    "prompt_3_spatial_query": {
-        "name": "PostGIS Query Optimization",
-        "description": "Optimize a slow spatial query in PostGIS",
+    "raster_pipeline": {
+        "name": "Multi-band Raster Processing Pipeline",
         "system": (
-            "You are a PostGIS and PostgreSQL performance expert. Analyze spatial "
-            "queries for performance issues and provide optimized rewrites with "
-            "explanations. Always consider: spatial indexes, geometry simplification, "
-            "bounding box pre-filtering, and query plan implications."
+            "You are a senior GIS automation engineer specializing in raster "
+            "processing pipelines. You write production Python code using GDAL, "
+            "rasterio, and FME. All code must include proper error handling, "
+            "logging, and be suitable for deployment in a scheduled batch environment."
         ),
         "user": (
-            "This PostGIS query takes 45 seconds on a table with 2.3 million parcels:\n\n"
-            "```sql\n"
-            "SELECT p.parcel_id, p.owner_name, f.flood_zone_code\n"
-            "FROM parcels p\n"
-            "CROSS JOIN flood_zones f\n"
-            "WHERE ST_Within(p.geometry, f.geometry)\n"
-            "  AND f.flood_zone_code IN ('AE', 'VE', 'AO')\n"
-            "ORDER BY p.parcel_id;\n"
-            "```\n\n"
-            "Table sizes: parcels (2.3M rows), flood_zones (45,000 rows)\n"
-            "Indexes: parcels has GiST index on geometry, flood_zones has no spatial index\n\n"
-            "Identify all performance problems and provide an optimized version."
+            "Design a Python script using rasterio that: "
+            "reads a directory of multi-band GeoTIFF files (Landsat-8 format, bands 1-7), "
+            "calculates NDVI (Band 4 and Band 5) for each scene, "
+            "masks clouds using the QA_PIXEL band, "
+            "writes clipped NDVI outputs to a dated output folder, "
+            "and logs per-scene statistics (min, max, mean NDVI, cloud cover percent). "
+            "Include the complete runnable script."
         ),
-        "quality_criteria": [
-            "identifies CROSS JOIN as catastrophic (N×M problem)",
-            "recommends ST_Intersects over ST_Within for index use OR explains difference",
-            "recommends GiST index on flood_zones.geometry",
-            "suggests filtering flood_zones before spatial join",
-            "provides rewritten query, not just advice"
-        ]
-    }
-}
-
-# Experiment configuration
-EXPERIMENT_CONFIG = {
-    "models": [
-        "claude-sonnet-4-5",
-        "claude-haiku-4-5"
-    ],
-    "runs_per_combination": 20,  # Statistical power requires ≥20 samples
-    "max_tokens": 1500,
-    "temperature": 1.0,  # Use default temperature to capture natural variance
+        "scoring_keywords": [
+            "rasterio", "open", "read", "ndvi", "NDVI",
+            "QA_PIXEL", "cloud", "mask", "band", "numpy",
+            "logging", "os.path", "datetime", "statistics",
+            "write", "meta", "transform", "nodata"
+        ],
+        "max_score": 10,
+    },
 }
 ```
 
-> **Customization note:** The `quality_criteria` lists are what your scorer will check for. Make them specific and measurable — not "good explanation" but "names the specific transformer causing the issue."
+---
+
+### Step 2: Build the Statistical Functions
+
+Create `stats.py` using the exact implementations from the source article. No external dependencies:
+
+```python
+# stats.py
+"""
+Statistical functions for LLM prompt evaluation.
+Pure Python implementation — no scipy, no numpy.
+Source: https://dev.to/aayush_kumarsingh_6ee1ffe/why-comparing-average-scores-is-the-wrong-way-to-evaluate-llm-prompts-and-what-to-do-instead-1li
+Validated against scipy to 3 decimal places per source author.
+"""
+
+import math
+import random
+import statistics
+
+
+# ── Mann-Whitney U ─────────────────────────────────────────────────────────────
+
+def mann_whitney_u(scores_a: list[float], scores_b: list[float]) -> float:
+    """
+    Returns p-value for the null hypothesis that A and B are drawn
+    from the same distribution.
+
+    p < 0.05  → the difference is statistically significant
+    p >= 0.05 → insufficient evidence to conclude a real difference
+
+    Non-parametric: makes NO assumption about score distribution.
+    Correct choice for bimodal LLM score distributions.
+    """
+    n1, n2 = len(scores_a), len(scores_b)
+    if n1 == 0 or n2 == 0:
+        return 1.0
+
+    # Count how often A beats B (ties count as 0.5)
+    u1 = sum(
+        1 if x > y else 0.5 if x == y else 0
+        for x in scores_a
+        for y in scores_b
+    )
+
+    # Normal approximation
+    mu = n1 * n2 / 2
+    sigma = math.sqrt(n1 * n2 * (n1 + n2 + 1) / 12)
+
+    if sigma == 0:
+        return 1.0
+
+    z = (u1 - mu) / sigma
+    p_value = 2 * (1 - _normal_cdf(abs(z)))
+
+    return round(max(0.001, min(1.0, p_value)), 4)
+
+
+def _normal_cdf(x: float) -> float:
+    """Standard normal CDF using math.erf."""
+    return 0.5 * (1 + math.erf(x / math.sqrt(2)))
+
+
+# ── Cohen's d ─────────────────────────────────────────────────────────────────
+
+def cohens_d(scores_a: list[float], scores_b: list[float]) -> float:
+    """
+    Effect size: how large is the difference in practical terms?
+
+    Interpretation (standard thresholds):
+        d < 0.2  → negligible  (not worth acting on)
+        d < 0.5  → small
+        d < 0.8  → medium
+        d >= 0.8 → large
+
+    Requires BOTH p < 0.05 AND d >= 0.5 before concluding
+    one model/prompt is meaningfully better.
+    """
+    if len(scores_a) < 2 or len(scores_b) < 2:
+        return 0.0
+
+    mean_a = statistics.mean(scores_a)
+    mean_b = statistics.mean(scores_b)
+    var_a = statistics.variance(scores_a)
+    var_b = statistics.variance(scores_b)
+
+    pooled = math.sqrt((var_a + var_b) / 2)
+
+    return round(abs(mean_b - mean_a) / pooled, 3) if pooled > 0 else 0.0
+
+
+# ── Bootstrap Confidence Intervals ────────────────────────────────────────────
+
+def bootstrap_ci(
+    values: list[float],
+    n_samples: int = 2000,
+    confidence: float = 0.95,
+) -> tuple[float, float]:
+    """
+    95% confidence interval for the mean using the percentile bootstrap method.
+
+    Makes no distribution assumptions.
+    Deterministic: seeded with 42 — same input always gives same output.
+
+    Interpretation: "We are 95% confident the true mean lies in this range."
+    Narrow interval = reliable estimate. Wide interval = high uncertainty.
+    """
+    if len(values) < 2:
+        m = statistics.mean(values) if values else 0.0
+        return (m, m)
+
+    rng = random.Random(42)  # deterministic — matches source exactly
+    boot_means = []
+
+    for _ in range(n_samples):
+        sample = [rng.choice(values) for _ in range(len(values))]
+        boot_means.append(statistics.mean(sample))
+
+    boot_means.sort()
+    alpha = 1 - confidence
+    lower_idx = int(alpha / 2 * n_samples)
+    upper_idx = int((1 - alpha / 2) * n_samples)
+
+    return (
+        round(boot_means[lower_idx], 4),
+        round(boot_means[upper_idx], 4),
+    )
+
+
+# ── Decision Logic ─────────────────────────────────────────────────────────────
+
+def interpret_results(
+    p_value: float,
+    d: float,
+    mean_sonnet: float,
+    mean_haiku: float,
+) -> str:
+    """
+    Apply the source's two-condition decision framework:
+      - p < 0.05 AND d >= 0.5 → meaningful, significant difference
+      - p < 0.05 AND d < 0.5  → statistically real but practically negligible
+      - p >= 0.05             → no reliable difference detected
+    """
+    sig = p_value < 0.05
+    meaningful = d >= 0.5
+    sonnet_better = mean_sonnet > mean_haiku
+
+    if sig and meaningful:
+        winner = "SONNET" if sonnet_better else "HAIKU"
+        return f"✅ SIGNIFICANT & MEANINGFUL — use {winner}"
+    elif sig and not meaningful:
+        return "⚠️  SIGNIFICANT but negligible effect — flip a coin, prefer cost"
+    else:
+        return "❌ NO RELIABLE DIFFERENCE — default to Haiku (cheaper)"
+```
 
 ---
 
-### Step 3: Build the Response Scorer
+### Step 3: Build the Scorer
 
-The scorer is the most important component. It converts a free-text LLM response into a numerical score (0–100) based on your criteria. Edit `scorer.py`:
+Create `scorer.py`. The source article doesn't specify a scoring rubric for GIS tasks, so this is an explicit addition — keyword coverage plus length-as-proxy-for-completeness:
+
+> **Note:** The source material defines the *statistical* methodology but not a domain-specific scoring function. The scorer below is purpose-built for GIS automation outputs. Adjust the keyword weights and rubric to match your own quality criteria.
 
 ```python
 # scorer.py
 """
-Scores LLM responses against quality criteria.
+Scores Claude API responses for GIS/FME automation quality.
 
-SCORING PHILOSOPHY:
-We use keyword/phrase matching as a proxy for quality. This is imperfect but
-reproducible and consistent — which is what statistical testing requires.
-For production use, consider replacing this with an LLM-as-judge approach
-(using a separate Claude call to score responses).
+Scoring rubric (0–10):
+  - Keyword coverage:   up to 6 points  (critical technical terms present)
+  - Code presence:      up to 2 points  (actual code blocks included)
+  - Length/completeness:up to 2 points  (response substantive, not a refusal)
+
+This is intentionally simple and transparent so scores are reproducible.
+Replace with LLM-as-judge or human rating if you need higher fidelity.
 """
 
 import re
-from typing import List, Dict, Tuple
-import anthropic
 
 
-def score_response_keyword(response_text: str, criteria: List[str]) -> Tuple[float, Dict]:
+def score_response(response_text: str, prompt_config: dict) -> float:
     """
-    Score a response using keyword matching against quality criteria.
-    
-    Returns:
-        - score: float 0-100
-        - breakdown: dict showing which criteria were met
+    Score a single Claude response against the prompt's expected keywords.
+
+    Returns a float in [0, 10].
     """
-    score_per_criterion = 100.0 / len(criteria)
-    breakdown = {}
-    total_score = 0.0
-    
-    response_lower = response_text.lower()
-    
-    for criterion in criteria:
-        # Extract key terms from the criterion description
-        key_terms = _extract_key_terms(criterion)
-        
-        # Check if the response addresses this criterion
-        criterion_met = _check_criterion(response_lower, key_terms)
-        
-        breakdown[criterion] = {
-            "met": criterion_met,
-            "key_terms_checked": key_terms,
-            "points": score_per_criterion if criterion_met else 0
-        }
-        
-        if criterion_met:
-            total_score += score_per_criterion
-    
-    return round(total_score, 2), breakdown
+    if not response_text or len(response_text) < 50:
+        return 0.0
+
+    text_lower = response_text.lower()
+    keywords = prompt_config["scoring_keywords"]
+    max_score = prompt_config["max_score"]
+
+    # ── Keyword coverage (0–6 points) ─────────────────────────────────────────
+    keywords_found = sum(
+        1 for kw in keywords
+        if kw.lower() in text_lower
+    )
+    keyword_score = min(6.0, (keywords_found / len(keywords)) * 6.0)
+
+    # ── Code block presence (0–2 points) ──────────────────────────────────────
+    code_blocks = len(re.findall(r"```[\s\S]*?```", response_text))
+    code_score = min(2.0, code_blocks * 1.0)
+
+    # ── Completeness proxy (0–2 points) ───────────────────────────────────────
+    # 200 chars = bare minimum, 800+ = substantive response
+    length = len(response_text)
+    if length >= 800:
+        completeness_score = 2.0
+    elif length >= 400:
+        completeness_score = 1.0
+    else:
+        completeness_score = 0.5
+
+    raw = keyword_score + code_score + completeness_score
+    return round(min(max_score, raw), 2)
 
 
-def score_response_llm_judge(
-    client: anthropic.Anthropic,
-    response_text: str,
-    original_prompt: str,
-    criteria: List[str],
-    judge_model: str = "claude-haiku-4-5"  # Use cheap model as judge
-) -> Tuple[float, Dict]:
-    """
-    Score a response using an LLM as judge.
-    More accurate than keyword matching but costs additional API calls.
-    
-    Use this for your final publication results for higher validity.
-    """
-    criteria_formatted = "\n".join([f"{i+1}. {c}" for i, c in enumerate(criteria)])
-    
-    judge_prompt = f"""You are evaluating an AI assistant's response to a GIS/FME technical question.
-
-ORIGINAL QUESTION:
-{original_prompt}
-
-AI RESPONSE TO EVALUATE:
-{response_text}
-
-EVALUATION CRITERIA (each worth equal points, total = 100):
-{criteria_formatted}
-
-For each criterion, output ONLY a JSON object with this exact structure:
-{{
-  "scores": [
-    {{"criterion": "criterion text", "met": true/false, "reasoning": "one sentence"}}
-  ],
-  "total_score": <number 0-100>
-}}
-
-Be strict: "met" = true only if the response clearly and specifically addresses the criterion."""
-
-    try:
-        message = client.messages.create(
-            model=judge_model,
-            max_tokens=500,
-            messages=[{"role": "user", "content": judge_prompt}]
-        )
-        
-        import json
-        response_content = message.content[0].text
-        
-        # Extract JSON from response
-        json_match = re.search(r'\{.*\}', response_content, re.DOTALL)
-        if json_match:
-            result = json.loads(json_match.group())
-            breakdown = {item["criterion"]: {"met": item["met"], "reasoning": item["reasoning"]} 
-                        for item in result["scores"]}
-            return float(result["total_score"]), breakdown
-    except Exception as e:
-        print(f"  [Judge fallback] LLM judge failed ({e}), using keyword scoring")
-    
-    # Fallback to keyword scoring
-    return score_response_keyword(response_text, criteria)
-
-
-def _extract_key_terms(criterion: str) -> List[str]:
-    """Extract searchable terms from a criterion description."""
-    # Remove common words and extract technical terms
-    stop_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 
-                  'for', 'of', 'with', 'by', 'from', 'is', 'are', 'that', 'this',
-                  'includes', 'mentions', 'provides', 'identifies', 'describes',
-                  'recommends', 'suggests', 'names', 'specific', 'step', 'steps'}
-    
-    words = re.findall(r'\b[a-z_]+\b', criterion.lower())
-    key_terms = [w for w in words if w not in stop_words and len(w) > 3]
-    
-    # Also keep multi-word technical phrases
-    technical_phrases = re.findall(r'[A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*', criterion)
-    
-    return key_terms + [p.lower() for p in technical_phrases]
-
-
-def _check_criterion(response_lower: str, key_terms: List[str]) -> bool:
-    """
-    Check if a response addresses a criterion based on key terms.
-    Requires at least 60% of key terms to be present.
-    """
-    if not key_terms:
-        return False
-    
-    matches = sum(1 for term in key_terms if term in response_lower)
-    match_ratio = matches / len(key_terms)
-    
-    return match_ratio >= 0.6
-
-
-def validate_scorer(sample_responses: List[str], criteria: List[str]) -> None:
-    """
-    Quick sanity check: print scores for a few sample responses.
-    Call this during development to verify your scorer is working as expected.
-    """
-    print("\n=== SCORER VALIDATION ===")
-    for i, response in enumerate(sample_responses):
-        score, breakdown = score_response_keyword(response, criteria)
-        print(f"\nSample {i+1} Score: {score:.1f}/100")
-        for criterion, result in breakdown.items():
-            status = "✓" if result["met"] else "✗"
-            print(f"  {status} {criterion[:60]}...")
+def score_batch(responses: list[str], prompt_config: dict) -> list[float]:
+    """Score a list of responses for a single prompt."""
+    return [score_response(r, prompt_config) for r in responses]
 ```
 
 ---
 
 ### Step 4: Build the Main Evaluation Harness
 
-This is the core orchestration script. Edit `gis_eval_harness.py`:
+Create `harness.py` — this is the core script:
 
 ```python
-# gis_eval_harness.py
+# harness.py
 """
-Statistical Prompt Evaluation Harness for GIS/FME Claude API Tasks
-
-Runs N trials per (prompt × model) combination and stores all scores
-for statistical analysis.
-
-Usage:
-    python gis_eval_harness.py                    # Full run (120 API calls)
-    python gis_eval_harness.py --dry-run          # Test with 2 runs per combo
-    python gis_eval_harness.py --scoring llm      # Use LLM judge (more accurate)
-    python gis_eval_harness.py --prompt-id prompt_1_crs_diagnosis  # Single prompt
+Statistical Prompt Evaluation Harness for Claude API GIS Tasks
+=============================================================
+Runs 3 GIS prompts × 2 models × 20 runs each = 120 API calls total.
+Applies Mann-Whitney U, Cohen's d, and bootstrap CIs per the methodology at:
+https://dev.to/aayush_kumarsingh_6ee1ffe/why-comparing-average-scores-is-the-wrong-way-to-evaluate-llm-prompts-and-what-to-do-instead-1li
 """
 
-import os
-import sys
-import time
 import json
-import argparse
-import csv
+import os
+import statistics
+import time
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
-from dataclasses import dataclass, asdict
 
 import anthropic
-from dotenv import load_dotenv
-from rich.console import Console
-from rich.progress import Progress, SpinnerColumn, TimeElapsedColumn
-from rich.table import Table
-from rich import print as rprint
 
-from prompts_config import PROMPTS, EXPERIMENT_CONFIG
-from scorer import score_response_keyword, score_response_llm_judge
+from prompts import PROMPTS
+from scorer import score_batch
+from stats import bootstrap_ci, cohens_d, interpret_results, mann_whitney_u
 
-# ─────────────────────────────────────────────
-# Configuration
-# ─────────────────────────────────────────────
+# ── Configuration ──────────────────────────────────────────────────────────────
 
-load_dotenv()
-console = Console()
+MODELS = {
+    "sonnet": "claude-sonnet-4-5",
+    "haiku":  "claude-haiku-4-5",
+}
 
-RESULTS_DIR = Path("results")
-RESULTS_DIR.mkdir(exist_ok=True)
+N_RUNS = 20          # runs per model per prompt
+MAX_TOKENS = 1024    # cap to control cost; raise for richer outputs
+TEMPERATURE = 1.0    # default; set lower for more deterministic scoring
 
+# ── API Client ─────────────────────────────────────────────────────────────────
 
-@dataclass
-class TrialResult:
-    """Single trial result for one (prompt × model × run) combination."""
-    prompt_id: str
-    prompt_name: str
-    model: str
-    run_number: int
-    score: float
-    response_length: int
-    latency_seconds: float
-    criteria_breakdown: str  # JSON string
-    timestamp: str
-    error: Optional[str] = None
+client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
 
-# ─────────────────────────────────────────────
-# Core Evaluation Functions
-# ─────────────────────────────────────────────
+# ── Core: Single API Call ──────────────────────────────────────────────────────
 
-def run_single_trial(
-    client: anthropic.Anthropic,
-    prompt_id: str,
-    prompt_config: Dict,
+def call_claude(
     model: str,
-    run_number: int,
-    scoring_method: str = "keyword"
-) -> TrialResult:
+    system_prompt: str,
+    user_prompt: str,
+    max_tokens: int = MAX_TOKENS,
+    temperature: float = TEMPERATURE,
+) -> str:
     """
-    Execute a single trial: call API, get response, score it.
-    
-    Args:
-        client: Anthropic client
-        prompt_id: Key from PROMPTS dict
-        prompt_config: The prompt configuration dict
-        model: Model identifier string
-        run_number: Which run this is (1-N)
-        scoring_method: "keyword" or "llm"
-    
-    Returns:
-        TrialResult with score and metadata
+    Make a single Claude API call. Returns the response text.
+    Returns empty string on error (scored as 0).
     """
-    start_time = time.time()
-    
     try:
-        # Make the API call
         message = client.messages.create(
             model=model,
-            max_tokens=EXPERIMENT_CONFIG["max_tokens"],
-            temperature=EXPERIMENT_CONFIG.get("temperature", 1.0),
-            system=prompt_config["system"],
-            messages=[
-                {"role": "user", "content": prompt_config["user"]}
-            ]
+            max_tokens=max_tokens,
+            temperature=temperature,
+            system=system_prompt,
+            messages=[{"role": "user", "content": user_prompt}],
         )
-        
-        latency = time.time() - start_time
-        response_text = message.content[0].text
-        
-        # Score the response
-        if scoring_method == "llm":
-            score, breakdown = score_response_llm_judge(
-                client=client,
-                response_text=response_text,
-                original_prompt=prompt_config["user"],
-                criteria=prompt_config["quality_criteria"]
-            )
-        else:
-            score, breakdown = score_response_keyword(
-                response_text=response_text,
-                criteria=prompt_config["quality_criteria"]
-            )
-        
-        return TrialResult(
-            prompt_id=prompt_id,
-            prompt_name=prompt_config["name"],
-            model=model,
-            run_number=run_number,
-            score=score,
-            response_length=len(response_text),
-            latency_seconds=round(latency, 3),
-            criteria_breakdown=json.dumps(breakdown),
-            timestamp=datetime.now().isoformat(),
-            error=None
-        )
-        
-    except anthropic.RateLimitError:
-        console.print(f"  [yellow]Rate limit hit, waiting 30s...[/yellow]")
-        time.sleep(30)
-        return run_single_trial(client, prompt_id, prompt_config, model, run_number, scoring_method)
-        
+        return message.content[0].text
     except Exception as e:
-        latency = time.time() - start_time
-        return TrialResult(
-            prompt_id=prompt_id,
-            prompt_name=prompt_config["name"],
-            model=model,
-            run_number=run_number,
-            score=0.0,
-            response_length=0,
-            latency_seconds=round(latency, 3),
-            criteria_breakdown="{}",
-            timestamp=datetime.now().isoformat(),
-            error=str(e)
+        print(f"    ⚠️  API error ({model}): {e}")
+        return ""
+
+
+# ── Core: Run N Evaluations for One Model+Prompt ──────────────────────────────
+
+def run_evaluations(
+    model_name: str,
+    model_id: str,
+    prompt_key: str,
+    prompt_config: dict,
+    n_runs: int = N_RUNS,
+) -> dict:
+    """
+    Run `n_runs` API calls, score each, return scores + raw responses.
+    Includes a 0.5s delay between calls to be a polite API citizen.
+    """
+    print(f"  Running {n_runs} evals: {model_name} / {prompt_config['name']}")
+    responses = []
+    scores = []
+
+    for i in range(n_runs):
+        print(f"    Run {i+1:02d}/{n_runs}", end="\r")
+        response = call_claude(
+            model=model_id,
+            system_prompt=prompt_config["system"],
+            user_prompt=prompt_config["user"],
+        )
+        score = score_batch([response], prompt_config)[0]
+        responses.append(response)
+        scores.append(score)
+        time.sleep(0.5)  # rate-limit courtesy pause
+
+    print(f"    Done. Mean={statistics.mean(scores):.2f}  "
+          f"Stdev={statistics.stdev(scores):.2f}    ")
+
+    return {
+        "model": model_name,
+        "model_id": model_id,
+        "prompt_key": prompt_key,
+        "scores": scores,
+        "responses": responses,
+    }
+
+
+# ── Core: Statistical Analysis for One Prompt ─────────────────────────────────
+
+def analyze_prompt(
+    prompt_key: str,
+    prompt_config: dict,
+    sonnet_data: dict,
+    haiku_data: dict,
+) -> dict:
+    """
+    Apply full statistical battery to one prompt's results.
+    Returns a structured result dict ready for table rendering.
+    """
+    s_scores = sonnet_data["scores"]
+    h_scores = haiku_data["scores"]
+
+    # Descriptive statistics
+    s_mean = round(statistics.mean(s_scores), 3)
+    h_mean = round(statistics.mean(h_scores), 3)
+    s_stdev = round(statistics.stdev(s_scores), 3)
+    h_stdev = round(statistics.stdev(h_scores), 3)
+
+    # Bootstrap confidence intervals (95%)
+    s_ci = bootstrap_ci(s_scores)
+    h_ci = bootstrap_ci(h_scores)
+
+    # Mann-Whitney U test
+    p_value = mann_whitney_u(s_scores, h_scores)
+
+    # Cohen's d effect size
+    d = cohens_d(s_scores, h_scores)
+
+    # Human-readable interpretation
+    verdict = interpret_results(p_value, d, s_mean, h_mean)
+
+    return {
+        "prompt_key": prompt_key,
+        "prompt_name": prompt_config["name"],
+        "sonnet_mean": s_mean,
+        "sonnet_stdev": s_stdev,
+        "sonnet_ci": s_ci,
+        "haiku_mean": h_mean,
+        "haiku_stdev": h_stdev,
+        "haiku_ci": h_ci,
+        "p_value": p_value,
+        "cohens_d": d,
+        "verdict": verdict,
+        "raw_sonnet_scores": s_scores,
+        "raw_haiku_scores": h_scores,
+    }
+
+
+# ── Rendering: Results Table (Markdown) ───────────────────────────────────────
+
+def render_markdown_table(results: list[dict]) -> str:
+    """
+    Render results as a Markdown table suitable for your Tool Critic post.
+    """
+    lines = []
+    lines.append("## Statistical Evaluation Results")
+    lines.append("")
+    lines.append(
+        "| Prompt | Sonnet Mean ± SD | Sonnet 95% CI | "
+        "Haiku Mean ± SD | Haiku 95% CI | p-value | Cohen's d | Verdict |"
+    )
+    lines.append(
+        "|--------|-----------------|---------------|"
+        "----------------|-------------|---------|-----------|---------|"
+    )
+
+    for r in results:
+        s_ci = r["sonnet_ci"]
+        h_ci = r["haiku_ci"]
+        lines.append(
+            f"| {r['prompt_name']} "
+            f"| {r['sonnet_mean']:.2f} ± {r['sonnet_stdev']:.2f} "
+            f"| [{s_ci[0]:.2f}, {s_ci[1]:.2f}] "
+            f"| {r['haiku_mean']:.2f} ± {r['haiku_stdev']:.2f} "
+            f"| [{h_ci[0]:.2f}, {h_ci[1]:.2f}] "
+            f"| {r['p_value']:.4f} "
+            f"| {r['cohens_d']:.3f} "
+            f"| {r['verdict']} |"
         )
 
+    lines.append("")
+    lines.append(
+        "> **n = 20 per model per prompt.** "
+        "p-value from Mann-Whitney U (non-parametric). "
+        "Cohen's d thresholds: <0.2 negligible, <0.5 small, <0.8 medium, ≥0.8 large. "
+        "Verdict requires BOTH p < 0.05 AND d ≥ 0.5 to recommend a switch."
+    )
+    return "\n".join(lines)
 
-def run_all_trials(
-    client: anthropic.Anthropic,
-    prompt_ids: Optional[List[str]] = None,
-    n_runs: Optional[int] = None,
-    scoring_method: str = "keyword",
-    delay_between_calls: float = 0.5
-) -> List[TrialResult]:
+
+# ── Rendering: Score Distribution Summary ─────────────────────────────────────
+
+def render_score_distributions(results: list[dict]) -> str:
     """
-    Run the complete evaluation matrix.
-    
-    Total calls = len(prompts) × len(models) × n_runs
-    
-    Args:
-        client: Anthropic client
-        prompt_ids: Which prompts to evaluate (None = all)
-        n_runs: Override for runs per combination
-        scoring_method: "keyword" or "llm"
-        delay_between_calls: Seconds to wait between API calls (rate limiting)
-    
-    Returns:
-        List of all TrialResults
+    Show raw score distributions so readers can see the bimodal pattern
+    the source article describes. This is the visual argument for why
+    averages alone are misleading.
     """
-    prompts_to_run = {k: v for k, v in PROMPTS.items() 
-                      if prompt_ids is None or k in prompt_ids}
-    models = EXPERIMENT_CONFIG["models"]
-    runs = n_runs or EXPERIMENT_CONFIG["runs_per_combination"]
-    
-    total_calls = len(prompts_to_run) * len(models) * runs
-    
-    console.print(f"\n[bold cyan]═══ GIS Prompt Evaluation Harness ═══[/bold cyan]")
-    console.print(f"Prompts:  {len(prompts_to_run)} ({', '.join(prompts_to_run.keys())})")
-    console.print(f"Models:   {len(models)} ({', '.join(models)})")
-    console.print(f"Runs:     {runs} per combination")
-    console.print(f"Total:    [bold]{total_calls} API calls[/bold]")
-    console.print(f"Scoring:  {scoring_method}")
-    console.print(f"Delay:    {delay_between_calls}s between calls\n")
-    
-    all_results: List[TrialResult] = []
-    call_count = 0
-    
-    with Progress(
-        SpinnerColumn(),
-        "[progress.description]{task.description}",
-        "[progress.percentage]{task.percentage:>3.0f}%",
-        TimeElapsedColumn(),
-        console=console
-    ) as progress:
-        
-        for prompt_id, prompt_config in prompts_to_run.items():
-            prompt_task = progress.add_task(
-                f"[cyan]{prompt_config['name']}[/cyan]", 
-                total=len(models) * runs
+    lines = ["\n## Raw Score Distributions (n=20 per cell)\n"]
+
+    for r in results:
+        lines.append(f"### {r['prompt_name']}")
+        s = sorted(r["raw_sonnet_scores"])
+        h = sorted(r["raw_haiku_scores"])
+        lines.append(f"- **Sonnet:** `{s}`")
+        lines.append(f"- **Haiku:**  `{h}`")
+
+        # Quick histogram (text-based, no matplotlib needed)
+        for label, scores in [("Sonnet", s), ("Haiku", h)]:
+            buckets = {str(i): 0 for i in range(11)}
+            for sc in scores:
+                bucket = str(min(10, int(sc)))
+                buckets[bucket] += 1
+            bar = " ".join(
+                f"{k}:{'█' * v}" for k, v in buckets.items() if v > 0
             )
-            
-            for model in models:
-                for run_num in range(1, runs + 1):
-                    progress.update(
-                        prompt_task, 
-                        description=f"[cyan]{prompt_config['name']}[/cyan] | "
-                                   f"[yellow]{model.split('-')[1]}[/yellow] | "
-                                   f"run {run_num}/{runs}"
-                    )
-                    
-                    result = run_single_trial(
-                        client=client,
-                        prompt_id=prompt_id,
-                        prompt_config=prompt_config,
-                        model=model,
-                        run_number=run_num,
-                        scoring_method=scoring_method
-                    )
-                    
-                    all_results.append(result)
-                    call_count += 1
-                    
-                    # Show individual result
-                    status = "[red]ERR[/red]" if result.error else f"[green]{result.score:.0f}[/green]"
-                    progress.print(
-                        f"  {'✓' if not result.error else '✗'} "
-                        f"{prompt_id[:20]:<22} | "
-                        f"{model.split('-')[1]:>6} | "
-                        f"run {run_num:>2} | "
-                        f"score={status} | "
-                        f"{result.latency_seconds:.1f}s"
-                    )
-                    
-                    progress.update(prompt_task, advance=1)
-                    
-                    if call_count < total_calls:
-                        time.sleep(delay_between_calls)
-    
-    return all_results
+            lines.append(f"  {label}: {bar}")
+        lines.append("")
+
+    return "\n".join(lines)
 
 
-# ─────────────────────────────────────────────
-# Data Persistence
-# ─────────────────────────────────────────────
-
-def save_results_csv(results: List[TrialResult], filepath: Path) -> None:
-    """Save all trial results to CSV for reproducibility."""
-    if not results:
-        return
-    
-    fieldnames = list(asdict(results[0]).keys())
-    
-    with open(filepath, 'w', newline='', encoding='utf-8') as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
-        writer.writeheader()
-        writer.writerows([asdict(r) for r in results])
-    
-    console.print(f"\n[green]✓[/green] Raw results saved to: [bold]{filepath}[/bold]")
-
-
-def load_results_csv(filepath: Path) -> List[TrialResult]:
-    """Load previously saved results (for re-running analysis without new API calls)."""
-    results = []
-    with open(filepath, 'r', encoding='utf-8') as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            results.append(TrialResult(
-                prompt_id=row['prompt_id'],
-                prompt_name=row['prompt_name'],
-                model=row['model'],
-                run_number=int(row['run_number']),
-                score=float(row['score']),
-                response_length=int(row['response_length']),
-                latency_seconds=float(row['latency_seconds']),
-                criteria_breakdown=row['criteria_breakdown'],
-                timestamp=row['timestamp'],
-                error=row['error'] if row['error'] else None
-            ))
-    return results
-
-
-# ─────────────────────────────────────────────
-# Main Entry Point
-# ─────────────────────────────────────────────
+# ── Main Orchestration ─────────────────────────────────────────────────────────
 
 def main():
-    parser = argparse.ArgumentParser(description="GIS Prompt Statistical Evaluation Harness")
-    parser.add_argument("--dry-run", action="store_true", 
-                        help="Run only 2 trials per combination (cost-saving test)")
-    parser.add_argument("--scoring", choices=["keyword", "llm"], default="keyword",
-                        help="Scoring method: keyword matching or LLM judge")
-    parser.add_argument("--prompt-id", type=str, default=None,
-                        help="Run only one specific prompt ID")
-    parser.add_argument("--load-csv", type=str, default=None,
-                        help="Load existing CSV instead of making new API calls")
-    parser.add_argument("--delay", type=float, default=0.5,
-                        help="Seconds between API calls (default: 0.5)")
-    args = parser.parse_args()
-    
-    # Initialize client
-    api_key = os.getenv("ANTHROPIC_API_KEY")
-    if not api_key:
-        console.print("[red]Error: ANTHROPIC_API_KEY not found in environment[/red]")
-        sys.exit(1)
-    
-    client = anthropic.Anthropic(api_key=api_key)
-    
-    # Determine output filename
+    output_dir = Path("results")
+    output_dir.mkdir(exist_ok=True)
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    csv_path = RESULTS_DIR / f"raw_scores_{timestamp}.csv"
-    
-    # Load or collect results
-    if args.load_csv:
-        console.print(f"\n[cyan]Loading existing results from {args.load_csv}[/cyan]")
-        results = load_results_csv(Path(args.load_csv))
-    else:
-        n_runs = 2 if args.dry_run else None
-        prompt_ids = [args.prompt_id] if args.prompt_id else None
-        
-        if args.dry_run:
-            console.print("\n[yellow]DRY RUN MODE: 2 runs per combination[/yellow]")
-        
-        results = run_all_trials(
-            client=client,
-            prompt_ids=prompt_ids,
-            n_runs=n_runs,
-            scoring_method=args.scoring,
-            delay_between_calls=args.delay
+
+    total_calls = len(PROMPTS) * len(MODELS) * N_RUNS
+    print(f"\n{'='*60}")
+    print(f"GIS Prompt Evaluation Harness")
+    print(f"Prompts: {len(PROMPTS)}  |  Models: {len(MODELS)}  "
+          f"|  Runs each: {N_RUNS}")
+    print(f"Total API calls: {total_calls}")
+    print(f"{'='*60}\n")
+
+    all_results = []
+
+    for prompt_key, prompt_config in PROMPTS.items():
+        print(f"\n── Prompt: {prompt_config['name']} ──")
+
+        # Run both models
+        sonnet_data = run_evaluations(
+            "sonnet", MODELS["sonnet"], prompt_key, prompt_config
         )
-        
-        save_results_csv(results, csv_path)
-    
-    # Import here to avoid circular imports in development
-    from results_publisher import analyze_and_publish
-    analyze_and_publish(results, RESULTS_DIR, timestamp)
-    
-    console.print("\n[bold green]✓ Evaluation complete![/bold green]")
-    console.print(f"  Results: {RESULTS_DIR}/")
+        haiku_data = run_evaluations(
+            "haiku", MODELS["haiku"], prompt_key, prompt_config
+        )
+
+        # Statistical analysis
+        result = analyze_prompt(
+            prompt_key, prompt_config, sonnet_data, haiku_data
+        )
+        all_results.append(result)
+
+        print(f"\n  p={result['p_value']:.4f}  "
+              f"d={result['cohens_d']:.3f}  "
+              f"{result['verdict']}")
+
+    # ── Save outputs ───────────────────────────────────────────────────────────
+
+    # 1. Full JSON (raw scores, responses, all stats)
+    json_path = output_dir / f"eval_{timestamp}.json"
+    # Don't serialize full responses to keep file manageable — just scores
+    json_output = [
+        {k: v for k, v in r.items() if k != "raw_sonnet_scores"
+         and k != "raw_haiku_scores"}
+        for r in all_results
+    ]
+    # Include scores separately
+    for i, r in enumerate(all_results):
+        json_output[i]["raw_sonnet_scores"] = r["raw_sonnet_scores"]
+        json_output[i]["raw_haiku_scores"] = r["raw_haiku_scores"]
+
+    json_path.write_text(json.dumps(json_output, indent=2))
+    print(f"\n✅ Raw results saved: {json_path}")
+
+    # 2. Markdown report for Tool Critic post
+    md_path = output_dir / f"report_{timestamp}.md"
+    md_content = [
+        "# GIS Prompt Evaluation: Sonnet vs Haiku",
+        f"*Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}*",
+        f"*Methodology: Mann-Whitney U + Cohen's d + Bootstrap CI (n={N_RUNS})*",
+        "",
+        render_markdown_table(all_results),
+        render_score_distributions(all_results),
+        "",
+        "## Methodology Notes",
+        "",
+        "Scores use simple keyword coverage + code-block presence rubric.",
+        "Statistical tests from: https://dev.to/aayush_kumarsingh_6ee1ffe/",
+        "why-comparing-average-scores-is-the-wrong-way-to-evaluate-llm-prompts-and-what-to-do-instead-1li",
+        "",
+        "**Decision rule (from source):** A model is judged meaningfully better",
+        "only when BOTH p < 0.05 (Mann-Whitney U) AND Cohen's d ≥ 0.5.",
+        "Statistical significance alone is insufficient.",
+    ]
+    md_path.write_text("\n".join(md_content))
+    print(f"✅ Markdown report saved: {md_path}")
+
+    # 3. Print summary to console
+    print(f"\n{'='*60}")
+    print("RESULTS SUMMARY")
+    print(f"{'='*60}")
+    print(render_markdown_table(all_results))
+    print(render_score_distributions(all_results))
 
 
 if __name__ == "__main__":
@@ -756,52 +707,47 @@ if __name__ == "__main__":
 
 ---
 
-### Step 5: Build the Statistical Analysis & Publisher
+### Step 5: Run the Harness
 
-This is where the Mann-Whitney U test happens. Edit `results_publisher.py`:
+```bash
+# From your project directory:
+cd gis-eval-harness
+python harness.py
+```
 
-```python
-# results_publisher.py
-"""
-Statistical analysis and publication-ready table generator.
+Expected console output pattern:
 
-THE MANN-WHITNEY U TEST — WHY IT'S RIGHT HERE:
-================================================
-We cannot assume LLM quality scores are normally distributed. They're often:
-- Bimodal (either the model gets it or it doesn't)  
-- Bounded (0-100 ceiling/floor effects)
-- Skewed (most responses score well, outliers pull the tail)
+```
+============================================================
+GIS Prompt Evaluation Harness
+Prompts: 3  |  Models: 2  |  Runs each: 20
+Total API calls: 120
+============================================================
 
-The Mann-Whitney U test is non-parametric — it ranks ALL scores from both
-groups together and tests whether one group's ranks are systematically higher.
-It requires no distribution assumptions and is robust to outliers.
+── Prompt: Coordinate System Transformation Workflow ──
+  Running 20 evals: sonnet / Coordinate System Transformation Workflow
+    Done. Mean=7.43  Stdev=1.82
+  Running 20 evals: haiku / Coordinate System Transformation Workflow
+    Done. Mean=6.91  Stdev=2.14
 
-Null hypothesis (H₀): The two models' score distributions are identical.
-If p < 0.05, we reject H₀ → the difference is statistically significant.
-Effect size (r): |z| / √N, where r > 0.3 = medium, r > 0.5 = large effect.
-"""
+  p=0.1823  d=0.264  ❌ NO RELIABLE DIFFERENCE — default to Haiku (cheaper)
 
-import json
-from pathlib import Path
-from typing import List, Dict, Tuple
-from collections import defaultdict
+── Prompt: Automated Spatial Join with Attribute Aggregation ──
+  ...
+```
 
-import numpy as np
-import pandas as pd
-from scipy import stats
-from rich.console import Console
-from rich.table import Table
+> **Cost estimate:** 120 calls × ~500 avg output tokens. At current pricing, this run costs roughly $0.15–0.40 depending on model mix. Set `MAX_TOKENS = 512` to reduce cost during testing.
 
-from gis_eval_harness import TrialResult
-from prompts_config import EXPERIMENT_CONFIG
+---
 
-console = Console()
+### Step 6: Interpret and Write Your Tool Critic Post
 
-SIGNIFICANCE_THRESHOLD = 0.05
+When the run completes, open `results/report_<timestamp>.md`. Your results table will look like this (values are illustrative — yours will differ):
 
+```markdown
+## Statistical Evaluation Results
 
-# ─────────────────────────────────────────────
-# Statistical Analysis
-# ─────────────────────────────────────────────
-
-def extract_scores_by_group(results: List[TrialResult]) -> Dict[str, Dict[str,
+| Prompt | Sonnet Mean ± SD | Sonnet 95% CI | Haiku Mean ± SD | Haiku 95% CI | p-value | Cohen's d | Verdict |
+|--------|-----------------|---------------|----------------|-------------|---------|-----------|---------|
+| Coordinate System Transformation | 7.43 ± 1.82 | [6.58, 8.21] | 6.91 ± 2.14 | [5.89, 7.82] | 0.1823 | 0.264 | ❌ NO RELIABLE DIFFERENCE — default to Haiku (cheaper) |
+| Spatial Join Automation | 8.12 ± 1.31 | [7.49, 8.74] | 5.88 ± 2.67 | [4.63, 7.01] | 0.0031 | 0.971 

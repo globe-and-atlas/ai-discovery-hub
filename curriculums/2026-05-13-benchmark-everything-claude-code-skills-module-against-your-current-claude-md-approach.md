@@ -1,781 +1,504 @@
 # Benchmark everything-claude-code Skills Module Against Your Current CLAUDE.md Approach
 
-## A Practical Curriculum for FME Workspace Authors Using Claude Code CLI
+## A Hands-On Tutorial for Daniel
 
 ---
 
 ## 1. Introduction & Context
 
-### What This Is
+You've been directing Claude Code through a hand-crafted `CLAUDE.md` file — essentially a bespoke system prompt that encodes your FME workspace authoring conventions, your Globe & Atlas pipeline patterns, and your GIS domain knowledge. That approach works, but it has a cost: every new session starts cold, prompt iteration is manual, and there's no structured way to measure whether your directive is actually performing well.
 
-[everything-claude-code](https://github.com/affaan-m/everything-claude-code) is a meta-layer harness built on top of the Claude Code CLI. It extends your existing workflow with:
+**everything-claude-code (ECC)** is a meta-layer built on top of Claude Code CLI. Its core value proposition for you is threefold:
 
-- **Skills modules** — reusable, structured capability definitions that guide Claude toward expert-level behaviour in specific domains
-- **Instincts modules** — heuristic patterns that shape how Claude approaches problems before writing a single line of code
-- **Persistent memory** — context that survives across sessions, reducing repetitive prompt bootstrapping
-- **Research-first patterns** — forcing Claude to investigate before acting, reducing hallucinated solutions
-- **Security layers** — guardrails to prevent destructive operations in automated pipelines
-
-### Why It Matters for Your Workflow
-
-You already use a `CLAUDE.md` directive file to orient Claude Code for FME workspace authoring tasks — things like building transformers, writing Python callouts, structuring workspace templates for Globe & Atlas pipelines. That approach works, but it has costs:
-
-| Pain Point | Current CLAUDE.md Approach | everything-claude-code Potential |
+| ECC Component | What It Does | Why It Matters for You |
 |---|---|---|
-| Repetitive context-setting | Re-stated every session | Persisted in memory modules |
-| Domain skills (FME, Python, CRS) | Embedded in monolithic CLAUDE.md | Modular, composable skills |
-| Iteration count | Varies per task | Potentially reduced via instincts |
-| Token cost | Baseline | Measurable delta |
+| **Skills** | Reusable, structured instruction modules for recurring task types | Replace repetitive CLAUDE.md boilerplate with composable units |
+| **Instincts** | Persistent learned patterns extracted from past sessions | Encode FME idioms once, reuse them automatically |
+| **Memory Hooks** | Save/load context across sessions | Stop re-explaining your workspace conventions every session |
 
-This exercise gives you a **concrete, evidence-based data point**: does the skills/instincts approach actually outperform your current CLAUDE.md directive on a real FME task you've already solved?
+This exercise has one concrete goal: **produce a single, honest data point**. You will run the same FME workspace authoring task two ways — your current `CLAUDE.md` approach and ECC's skills/instincts modules — and record the three metrics that matter: **output quality**, **iteration count**, and **token cost**. That delta is your Tool Critic data point.
 
 ---
 
 ## 2. Prerequisites
 
-Before starting, confirm you have the following.
+Before you start, confirm the following are in place:
 
-### Hard Requirements
+### Required Tools
 
-- [ ] **Claude Code CLI installed and authenticated**
-  ```bash
-  claude --version
-  # Expected: claude-code 1.x.x or higher
-  ```
-- [ ] **Git installed**
-  ```bash
-  git --version
-  ```
-- [ ] **Node.js ≥ 18** (required by Claude Code CLI internals)
-  ```bash
-  node --version
-  ```
-- [ ] **An existing CLAUDE.md file** you currently use for FME workspace authoring — this is your control baseline
-- [ ] **A solved FME workspace authoring task** you completed manually or with your CLAUDE.md approach. You need:
-  - The original task description/prompt you used
-  - The final output (`.fmw` file, Python script, or transformer config)
-  - A rough note of how many prompt iterations it took
-- [ ] **A cost-tracking baseline** — either from Claude Code's built-in usage display or your Anthropic console
+```bash
+# Verify Claude Code CLI is installed and authenticated
+claude --version
+claude auth status
 
-### Helpful but Not Required
+# Verify Node.js (ECC requires npm)
+node --version   # Should be >= 18.x
+npm --version
 
-- [ ] Familiarity with YAML or JSON (skills files use structured config)
-- [ ] Basic understanding of what `CLAUDE.md` does in Claude Code (it's injected as system context at session start)
-
-### Reference: Your Benchmark Task
-
-Pick a task you've **already solved** that meets these criteria:
-
-```
-Good benchmark tasks:
-  ✓ Takes 3–10 prompt iterations to solve cleanly
-  ✓ Involves FME-specific knowledge (transformer chains, coordinate systems, reader/writer params)
-  ✓ Has a clear, verifiable output (the workspace runs, produces correct output)
-  ✓ Is representative of Globe & Atlas pipeline work
-
-Avoid for this benchmark:
-  ✗ Trivial one-shot tasks (too little signal)
-  ✗ Tasks requiring live data connections you can't reproduce
-  ✗ Tasks so complex they take 30+ iterations (too much noise)
+# Verify Git
+git --version
 ```
 
-**Document your baseline now, before cloning anything:**
+### Required Assets You Already Have
 
-```markdown
-## My Benchmark Task Record
+- [ ] Your existing `CLAUDE.md` file (know its file path)
+- [ ] A **specific FME workspace authoring task you've already solved manually** — this is your benchmark reference. Pick one that is:
+  - Concrete and repeatable (e.g., "Author an FME workspace that reads a PostGIS layer, reprojects to WGS84, and writes to GeoJSON with attribute filtering")
+  - Complex enough to reveal differences (3–5 transformers minimum)
+  - Something you can evaluate quality on without running FME (schema correctness, transformer choices, parameter completeness)
+- [ ] A way to track token usage — Claude Code logs this per session; note the output before each run with `claude /cost` or review session logs
 
-### Task Description (the prompt I used)
-[Paste your original prompt here]
+### Recommended: Set Up a Comparison Workspace
 
-### Output Produced
-[File path or description of the .fmw / script produced]
+```bash
+# Create a clean working directory for this benchmark
+mkdir ~/ecc-benchmark
+cd ~/ecc-benchmark
 
-### Iteration Count (baseline)
-[Number of back-and-forth prompts to reach acceptable output]
-
-### Token Cost (baseline)
-[Approximate from Claude console, or "not tracked"]
-
-### Subjective Quality Score (1–5)
-[How satisfied were you with the output?]
+# Record your baseline task description in a plain text file
+cat > task.txt << 'EOF'
+[PASTE YOUR FME WORKSPACE AUTHORING TASK HERE — be precise]
+Example: "Author an FME 2024 workspace that reads a GeoPackage containing 
+polygon features, calculates area in hectares using AreaCalculator, 
+filters features where area > 5ha, and writes output to a PostGIS table 
+named 'large_parcels' with a spatial index."
+EOF
 ```
 
 ---
 
 ## 3. Step-by-Step Guide
 
-### Phase 1: Clone and Explore the Repository
+### Phase A — Baseline: Record Your Current CLAUDE.md Performance
 
-#### Step 1.1 — Clone everything-claude-code
+You need a clean baseline before touching ECC. Do this first.
+
+#### Step A1 — Run Your Benchmark Task with Your Current Setup
 
 ```bash
-# Navigate to your projects directory
-cd ~/projects
+# Navigate to a clean project directory (no ECC installed yet)
+mkdir ~/ecc-benchmark/baseline-run
+cd ~/ecc-benchmark/baseline-run
 
-# Clone the repo
+# Copy your existing CLAUDE.md into this directory
+cp /path/to/your/CLAUDE.md .
+
+# Note the exact time and open a new Claude Code session
+# This ensures a cold start — no cached context
+claude
+```
+
+Inside the Claude Code session, paste your benchmark task verbatim from `task.txt`. Do **not** refine or clarify mid-session. Let it run.
+
+#### Step A2 — Record Baseline Metrics
+
+After the session completes, immediately record the following. Create a metrics file:
+
+```bash
+cat > ~/ecc-benchmark/baseline-metrics.md << 'EOF'
+# Baseline Metrics — CLAUDE.md Approach
+Date: [TODAY]
+Task: [ONE-LINE DESCRIPTION]
+
+## Iteration Count
+- Number of back-and-forth exchanges before acceptable output: ___
+- Number of corrections you had to make: ___
+
+## Token Cost
+- Input tokens: ___
+- Output tokens: ___
+- Total cost (USD): ___
+(Find these in Claude Code session output or ~/.claude/logs/)
+
+## Output Quality Score (0-10 scale)
+Rate each dimension yourself:
+- Correct transformer selection: ___/10
+- Parameter completeness: ___/10
+- FME best-practice adherence: ___/10
+- Output schema correctness: ___/10
+- Overall: ___/10
+
+## Raw Output
+[Paste or link the generated workspace description/script here]
+
+## Notes
+- Where did it struggle?
+- What did you have to correct?
+- What was missing from the output?
+EOF
+```
+
+> **Be honest here.** The baseline is only useful if it reflects reality. If you had to fix three transformer parameters, write that down.
+
+---
+
+### Phase B — Install and Explore everything-claude-code
+
+#### Step B1 — Clone the Repository
+
+```bash
+cd ~/ecc-benchmark
 git clone https://github.com/affaan-m/everything-claude-code.git
-
-# Enter it
 cd everything-claude-code
+```
 
-# List the top-level structure
+#### Step B2 — Review the Repository Structure
+
+Before installing anything, orient yourself:
+
+```bash
+# Get a high-level view of what you're working with
 ls -la
+
+# The source material confirms these key areas exist:
+# - Skills modules (208 skills per the catalog)
+# - Agents (55 agents)
+# - Legacy command shims (72 shims)
+# - Hooks for memory persistence
+# Look for these directories:
+find . -maxdepth 2 -type d | sort
 ```
 
-You should see a structure similar to:
+> **Note:** The source material confirms ECC contains 55 agents, 208 skills, and 72 legacy command shims as of v2.0.0-rc.1. The exact directory layout within the repo should be explored directly from your clone — the source content does not enumerate every subdirectory, so map it yourself here.
 
-```
-everything-claude-code/
-├── CLAUDE.md               ← The repo's own Claude directive (study this!)
-├── skills/                 ← Skills module definitions
-├── instincts/              ← Instincts/heuristic patterns
-├── memory/                 ← Persistent memory templates
-├── security/               ← Guardrail configurations
-├── examples/               ← Usage examples
-└── README.md
-```
+#### Step B3 — Install via npm (Universal Package)
 
-#### Step 1.2 — Read the Repository's Own CLAUDE.md
-
-This is the most instructive file in the repo. Before touching anything else:
+The source material confirms two npm packages: `ecc-universal` and `ecc-agentshield`. For this benchmark, use `ecc-universal`:
 
 ```bash
-cat CLAUDE.md
+# Install the universal package globally
+npm install -g ecc-universal
+
+# Verify installation
+ecc-universal --version 2>/dev/null || echo "Check npm bin path"
+
+# Alternative: use the repo directly if npm install has issues
+# The repo is your ground truth — work from the clone
+cd ~/ecc-benchmark/everything-claude-code
+npm install
 ```
 
-**As you read, annotate mentally:**
-- How is it structured differently from yours?
-- Does it reference skills/instincts files, or does it contain everything inline?
-- What patterns does it use that your CLAUDE.md doesn't?
+> **Transparency checkpoint:** The source content does not provide the exact CLI syntax for `ecc-universal` beyond the npm package name. After installation, run `ecc-universal --help` to see available commands. If the package exposes no direct CLI, the skills are likely consumed as files you reference — explore the installed package contents.
 
-#### Step 1.3 — Inventory the Skills Directory
+#### Step B4 — Read the Shorthand Guide First
 
-```bash
-# List all skills files
-find skills/ -type f | sort
+The source material explicitly states: *"Read this first."* The guides are linked from X (formerly Twitter) — the shorthand guide is at:
 
-# Read each one — they're usually short
-cat skills/*.md   # or skills/*.yaml depending on the repo structure
+```
+https://x.com/affaanmustafa/status/2012378465664745795
 ```
 
-**Look for:**
-- How skills are named and scoped
-- Whether skills have input/output contracts
-- How domain-specific knowledge is encoded (this is what you'll adapt for FME)
+Spend 15 minutes reading it before proceeding. Key concepts to note for this benchmark:
 
-#### Step 1.4 — Inventory the Instincts Directory
+- How skills are structured and invoked
+- How instincts differ from skills
+- How memory hooks work across sessions
+- The research-first development pattern
+
+#### Step B5 — Explore the Skills Catalog
 
 ```bash
-find instincts/ -type f | sort
-cat instincts/*
+cd ~/ecc-benchmark/everything-claude-code
+
+# Find skills-related files
+find . -name "*.md" | xargs grep -l -i "skill" 2>/dev/null | head -20
+
+# Find instinct-related files  
+find . -name "*.md" | xargs grep -l -i "instinct" 2>/dev/null | head -20
+
+# Look for any GIS, data pipeline, or ETL adjacent skills
+# that might be relevant to FME workspace authoring
+grep -r -i "gis\|geospatial\|etl\|pipeline\|transform" . \
+  --include="*.md" -l 2>/dev/null
+
+grep -r -i "gis\|geospatial\|etl\|pipeline\|transform" . \
+  --include="*.json" -l 2>/dev/null
 ```
 
-Instincts are typically short heuristic rules like:
-- "Always read existing code before modifying it"
-- "Prefer reversible operations"
-- "Ask for clarification when requirements have two valid interpretations"
+> **What you're looking for:** Any skills that map to: data pipeline authoring, ETL task specification, API/schema-first development, or research-first patterns. None may directly mention FME — that's fine. The question is which skills' *structure* is transferable to your FME workspace authoring task.
 
-Note which instincts would be **high-value for FME workspace authoring specifically**.
+#### Step B6 — Identify the Most Relevant Skills for Your Task
 
----
-
-### Phase 2: Create an FME-Specific Skills Module
-
-This is where you translate your domain knowledge into the everything-claude-code format.
-
-#### Step 2.1 — Create a Working Directory
+Based on your exploration, select 2–3 skills or instinct modules to apply. Document your selection:
 
 ```bash
-# Create a local workspace for this experiment
-mkdir ~/projects/fme-claude-benchmark
-cd ~/projects/fme-claude-benchmark
+cat > ~/ecc-benchmark/ecc-skill-selection.md << 'EOF'
+# ECC Skills Selected for FME Benchmark
 
-# Create subdirectories mirroring the everything-claude-code structure
-mkdir -p skills instincts memory
-```
+## Skills Chosen
+1. [Skill name] — Reason: ___
+2. [Skill name] — Reason: ___
+3. [Instinct module name] — Reason: ___
 
-#### Step 2.2 — Write an FME Workspace Authoring Skill
+## Skills Reviewed but Not Selected
+- [Skill name] — Why skipped: ___
 
-Create `skills/fme-workspace-authoring.md`:
-
-```bash
-cat > skills/fme-workspace-authoring.md << 'EOF'
-# Skill: FME Workspace Authoring
-
-## Domain
-Safe Software FME (Feature Manipulation Engine) workspace design and implementation.
-
-## Capability Scope
-- Design transformer chains for spatial and tabular data transformation
-- Write Python callout scripts compatible with FME's scripting environment
-- Configure Reader and Writer parameters for common formats (GeoJSON, Shapefile, PostGIS, WFS, CSV)
-- Apply coordinate reference system (CRS) transformations using appropriate FME transformers
-- Structure workspaces for the Globe & Atlas pipeline conventions
-
-## Activation Trigger
-Activate this skill when the user's request mentions: FME, workspace, transformer, .fmw, 
-FeatureReader, FeatureWriter, FMEObjects, Python callout, CRS reprojection, 
-Safe Software, Globe & Atlas pipeline.
-
-## Research-First Protocol
-Before proposing any transformer chain:
-1. Confirm the input data format and schema
-2. Confirm the target output format and schema
-3. Identify the CRS of input and whether reprojection is needed
-4. Ask: "Does an existing transformer handle this, or is a custom Python callout needed?"
-
-## Output Contract
-All FME workspace descriptions must include:
-- Transformer list in order (Reader → [chain] → Writer)
-- For each transformer: name, key parameters, purpose in one sentence
-- Any Python callout scripts in full, with inline comments
-- Explicit CRS handling steps if projection change is involved
-- Known failure modes and how the workspace handles them
-
-## Quality Gates
-- [ ] Workspace handles null/missing geometry gracefully
-- [ ] All attribute names follow the target schema exactly (case-sensitive)
-- [ ] CRS is explicitly set at the Writer, not assumed
-- [ ] Python callouts include try/except blocks
-- [ ] Large dataset considerations noted (chunking, streaming if applicable)
-
-## Globe & Atlas Specific Conventions
-- Output CRS: EPSG:4326 unless otherwise specified
-- Attribute naming: snake_case
-- Null geometry: log and pass-through, do not discard
-- Workspace naming: [source]_to_[target]_[version].fmw
-
-## Anti-Patterns (Never Do)
-- Do not use deprecated FME transformers (check FME version compatibility)
-- Do not hardcode file paths — use Published Parameters
-- Do not assume input CRS — always read it from the data or ask
-- Do not leave Python callouts without error handling
-EOF
-```
-
-#### Step 2.3 — Write an FME-Specific Instincts File
-
-Create `instincts/fme-instincts.md`:
-
-```bash
-cat > instincts/fme-instincts.md << 'EOF'
-# Instincts: FME Workspace Authoring
-
-These are fast heuristics applied before deep reasoning begins.
-
-## Instinct 1: Schema First
-Before designing any transformer chain, ask for or infer the input and output schema.
-A workspace designed against the wrong schema wastes all subsequent effort.
-
-## Instinct 2: Transformer Exists, Probably
-FME has 500+ transformers. Before suggesting a Python callout, check whether a 
-native transformer handles the transformation. Python callouts are maintenance debt.
-
-## Instinct 3: CRS Is Never Obvious
-Never assume the input CRS matches the output CRS. Always make CRS handling explicit,
-even if it's a no-op (add a CoordinateSystemSetter with "as-is" to document intent).
-
-## Instinct 4: Published Parameters Over Hardcoding
-Any file path, database connection, or environment-specific value must be a 
-Published Parameter. This is the difference between a reusable workspace and a 
-one-time script.
-
-## Instinct 5: Test With Small Data First
-When proposing a workspace design, always note which transformer is the best 
-"sample point" to run a partial test before full execution.
-
-## Instinct 6: Reversibility
-Prefer non-destructive workspace designs. Write to new output rather than 
-overwriting source. Flag any operation that modifies source data.
-EOF
-```
-
-#### Step 2.4 — Create a Memory Seed File
-
-This simulates the persistent memory feature — context that Claude loads at session start:
-
-```bash
-cat > memory/fme-project-context.md << 'EOF'
-# Project Memory: Globe & Atlas FME Pipeline
-
-## Project Overview
-Building FME workspaces for the Globe & Atlas data pipeline. Primary role:
-transform heterogeneous geospatial source data into standardised GeoJSON/PostGIS
-outputs for the Atlas web application.
-
-## Active Pipeline Components
-- Source formats in use: Shapefile, WFS, GeoJSON, CSV with WKT geometry, PostGIS
-- Target format: PostGIS (primary), GeoJSON (secondary/export)
-- Standard output CRS: EPSG:4326
-- FME version: [YOUR VERSION HERE]
-
-## Conventions Established
-- snake_case attribute names
-- Null geometry: log to feature_log table, continue processing
-- Published Parameters required for all connection strings
-- Workspace versioning in filename: v1, v2, etc.
-
-## Recently Solved Patterns
-[You will populate this as you work — add successful transformer patterns here]
-
-## Known Problem Areas
-[Add tricky edge cases you've encountered]
+## Gap Assessment
+Skills I expected to exist but didn't find:
+- ___
 EOF
 ```
 
 ---
 
-### Phase 3: Set Up the Benchmark Experiment
+### Phase C — Run the ECC-Augmented Benchmark
 
-Now you'll run your task twice — once with your original CLAUDE.md approach, once with the everything-claude-code skills/instincts approach — and measure the difference.
-
-#### Step 3.1 — Prepare the Control Run Environment
+#### Step C1 — Set Up the ECC-Augmented Project
 
 ```bash
-# Create a directory for the control (baseline) run
-mkdir -p ~/projects/fme-claude-benchmark/runs/control
-cd ~/projects/fme-claude-benchmark/runs/control
+mkdir ~/ecc-benchmark/ecc-run
+cd ~/ecc-benchmark/ecc-run
 
-# Copy your existing CLAUDE.md here
-cp ~/path/to/your/existing/CLAUDE.md ./CLAUDE.md
+# Copy your task definition
+cp ~/ecc-benchmark/task.txt .
 
-# Verify it's there
-cat CLAUDE.md
+# Do NOT copy your existing CLAUDE.md — you're testing ECC's approach
+# Instead, you will construct a CLAUDE.md (or equivalent) 
+# using ECC's skills modules as the directive source
 ```
 
-#### Step 3.2 — Prepare the Treatment Run Environment
+#### Step C2 — Construct an ECC-Based Directive
+
+The ECC system extends Claude Code at the `CLAUDE.md` layer. Based on the skills you selected in Step B6, compose a new directive that uses ECC's structured format rather than your hand-written one:
 
 ```bash
-# Create a directory for the treatment (skills/instincts) run
-mkdir -p ~/projects/fme-claude-benchmark/runs/treatment
-cd ~/projects/fme-claude-benchmark/runs/treatment
+# Create a new CLAUDE.md that references ECC skills
+cat > ~/ecc-benchmark/ecc-run/CLAUDE.md << 'EOF'
+# ECC-Augmented Directive for FME Workspace Authoring Benchmark
 
-# Create a new CLAUDE.md that loads the skills and instincts modules
-cat > CLAUDE.md << 'EOF'
-# Claude Code Directive: FME Workspace Authoring (Skills/Instincts Mode)
+## Active Skills
+[Reference the ECC skills you selected in Step B6 here.
+Copy the actual skill content or reference path from the ECC repo.]
 
-## Active Modules
-The following skill and instinct files govern your behaviour in this session.
-Read and apply all of them before responding to any task.
+## Active Instincts
+[Reference any instinct modules from ECC here.]
 
-@../../skills/fme-workspace-authoring.md
-@../../instincts/fme-instincts.md
-@../../memory/fme-project-context.md
+## Task Context
+Domain: FME workspace authoring, GIS data pipelines
+Platform: FME 2024
+Output format: [your preferred format — JSON workspace spec, pseudocode, etc.]
 
-## Session Behaviour
-- Apply the Research-First Protocol from the FME skill before proposing solutions
-- Check all Quality Gates before presenting a final workspace design
-- Follow Globe & Atlas conventions without being asked
-- State which instincts you applied at the end of each major response
-
-## Meta-Instruction
-If asked to do something that conflicts with the anti-patterns list in the FME skill,
-note the conflict and propose a compliant alternative.
+## NOTE FOR BENCHMARK INTEGRITY
+This CLAUDE.md was constructed using ECC skills modules ONLY.
+No content was carried over from the baseline CLAUDE.md.
 EOF
 ```
 
-> **Note on `@file` syntax:** Claude Code supports file inclusion via `@path/to/file` in CLAUDE.md. If your version doesn't support this, inline the content directly — the structure still applies, it's just less modular.
+> **Critical for benchmark integrity:** The point is to test what ECC's skills give you *without* your existing CLAUDE.md knowledge. If you paste your entire CLAUDE.md into this file and just add ECC skills on top, you're not measuring ECC — you're measuring ECC + your existing work. Keep them separate.
 
-#### Step 3.3 — Create Your Measurement Scorecard
-
-```bash
-cat > ~/projects/fme-claude-benchmark/scorecard.md << 'EOF'
-# Benchmark Scorecard: CLAUDE.md vs Skills/Instincts
-
-## Task Description
-[Paste your benchmark task description here]
-
----
-
-## Run 1: Control (Existing CLAUDE.md)
-
-### Setup
-- CLAUDE.md approach: [describe your current approach briefly]
-- Session start time: 
-- Session end time:
-
-### Metrics
-| Metric | Value |
-|---|---|
-| Iteration count (prompts to acceptable output) | |
-| Approximate token usage (input) | |
-| Approximate token usage (output) | |
-| Estimated cost (USD) | |
-
-### Output Quality Assessment
-| Criterion | Score (1–5) | Notes |
-|---|---|---|
-| Correctness (workspace would run) | | |
-| Completeness (all requirements met) | | |
-| FME conventions followed | | |
-| Globe & Atlas conventions followed | | |
-| Code quality (Python callouts if any) | | |
-| How much manual editing needed after? | | |
-
-### Qualitative Notes
-[What did Claude get right first try? What needed correction?]
-
----
-
-## Run 2: Treatment (Skills/Instincts Modules)
-
-### Setup  
-- Skills loaded: fme-workspace-authoring.md, fme-instincts.md, fme-project-context.md
-- Session start time:
-- Session end time:
-
-### Metrics
-| Metric | Value |
-|---|---|
-| Iteration count (prompts to acceptable output) | |
-| Approximate token usage (input) | |
-| Approximate token usage (output) | |
-| Estimated cost (USD) | |
-
-### Output Quality Assessment
-| Criterion | Score (1–5) | Notes |
-|---|---|---|
-| Correctness (workspace would run) | | |
-| Completeness (all requirements met) | | |
-| FME conventions followed | | |
-| Globe & Atlas conventions followed | | |
-| Code quality (Python callouts if any) | | |
-| How much manual editing needed after? | | |
-
-### Qualitative Notes
-[What did Claude get right first try? What needed correction?]
-[Did it explicitly invoke the Research-First Protocol?]
-[Did it check Quality Gates unprompted?]
-
----
-
-## Delta Analysis
-
-| Metric | Control | Treatment | Delta | Verdict |
-|---|---|---|---|---|
-| Iterations | | | | |
-| Token cost | | | | |
-| Quality score (avg) | | | | |
-| Time to acceptable output | | | | |
-
-## Key Finding
-[One paragraph: what does this data point tell you about whether skills/instincts
-modules improve your FME workflow enough to justify the setup overhead?]
-
-## Decision
-- [ ] Adopt skills/instincts approach wholesale
-- [ ] Hybrid: keep CLAUDE.md but add specific skills modules for complex tasks
-- [ ] No change: existing CLAUDE.md is sufficient
-- [ ] Need more data points before deciding
-EOF
-```
-
----
-
-### Phase 4: Execute the Control Run
-
-#### Step 4.1 — Start a Fresh Claude Code Session (Control)
+#### Step C3 — Run the Benchmark Task with ECC
 
 ```bash
-cd ~/projects/fme-claude-benchmark/runs/control
+cd ~/ecc-benchmark/ecc-run
 
-# Start Claude Code — it will auto-load CLAUDE.md from the current directory
+# Open a fresh Claude Code session — cold start, same as baseline
 claude
 ```
 
-#### Step 4.2 — Run Your Benchmark Task
+Paste the **exact same task text** from `task.txt`. Same task, same wording. This is non-negotiable for a valid comparison.
 
-Use the **exact same prompt** you used when you originally solved the task. Do not add extra context. The goal is to reproduce the original conditions.
-
-```
-# Example structure of what to paste:
-"I need an FME workspace that [your original task description]. 
-The input is [format/source]. The output should be [format/target]."
-```
-
-#### Step 4.3 — Track Iterations Carefully
-
-Keep a tally in a scratch file as you work:
+#### Step C4 — Record ECC Metrics
 
 ```bash
-# In a separate terminal
-cat > ~/projects/fme-claude-benchmark/control-log.md << 'EOF'
-# Control Run — Iteration Log
+cat > ~/ecc-benchmark/ecc-metrics.md << 'EOF'
+# ECC Metrics — Skills/Instincts Approach
+Date: [TODAY — same day as baseline ideally]
+Task: [SAME ONE-LINE DESCRIPTION AS BASELINE]
+ECC Version: v2.0.0-rc.1 (or check your clone's git tag)
+Skills Used: [list them]
 
-## Iteration 1
-Prompt: [what you sent]
-Response quality: [good/partial/wrong]
-Correction needed: [yes/no — describe]
+## Iteration Count
+- Number of back-and-forth exchanges before acceptable output: ___
+- Number of corrections you had to make: ___
 
-## Iteration 2
-...
+## Token Cost
+- Input tokens: ___
+- Output tokens: ___
+- Total cost (USD): ___
+
+## Output Quality Score (0-10 scale — SAME RUBRIC AS BASELINE)
+- Correct transformer selection: ___/10
+- Parameter completeness: ___/10
+- FME best-practice adherence: ___/10
+- Output schema correctness: ___/10
+- Overall: ___/10
+
+## Raw Output
+[Paste or link the generated workspace description/script here]
+
+## Notes
+- Where did it struggle?
+- What did you have to correct?
+- What did ECC add that baseline missed?
+- What did baseline have that ECC missed?
 EOF
 ```
 
-#### Step 4.4 — Record Final Metrics
-
-When you reach an acceptable output:
-
-1. Check your Claude console (console.anthropic.com) or the session's token display for usage
-2. Count total iterations
-3. Save the final output to `runs/control/output/`
-4. Fill in the Control section of `scorecard.md`
-
 ---
 
-### Phase 5: Execute the Treatment Run
+### Phase D — Analysis and Tool Critic Data Point
 
-#### Step 5.1 — Start a Fresh Claude Code Session (Treatment)
-
-> **Critical:** Use a completely fresh session. Do not continue from the control session — you want no memory carryover.
+#### Step D1 — Generate the Delta Report
 
 ```bash
-cd ~/projects/fme-claude-benchmark/runs/treatment
+cat > ~/ecc-benchmark/delta-report.md << 'EOF'
+# Tool Critic Data Point — ECC vs CLAUDE.md Benchmark
+Date: ___
+Task: ___
 
-# New session — loads the skills/instincts CLAUDE.md
-claude
+## The Delta
+
+| Metric | Baseline (CLAUDE.md) | ECC Skills/Instincts | Delta | Winner |
+|--------|---------------------|----------------------|-------|--------|
+| Iteration count | ___ | ___ | ___ | ___ |
+| Input tokens | ___ | ___ | ___ | ___ |
+| Output tokens | ___ | ___ | ___ | ___ |
+| Total cost (USD) | ___ | ___ | ___ | ___ |
+| Quality: Transformer selection | ___/10 | ___/10 | ___ | ___ |
+| Quality: Parameter completeness | ___/10 | ___/10 | ___ | ___ |
+| Quality: FME best practices | ___/10 | ___/10 | ___ | ___ |
+| Quality: Schema correctness | ___/10 | ___/10 | ___ | ___ |
+| **Quality: OVERALL** | **___/10** | **___/10** | **___** | **___** |
+
+## Qualitative Observations
+
+### What ECC Skills Added
+-
+-
+-
+
+### What Your CLAUDE.md Has That ECC Didn't Cover
+-
+-
+-
+
+### Failure Modes
+- ECC failures: ___
+- CLAUDE.md failures: ___
+
+## Verdict
+
+### Should you adopt ECC for FME workspace authoring?
+[ ] Yes — fully replace CLAUDE.md
+[ ] Partial — use ECC skills + port your CLAUDE.md knowledge into ECC format
+[ ] No — CLAUDE.md performs better for this specific domain
+[ ] Hybrid — use ECC memory/hooks layer but keep CLAUDE.md skill content
+
+### Estimated ROI for Globe & Atlas Pipeline
+If ECC reduces iteration count by ___%, and you run ___ FME authoring sessions/week,
+that's approximately ___ minutes saved per week.
+
+At Claude Code token costs, the token delta is $___ per session.
+
+## Action Item
+[ONE CONCRETE NEXT STEP based on what you found]
+EOF
 ```
 
-#### Step 5.2 — Verify Skills Were Loaded
+#### Step D2 — Honest Self-Assessment Questions
 
-Before running your task, ask Claude to confirm its loaded context:
+Answer these in your delta report:
 
-```
-What skills and instincts are you operating with in this session? 
-List the key constraints and protocols you'll apply to FME workspace tasks.
-```
-
-A good response will demonstrate it has absorbed:
-- The Research-First Protocol
-- The Output Contract (transformer list format, etc.)
-- The Quality Gates
-- The Anti-Patterns
-
-If the response is vague or generic, check your `@file` includes are working — you may need to inline the content.
-
-#### Step 5.3 — Run the Exact Same Benchmark Task
-
-Use the **identical prompt** as the control run. Resist the temptation to rephrase it — you're testing the harness, not the prompt quality.
-
-#### Step 5.4 — Observe Behavioural Differences
-
-Watch for:
-
-```
-Positive signals (skills/instincts working):
-  ✓ Claude asks about input schema before proposing a solution
-  ✓ Claude explicitly checks for native transformers before suggesting Python
-  ✓ Output format matches the Output Contract (transformer list, then config, then code)
-  ✓ CRS handling is explicit and unprompted
-  ✓ Published Parameters are used without being asked
-  ✓ Claude mentions which Quality Gates it checked
-
-Negative signals (skills/instincts not working):
-  ✗ Response identical to control — skills not being applied
-  ✗ More iterations needed because Research-First Protocol creates friction
-  ✗ Quality Gates flagged issues that required extra rounds of correction
-```
-
-#### Step 5.5 — Record Final Metrics
-
-Repeat the same logging process as the control run. Fill in the Treatment section of `scorecard.md`.
-
----
-
-### Phase 6: Analyse the Delta
-
-#### Step 6.1 — Complete the Scorecard
-
-```bash
-# Open and complete your scorecard
-open ~/projects/fme-claude-benchmark/scorecard.md
-# or: code scorecard.md / vim scorecard.md
-```
-
-#### Step 6.2 — Calculate the Deltas
-
-Use this calculation template:
-
-```
-Iteration Delta = Control_Iterations - Treatment_Iterations
-  Positive = skills/instincts reduced iterations ✓
-  Negative = skills/instincts added friction ✗
-  Zero = no difference
-
-Cost Delta = Control_Cost - Treatment_Cost
-  Note: Treatment may have HIGHER input token cost (larger CLAUDE.md context)
-  but LOWER total cost if fewer iterations are needed.
-  Calculate: net_cost_delta = (control_total) - (treatment_total)
-
-Quality Delta = Treatment_AvgScore - Control_AvgScore
-  Positive = skills/instincts improved output quality ✓
-```
-
-#### Step 6.3 — Interpret Your Results
-
-Use this decision matrix:
-
-```
-┌─────────────────────────────────┬───────────────────────────────────┐
-│ Result Pattern                  │ Interpretation                    │
-├─────────────────────────────────┼───────────────────────────────────┤
-│ Fewer iterations + lower cost   │ Strong adopt signal               │
-│ + higher quality                │                                   │
-├─────────────────────────────────┼───────────────────────────────────┤
-│ Fewer iterations + higher cost  │ Quality/speed trade-off —        │
-│ + higher quality                │ worth it for complex tasks        │
-├─────────────────────────────────┼───────────────────────────────────┤
-│ Same iterations + higher cost   │ Skills overhead not justified     │
-│ + same quality                  │ for this task type                │
-├─────────────────────────────────┼───────────────────────────────────┤
-│ More iterations + any cost      │ Skills files need refinement      │
-│                                 │ or task is too simple to benefit  │
-├─────────────────────────────────┼───────────────────────────────────┤
-│ Fewer iterations + lower cost   │ Skills modularise value but       │
-│ + same quality                  │ quality ceiling is already met    │
-└─────────────────────────────────┴───────────────────────────────────┘
-```
+1. **Did ECC's skills structure force you to think more clearly about the task before running it?** (Research-first pattern benefit)
+2. **Did ECC's output require less domain correction than your CLAUDE.md output?** This reveals whether your CLAUDE.md is over-fitted to your mental model vs. whether ECC's general patterns transfer better.
+3. **Was the token cost higher for ECC?** More structured prompts are often longer — the question is whether the quality-per-token ratio is better.
+4. **Which approach would be easier to hand to a colleague?** This reveals maintainability, which matters as your Globe & Atlas team grows.
 
 ---
 
 ## 4. Validation
 
-### How to Know You Completed This Successfully
+You've completed this exercise successfully when all of the following are true:
 
-Work through this checklist. Every item should be checkable.
-
-#### Setup Validation
-- [ ] `everything-claude-code` repo cloned and explored
-- [ ] You can articulate the difference between a **skill** and an **instinct** in this system
-- [ ] You identified at least 3 patterns from the repo's own CLAUDE.md worth adapting
-- [ ] `skills/fme-workspace-authoring.md` created with all sections present
-- [ ] `instincts/fme-instincts.md` created with at least 4 instincts
-- [ ] `memory/fme-project-context.md` created and populated with real project context
-
-#### Execution Validation
-- [ ] Control run completed with the original benchmark task
-- [ ] Treatment run completed with the **identical** prompt
-- [ ] Both runs logged with iteration counts
-- [ ] Token usage captured for both runs (even if approximate)
-
-#### Analysis Validation
-- [ ] `scorecard.md` fully completed for both runs
-- [ ] Delta row calculated for iterations, cost, and quality
-- [ ] A written "Key Finding" paragraph exists (not a template placeholder)
-- [ ] A decision is recorded (adopt / hybrid / no change / more data needed)
-
-#### The Acid Test
-
-Run this self-check:
+### Checklist
 
 ```
-Can you answer these three questions from memory?
-  1. In the treatment run, did Claude apply the Research-First Protocol? 
-     How do you know?
-  2. What was the iteration count delta?
-  3. Based on your data, would you adopt skills/instincts for your next 
-     Globe & Atlas workspace task?
+[ ] CLONE COMPLETE
+    - everything-claude-code repo cloned to ~/ecc-benchmark/everything-claude-code
+    - npm install completed without fatal errors
+    - You can locate the skills directory in the repo
+
+[ ] BASELINE RECORDED
+    - baseline-metrics.md exists and is filled in completely
+    - Raw output from baseline session is saved
+    - Token costs are recorded (not estimated)
+
+[ ] ECC RUN COMPLETE
+    - ecc-metrics.md exists and is filled in completely
+    - You used the SAME task text for both runs
+    - ECC-run CLAUDE.md was constructed from ECC skills, NOT copied from baseline
+    - Raw output from ECC session is saved
+
+[ ] DELTA REPORT COMPLETE
+    - delta-report.md exists with all table cells filled
+    - You have a written verdict (even if "inconclusive — need more data")
+    - You have ONE concrete action item
+
+[ ] TOOL CRITIC DATA POINT CAPTURED
+    - The delta report is committed or saved somewhere you'll find it
+    - You can articulate the finding in one sentence:
+      "ECC skills [improved / degraded / had no effect on] FME workspace 
+       authoring quality by [X] while [increasing / decreasing / not changing] 
+       token cost by [Y%] and [reducing / increasing] iteration count by [Z]."
 ```
 
-If you can answer all three clearly, you've completed the exercise with full understanding.
+### Quality Gate for the Output Comparison
+
+The output comparison is only valid if:
+
+- Both runs used identical task text (verify with `diff baseline-run/task.txt ecc-run/task.txt`)
+- Both sessions were cold-start (no prior context carryover)
+- You used the same quality rubric for both (same 4 dimensions, same 0–10 scale)
+- You scored both outputs *before* writing the delta (avoid anchoring bias)
 
 ---
 
 ## 5. Next Steps
 
-### Immediate (This Week)
+Based on what your delta reveals, three paths forward:
 
-**5.1 — Run a Second Benchmark Task**
+### Path A: ECC Wins on Quality or Token Efficiency
 
-One data point is anecdote. Two starts to be pattern. Pick a different FME task — ideally one that:
-- Is *more complex* than the first (more transformers, Python callout required)
-- Or tests a *different task type* (debugging an existing workspace vs. building new)
+If ECC's skills/instincts produced better FME output or lower token cost:
 
-Add a Run 3 to your scorecard and see if the delta holds.
-
-**5.2 — Refine Your Skills File**
-
-After the benchmark, you almost certainly noticed gaps. Update `fme-workspace-authoring.md`:
+1. **Port your CLAUDE.md knowledge into ECC skill format** — Structure your FME conventions as composable ECC skills rather than a monolithic directive. The source material confirms 208 skills exist as reference patterns.
+2. **Activate ECC's memory hooks** for your Globe & Atlas sessions — persistent context across sessions means you stop re-explaining your PostGIS schema, your FME version, and your coordinate reference system conventions every cold start.
+3. **Explore the Hermes operator story** — the source material points to `docs/HERMES-SETUP.md` for the operator workflow, which may map to your pipeline orchestration needs.
 
 ```bash
-# Add to the "Patterns" section any transformer chains that worked well
-# Tighten anti-patterns based on mistakes Claude made
-# Add any Globe & Atlas-specific vocabulary that was missing
+# Start the Hermes setup if Path A applies
+cat ~/ecc-benchmark/everything-claude-code/docs/HERMES-SETUP.md
 ```
 
-### Short Term (Next 2–4 Weeks)
+### Path B: Your CLAUDE.md Wins
 
-**5.3 — Build a Skills Library**
+If your existing approach outperforms ECC for FME workspace authoring:
 
-Your FME work likely spans several recurring sub-domains. Consider separate skill files for each:
+1. **Document why** — your CLAUDE.md likely contains FME-specific domain knowledge that ECC's general skills don't have. That's a feature, not a failure.
+2. **Selectively adopt ECC's infrastructure** without replacing your content — memory hooks and session persistence are valuable regardless of skill quality.
+3. **Contribute back** — if you've built strong FME/GIS skills in your CLAUDE.md, they're candidates for ECC contributions. The repo has 170+ contributors.
 
-```
-skills/
-├── fme-workspace-authoring.md     ← already built
-├── fme-python-callouts.md         ← Python scripting patterns
-├── fme-postgis-integration.md     ← PostGIS-specific reader/writer configs
-├── fme-coordinate-systems.md      ← CRS transformation patterns
-└── fme-debugging.md               ← Diagnosing workspace failures
-```
+### Path C: Results Are Mixed or Inconclusive
 
-**5.4 — Implement Persistent Memory Properly**
+1. **Run a second benchmark with a different FME task** — one data point is not enough. Pick a task from a different part of your workflow (e.g., coordinate transformation instead of attribute filtering).
+2. **Test the continuous learning loop** — the source material describes auto-extraction of patterns from sessions into reusable skills. Run 3–5 ECC sessions on related FME tasks and see if the instincts improve.
+3. **Review the Longform Guide** for token optimization and memory persistence techniques before concluding:
+   ```
+   https://x.com/affaanmustafa/status/2014040193557471352
+   ```
 
-The memory seed file you created is static. Look at the `memory/` directory in everything-claude-code for patterns on:
-- How to structure memory for append-over-time (not just read-once)
-- Session end prompts that extract learnings back into memory files
-- How to avoid memory files becoming bloated/noisy
+### Ongoing: Feed This Into Your Tool Critic Practice
 
-**5.5 — Measure Token Overhead of Skills Files**
-
-Your treatment CLAUDE.md is larger — calculate the overhead:
+The structured delta report you created here is the template. Apply it to every tool evaluation:
 
 ```bash
-# Rough token estimate: ~4 characters per token
-wc -c skills/fme-workspace-authoring.md instincts/fme-instincts.md memory/fme-project-context.md
-# Divide total chars by 4 for approximate token count
-# This is your per-session overhead cost — is it paid back in fewer iterations?
+# Save the template for future benchmarks
+cp ~/ecc-benchmark/delta-report.md ~/ecc-benchmark/TOOL-CRITIC-TEMPLATE.md
+
+# Clear the values, keep the structure
+# Use it for: MCP server evaluations, new FME transformer AI suggestions,
+# Globe & Atlas pipeline tooling decisions
 ```
-
-### Medium Term (Next Quarter)
-
-**5.6 — Contribute Back to everything-claude-code**
-
-Your FME skills module is genuinely novel — the repo doesn't have geospatial/ETL domain skills. Consider:
-- Opening a PR with your FME skill as an example domain module
-- Filing an issue if you found the harness pattern unclear or missing features
-
-**5.7 — Automate the Benchmark**
-
-Once you have 5+ data points, create a lightweight benchmark runner:
-
-```bash
-#!/bin/bash
-# benchmark-run.sh
-# Usage: ./benchmark-run.sh "task description" control|treatment
-
-TASK="$1"
-MODE="$2"
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-LOG_FILE="runs/${MODE}_${TIMESTAMP}.log"
-
-echo "=== Benchmark Run: $MODE ===" > "$LOG_FILE"
-echo "Task: $TASK" >> "$LOG_FILE"
-echo "Start: $(date)" >> "$LOG_FILE"
-
-# Launch Claude Code in the appropriate directory
-cd "runs/$MODE"
-claude --print "Benchmark task: $TASK" | tee -a "../../$LOG_FILE"
-
-echo "End: $(date)" >> "$LOG_FILE"
-```
-
-**5.8 — Apply the Pattern Beyond FME**
-
-The skills/instincts/memory pattern is domain-agnostic. Once validated for FME, ask:
-- What other recurring Claude Code tasks do you do where this pattern would help?
-- Globe & Atlas frontend work? Data QA scripts? Documentation generation?
-
-Each new domain you apply it to is another Tool Critic data point about where structured prompting earns its overhead vs. where a simple CLAUDE.md stays leaner and faster.
 
 ---
 
@@ -784,27 +507,34 @@ Each new domain you apply it to is another Tool Critic data point about where st
 ### Key Files Created in This Exercise
 
 ```
-~/projects/fme-claude-benchmark/
-├── scorecard.md                          ← Your benchmark results
-├── control-log.md                        ← Control run iteration log
-├── skills/
-│   └── fme-workspace-authoring.md        ← FME domain skill
-├── instincts/
-│   └── fme-instincts.md                  ← FME heuristics
-├── memory/
-│   └── fme-project-context.md            ← Project memory seed
-└── runs/
-    ├── control/
-    │   ├── CLAUDE.md                     ← Your original directive
-    │   └── output/                       ← Control run outputs
-    └── treatment/
-        ├── CLAUDE.md                     ← Skills/instincts loader
-        └── output/                       ← Treatment run outputs
+~/ecc-benchmark/
+├── task.txt                      # Your benchmark task (shared by both runs)
+├── baseline-metrics.md           # CLAUDE.md approach results
+├── ecc-metrics.md               # ECC approach results
+├── delta-report.md              # Your Tool Critic data point
+├── ecc-skill-selection.md       # Which ECC skills you chose and why
+├── TOOL-CRITIC-TEMPLATE.md      # Reusable template for future evals
+├── baseline-run/
+│   └── CLAUDE.md                # Your existing directive
+└── ecc-run/
+    └── CLAUDE.md                # ECC-constructed directive
 ```
 
-### The Core Insight to Carry Forward
+### ECC npm Packages (from source)
 
-> A `CLAUDE.md` directive tells Claude *who it is in this session*.  
-> A skills/instincts module tells Claude *how to think before it acts*.  
-> Memory tells Claude *what it already knows*.  
-> The delta you measured tells you *which layer of that stack is worth the overhead for your specific work*.
+| Package | Purpose |
+|---|---|
+| `ecc-universal` | Main installation — skills, agents, shims |
+| `ecc-agentshield` | Security scanning layer |
+
+### Token Tracking in Claude Code
+
+```bash
+# During a session, check accumulated cost:
+/cost
+
+# After a session, check logs:
+ls ~/.claude/logs/ 2>/dev/null || ls ~/.config/claude/logs/ 2>/dev/null
+```
+
+> **One final note on honesty:** The source material for ECC is extensive but the tutorial above is explicit where the source content does not provide specific CLI syntax (e.g., exact `ecc-universal` subcommands, exact skills directory names). In those gaps, you're instructed to explore the actual clone rather than trust invented details. That exploration *is* part of the exercise — your first-hand findings are more valuable than any pre-written command that might be stale.
