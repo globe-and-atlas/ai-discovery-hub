@@ -117,3 +117,5 @@
 - 2026-05-13 15:03 — expand_lab.py → completed | item 5: Build a Statistical Prompt Evaluation Harness for Your Claud
 - 2026-05-17 09:29 — commit: feat: initialize project architecture with standardized AI directives, knowledge tracking, and execution modules. | AGENTS.md,CLAUDE.md,GEMINI.md,README.md,curriculums/2026-05-13-benchmark-everything-claude-code-skills-module-against-your-current-claude-md-approach.md
 - 2026-05-17 09:33 — commit: docs: record project architecture initialization and standardized AI directives in SESSION.md | knowledge/SESSION.md
+- 2026-05-20 22:00 — commit: chore: update SESSION.md | knowledge/SESSION.md
+- 2026-05-20 22:05 — commit: docs: rewrite README with full source documentation and pipeline walkthrough | README.md
