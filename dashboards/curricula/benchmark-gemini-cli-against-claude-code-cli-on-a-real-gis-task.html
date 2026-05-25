@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Benchmark Gemini CLI Against Claude Code CLI on a Real GIS Task — Lab Tutorial</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080b12; --bg2: #0e1220; --bg3: #151c2e; --bg4: #1d2540;
+    --border: #252e4a; --border2: #36416a; --text: #e6eaf4;
+    --text2: #8e9ab8; --text3: #58678e; --blue: #5b8af7;
+    --green: #34d89a; --orange: #f97c3c; --yellow: #f5c842;
+    --teal: #38c9d4; --cyan: #4fd9f5; --purple: #7c5cfc;
+    --font-sans: 'Inter', -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:var(--font-sans); line-height:1.7; }
+  .page { max-width:780px; margin:0 auto; padding:48px 32px 80px; }
+  .back { margin-bottom:32px; }
+  .back a { font-size:12px; font-family:var(--font-mono); color:var(--text3); text-decoration:none; border:1px solid var(--border); padding:6px 14px; border-radius:6px; transition:.15s; }
+  .back a:hover { color:var(--blue); border-color:var(--blue); }
+  .page-title { font-size:26px; font-weight:900; letter-spacing:-.4px; color:var(--text); margin-bottom:10px; line-height:1.25; }
+  .page-meta { font-size:11px; font-family:var(--font-mono); color:var(--text3); margin-bottom:40px; padding-bottom:24px; border-bottom:1px solid var(--border); }
+  h2.cur-h2 { font-size:19px; font-weight:800; color:var(--text); margin:40px 0 10px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+  h3.cur-h3 { font-size:15px; font-weight:700; color:var(--text2); margin:28px 0 8px; }
+  h4.cur-h4 { font-size:12.5px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.6px; margin:20px 0 6px; }
+  p.cur-p { font-size:14px; color:var(--text2); margin-bottom:12px; }
+  ul.cur-list { font-size:14px; color:var(--text2); margin:8px 0 14px 20px; }
+  ul.cur-list li { margin-bottom:6px; line-height:1.6; }
+  ul.cur-ol { list-style:decimal; }
+  pre { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:18px 20px; margin:14px 0 20px; overflow-x:auto; }
+  pre code { font-family:var(--font-mono); font-size:12px; color:var(--green); white-space:pre; line-height:1.6; }
+  code.cur-inline { font-family:var(--font-mono); font-size:12px; background:var(--bg4); color:var(--cyan); padding:2px 6px; border-radius:4px; }
+  strong { color:var(--text); font-weight:700; }
+  .disclaimer { background:rgba(249,124,60,.07); border:1px solid rgba(249,124,60,.3); border-radius:8px; padding:14px 18px; margin-bottom:32px; font-size:13px; color:var(--orange); line-height:1.6; }
+  .disclaimer strong { color:var(--orange); }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="back"><a href="../latest.html">← Back to Hub</a></div>
+  <div class="page-title">Benchmark Gemini CLI Against Claude Code CLI on a Real GIS Task</div>
+  <div class="page-meta">AI Discovery Hub · Lab Tutorial</div>
+  <div class="disclaimer">⚠️ <strong>AI-generated tutorial.</strong> Steps and commands are synthesised from source material and model knowledge — verify against official documentation before running anything in a production environment.</div>
+  <h2 class="cur-h2">Benchmark Gemini CLI Against Claude Code CLI on a Real GIS Task</h2>
+<h3 class="cur-h3">A Tool Critic's Field Guide for GIS/AI Practitioners</h3>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">1. Introduction & Context</h3>
+<p class="cur-p">Google's <strong>Gemini CLI</strong> is an open-source, Apache 2.0-licensed terminal AI agent that drops Gemini directly into your shell — no browser, no IDE extension required. It's a direct structural competitor to Anthropic's Claude Code CLI, and its free tier (60 requests/min, 1,000 requests/day with a personal Google account) makes the barrier to a genuine benchmark effectively zero.</p>
+<p class="cur-p">Why should you run this test yourself? Because every existing Gemini CLI review was written by a general developer. Their benchmarks cover "write a React component" or "explain this Python stack trace." None of them will hand both tools the same <strong>FME workspace generation task</strong> or <strong>Sentinel Hub API scripting problem</strong> and compare:</p>
+<ul class="cur-list">
+<li>Output correctness in a domain with real spatial semantics</li>
+<li>Token transparency and context window utilization (Gemini's 1M-token window is a genuine differentiator)</li>
+<li>Tool-use patterns — does the agent read your local <code class="cur-inline">.fmw</code> files? Does it shell out to GDAL?</li>
+<li>Wall-clock speed under equivalent prompts</li>
+</ul>
+<p class="cur-p">By writing this up as a <strong>Tool Critic piece</strong>, you produce content that general developer reviewers cannot replicate. Your GIS-specific test case is your differentiated signal.</p>
+<p class="cur-p"><strong>What you'll build in this tutorial:</strong></p>
+<ul class="cur-list cur-ol">
+<li>A reproducible benchmark harness: two identical GIS prompts, two CLIs, structured output capture</li>
+<li>A scoring rubric tailored to spatial domain correctness</li>
+<li>A publishable comparison write-up template</li>
+</ul>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">2. Prerequisites</h3>
+<h4 class="cur-h4">Software</h4>
+<p class="cur-p">| Requirement | Minimum Version | Check Command |</p>
+<p class="cur-p">|---|---|---|</p>
+<p class="cur-p">| Node.js | v18+ (LTS recommended) | <code class="cur-inline">node --version</code> |</p>
+<p class="cur-p">| npm | v9+ | <code class="cur-inline">npm --version</code> |</p>
+<p class="cur-p">| Claude Code CLI | Latest | <code class="cur-inline">claude --version</code> |</p>
+<p class="cur-p">| Git | Any recent | <code class="cur-inline">git --version</code> |</p>
+<p class="cur-p">| Python | 3.9+ (for result parsing) | <code class="cur-inline">python3 --version</code> |</p>
+<h4 class="cur-h4">Accounts & Credentials</h4>
+<ul class="cur-list">
+<li><strong>Google Account</strong> — for Gemini CLI OAuth (free tier, no credit card)</li>
+<li><strong>Anthropic account</strong> — Claude Code CLI already authenticated (assumed from your existing workflow)</li>
+<li>Optional: <code class="cur-inline">GOOGLE_CLOUD_PROJECT</code> env var if you have a paid Code Assist license</li>
+</ul>
+<h4 class="cur-h4">GIS-Specific Assets</h4>
+<p class="cur-p">Prepare <strong>at least one</strong> of the following before starting:</p>
+<pre><code>your-benchmark-workspace/
+├── sample.fmw              # An existing FME workspace (even a simple one)
+├── sentinel_area.geojson   # A small AOI polygon for Sentinel Hub queries
+├── sample_data.gpkg        # Optional: a GeoPackage for transformation tasks
+└── GEMINI.md               # We will create this — project context file</code></pre>
+<p class="cur-p">> <strong>If you don't have an <code class="cur-inline">.fmw</code> file handy:</strong> A one-transformer FME workspace reading a Shapefile and writing to GeoJSON is sufficient. Alternatively, use the Sentinel Hub scripting task exclusively — it requires only the <code class="cur-inline">.geojson</code> AOI file.</p>
+<h4 class="cur-h4">Install `jq` and `tee` (for output capture)</h4>
+<pre><code># macOS
+brew install jq
+
+# Ubuntu/Debian
+sudo apt-get install jq</code></pre>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">3. Step-by-Step Guide</h3>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 0 — Set Up Your Benchmark Directory</h4>
+<p class="cur-p">Create a clean, isolated working directory. <strong>Both CLIs will be run from here</strong> so their file-reading tools see identical context.</p>
+<pre><code>mkdir gis-cli-benchmark && cd gis-cli-benchmark
+
+# Copy in your GIS assets
+cp /path/to/your/sample.fmw .
+cp /path/to/your/sentinel_area.geojson .
+
+# Create a timestamped results directory
+mkdir -p results/gemini results/claude</code></pre>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 1 — Install Gemini CLI</h4>
+<p class="cur-p">The source material provides three installation paths. Choose the one that fits your environment:</p>
+<p class="cur-p">#### Option A: Global npm install (recommended for benchmarking — stable, inspectable)</p>
+<pre><code>npm install -g @google/gemini-cli@latest</code></pre>
+<p class="cur-p">Verify:</p>
+<pre><code>gemini --version</code></pre>
+<p class="cur-p">#### Option B: npx (no install, always latest — good for a one-off test)</p>
+<pre><code>npx @google/gemini-cli</code></pre>
+<p class="cur-p">> <strong>Note on release channels:</strong> The source defines <code class="cur-inline">latest</code> (stable, promoted weekly Tuesday 20:00 UTC), <code class="cur-inline">preview</code> (weekly Tuesday 23:59 UTC, less vetted), and <code class="cur-inline">nightly</code> (daily, main branch). For a publishable benchmark, <strong>use <code class="cur-inline">@latest</code></strong> so your results are reproducible by readers. State this explicitly in your write-up.</p>
+<p class="cur-p">#### Option C: Homebrew (macOS/Linux)</p>
+<pre><code>brew install gemini-cli</code></pre>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 2 — Authenticate Gemini CLI</h4>
+<pre><code>gemini</code></pre>
+<p class="cur-p">On first launch, Gemini CLI will prompt you to choose an authentication method. Select <strong>"Sign in with Google"</strong> and complete the browser OAuth flow.</p>
+<p class="cur-p">Once authenticated, you'll land in the interactive REPL. Type <code class="cur-inline">/quit</code> or <code class="cur-inline">Ctrl+C</code> to exit — we'll re-enter with structured prompts in Phase 4.</p>
+<p class="cur-p">> <strong>If you have an organizational Code Assist license</strong>, set your project first:</p>
+<p class="cur-p">> <code class="cur-inline">`</code>bash</p>
+<p class="cur-p">> export GOOGLE_CLOUD_PROJECT="YOUR_PROJECT_ID"</p>
+<p class="cur-p">> gemini</p>
+<p class="cur-p">> <code class="cur-inline">`</code></p>
+<p class="cur-p">> <strong>Free tier limits to note in your write-up:</strong> 60 requests/min, 1,000 requests/day. For a benchmark session, you will not hit these limits.</p>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 3 — Create Your Project Context File (`GEMINI.md`)</h4>
+<p class="cur-p">Gemini CLI supports a <code class="cur-inline">GEMINI.md</code> file in the project root for custom context injection — analogous to Claude's <code class="cur-inline">CLAUDE.md</code>. This is a critical benchmark variable: <strong>if you give Gemini your project context, do the same for Claude.</strong></p>
+<pre><code>cat &gt; GEMINI.md &lt;&lt; 'EOF'
+# GIS Benchmark Project Context
+
+## Environment
+- FME Desktop 2024.x installed, `fme` available on PATH
+- Python 3.11 with `sentinelhub`, `geopandas`, `shapely` installed
+- GDAL 3.8 available via `ogrinfo`, `ogr2ogr`
+
+## Data Assets in This Directory
+- `sample.fmw` — FME workspace: reads a Shapefile, reprojects to EPSG:4326, writes GeoJSON
+- `sentinel_area.geojson` — AOI polygon in EPSG:4326 for Sentinel-2 queries
+
+## Conventions
+- FME workspaces should use Published Parameters for input/output paths
+- Sentinel Hub scripts should use the `sentinelhub` Python library (&gt;=3.9)
+- All output CRS: EPSG:4326 unless otherwise specified
+- Error handling: always include try/except with meaningful spatial context in messages
+
+## Do Not
+- Invent file paths that don't exist in this directory
+- Use deprecated FME transformers (check FME 2024 transformer list)
+EOF</code></pre>
+<p class="cur-p">> <strong>For Claude Code CLI</strong>, create an equivalent <code class="cur-inline">CLAUDE.md</code> with identical content, or symlink it:</p>
+<p class="cur-p">> <code class="cur-inline">`</code>bash</p>
+<p class="cur-p">> cp GEMINI.md CLAUDE.md</p>
+<p class="cur-p">> <code class="cur-inline">`</code></p>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 4 — Define Your Two Benchmark Prompts</h4>
+<p class="cur-p">This is the heart of the exercise. You need prompts that are:</p>
+<ul class="cur-list cur-ol">
+<li><strong>Identical in specification</strong> — both tools get the exact same text</li>
+<li><strong>Spatially specific</strong> — not solvable by a general developer without GIS knowledge</li>
+<li><strong>Verifiable</strong> — output can be checked for correctness</li>
+</ul>
+<p class="cur-p">#### Prompt A: FME Workspace Generation Task</p>
+<pre><code>BENCHMARK_PROMPT_FME="You are an FME workspace developer. 
+Examine the file sample.fmw in this directory to understand the existing pattern.
+Then create a NEW FME workspace called reproject_and_clip.fmw that:
+1. Reads features from an input GeoPackage (Published Parameter: INPUT_GPKG)
+2. Reprojects features from their source CRS to EPSG:3857 (Web Mercator)
+3. Clips features to the bounding box defined in sentinel_area.geojson
+4. Writes the result to an output GeoPackage (Published Parameter: OUTPUT_GPKG)
+5. Adds a Published Parameter called LOG_LEVEL with default value MEDIUM
+
+Use FMEObjects XML format. Include a FeatureReader, Reprojector, Clipper, 
+and FeatureWriter transformer. Add inline comments explaining each transformer's 
+role. Verify your transformer names are valid in FME 2024."</code></pre>
+<p class="cur-p">#### Prompt B: Sentinel Hub API Scripting Task</p>
+<pre><code>BENCHMARK_PROMPT_SENTINEL="Read the file sentinel_area.geojson in this directory.
+Write a complete, runnable Python script that:
+1. Loads the AOI from sentinel_area.geojson using geopandas
+2. Queries Sentinel Hub for Sentinel-2 L2A imagery over that AOI
+3. Filters for scenes with cloud cover &lt; 20% in the last 90 days
+4. Downloads the least-cloudy scene as a GeoTIFF at 10m resolution
+5. Computes NDVI from bands B04 and B08
+6. Saves the NDVI raster as ndvi_output.tif in the current directory
+7. Prints a summary: scene date, cloud cover %, NDVI min/max/mean
+
+Use the sentinelhub Python library. Include a SHConfig() setup block at the 
+top with placeholders for credentials. Handle the case where no scenes meet 
+the cloud cover threshold. Include docstrings."</code></pre>
+<p class="cur-p">Save both prompts to files for reproducible execution:</p>
+<pre><code>cat &gt; prompts/prompt_fme.txt &lt;&lt; 'EOF'
+[paste BENCHMARK_PROMPT_FME content here]
+EOF
+
+cat &gt; prompts/prompt_sentinel.txt &lt;&lt; 'EOF'
+[paste BENCHMARK_PROMPT_SENTINEL content here]
+EOF</code></pre>
+<pre><code>mkdir -p prompts</code></pre>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 5 — Run Gemini CLI on Both Prompts</h4>
+<p class="cur-p">#### 5.1 — Run Prompt A (FME) with Gemini CLI</p>
+<p class="cur-p">Capture the full session output including timing:</p>
+<pre><code>cd gis-cli-benchmark
+
+# Start timer and run — pipe the prompt in non-interactively
+time gemini &lt; prompts/prompt_fme.txt 2&gt;&1 | tee results/gemini/fme_output.txt
+
+# Record the wall-clock time manually or parse from `time` output</code></pre>
+<p class="cur-p">> <strong>Non-interactive mode note:</strong> The source material states Gemini CLI supports running non-interactively in scripts. Piping via stdin is the standard shell approach. If your version requires a flag for non-interactive mode, consult <code class="cur-inline">gemini --help</code> — the source content does not specify a dedicated <code class="cur-inline">--no-interactive</code> flag, so <strong>do not assume one exists</strong>. If stdin piping doesn't work, use the interactive REPL and manually paste the prompt, capturing with <code class="cur-inline">script</code>:</p>
+<pre><code># Fallback: use script(1) to capture an interactive session
+script -q results/gemini/fme_session.txt
+gemini
+# [paste prompt, wait for response, then /quit]
+exit</code></pre>
+<p class="cur-p">#### 5.2 — Run Prompt B (Sentinel Hub) with Gemini CLI</p>
+<pre><code>time gemini &lt; prompts/prompt_sentinel.txt 2&gt;&1 | tee results/gemini/sentinel_output.txt</code></pre>
+<p class="cur-p">#### 5.3 — Observe and Note During Each Run</p>
+<p class="cur-p">While Gemini CLI responds, watch for and annotate in a scratchpad:</p>
+<pre><code>cat &gt; results/gemini/observations.md &lt;&lt; 'EOF'
+# Gemini CLI Live Observations
+
+## FME Task
+- Did it read sample.fmw before generating? (tool-use: file read) Y/N
+- Did it read sentinel_area.geojson? Y/N  
+- Did it invoke any shell commands? Y/N — if yes, what?
+- Did it use Google Search grounding? Y/N
+- Approximate time to first token: __s
+- Approximate time to complete response: __s
+- Any visible token/context info displayed? Y/N
+
+## Sentinel Hub Task
+- Did it read sentinel_area.geojson? Y/N
+- Did it attempt to verify library imports? Y/N
+- Did it use Google Search grounding? Y/N
+- Approximate time to first token: __s
+- Approximate time to complete response: __s
+EOF</code></pre>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 6 — Run Claude Code CLI on the Same Prompts</h4>
+<p class="cur-p">Assuming you have Claude Code CLI already configured in your workflow:</p>
+<pre><code># Adjust the command to match your Claude Code CLI invocation pattern
+# Common patterns — use whichever matches your setup:
+
+# Pattern 1: stdin pipe
+time claude &lt; prompts/prompt_fme.txt 2&gt;&1 | tee results/claude/fme_output.txt
+
+time claude &lt; prompts/prompt_sentinel.txt 2&gt;&1 | tee results/claude/sentinel_output.txt
+
+# Pattern 2: -p / --print flag (non-interactive, if supported by your version)
+# time claude -p "$(cat prompts/prompt_fme.txt)" 2&gt;&1 | tee results/claude/fme_output.txt</code></pre>
+<pre><code># Mirror the same observation template
+cp results/gemini/observations.md results/claude/observations.md
+# Fill in equivalent fields for Claude</code></pre>
+<p class="cur-p">> <strong>Critical for fairness:</strong> Run both CLIs from the <strong>same directory</strong> (<code class="cur-inline">gis-cli-benchmark/</code>) so both have access to <code class="cur-inline">sample.fmw</code>, <code class="cur-inline">sentinel_area.geojson</code>, <code class="cur-inline">GEMINI.md</code>/<code class="cur-inline">CLAUDE.md</code>, and identical filesystem context.</p>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 7 — Score Each Output</h4>
+<p class="cur-p">Create a scoring rubric. This is what makes your benchmark publishable — a GIS-specific rubric that general reviewers don't have.</p>
+<p class="cur-p">#### 7.1 — Create the Rubric File</p>
+<pre><code>cat &gt; results/scoring_rubric.md &lt;&lt; 'EOF'
+# GIS CLI Benchmark Scoring Rubric
+
+Each criterion scored 0–3:
+  0 = Not attempted / completely wrong
+  1 = Attempted but significant errors
+  2 = Mostly correct, minor issues
+  3 = Correct and production-ready
+
+## Task A: FME Workspace Generation
+
+| Criterion | Max | Gemini | Claude |
+|---|---|---|---|
+| Used FeatureReader/FeatureWriter correctly | 3 | | |
+| Reprojector targets EPSG:3857 (not hardcoded EPSG:4326) | 3 | | |
+| Clipper uses sentinel_area.geojson bounding box (read from file, not hallucinated) | 3 | | |
+| Published Parameters: INPUT_GPKG, OUTPUT_GPKG, LOG_LEVEL with defaults | 3 | | |
+| Transformer names valid in FME 2024 (no deprecated transformers) | 3 | | |
+| FMEObjects XML is syntactically parseable | 3 | | |
+| Inline comments present | 3 | | |
+| Read sample.fmw to infer pattern (tool use) | 3 | | |
+| **TOTAL** | **24** | | |
+
+## Task B: Sentinel Hub Scripting
+
+| Criterion | Max | Gemini | Claude |
+|---|---|---|---|
+| Loads AOI from sentinel_area.geojson (uses the actual file) | 3 | | |
+| Correct SHConfig() setup block with credential placeholders | 3 | | |
+| DataCollection.SENTINEL2_L2A used (not L1C) | 3 | | |
+| Cloud cover filter &lt; 20% implemented correctly | 3 | | |
+| 90-day date range calculated dynamically (not hardcoded dates) | 3 | | |
+| 10m resolution specified correctly for Sentinel-2 | 3 | | |
+| NDVI formula correct: (B08 - B04) / (B08 + B04) | 3 | | |
+| ndvi_output.tif saved to current directory | 3 | | |
+| Summary print: date, cloud%, NDVI min/max/mean | 3 | | |
+| No-scenes-found edge case handled | 3 | | |
+| Docstrings present | 3 | | |
+| **TOTAL** | **33** | | |
+
+## Behavioral Metrics (qualitative 0–3 each)
+
+| Metric | Gemini | Claude |
+|---|---|---|
+| File reading (actually used local files before generating) | | |
+| Token/context transparency (showed usage, model info) | | |
+| Hallucination rate (invented APIs, paths, transformer names) | | |
+| Response speed (subjective: 3=fast, 1=slow) | | |
+| Error recovery (if it hit an error, did it self-correct?) | | |
+
+EOF</code></pre>
+<p class="cur-p">#### 7.2 — Validate the FME Output Structurally</p>
+<p class="cur-p">Check whether the generated <code class="cur-inline">.fmw</code> XML is at least parseable:</p>
+<pre><code># Extract any XML block from Gemini's output
+grep -A 1000 '&lt;?xml' results/gemini/fme_output.txt | head -200 &gt; results/gemini/extracted.fmw
+
+# Validate XML structure
+python3 -c "
+import xml.etree.ElementTree as ET
+try:
+    tree = ET.parse('results/gemini/extracted.fmw')
+    print('XML VALID - root tag:', tree.getroot().tag)
+except ET.ParseError as e:
+    print('XML INVALID:', e)
+"
+
+# Repeat for Claude
+grep -A 1000 '&lt;?xml' results/claude/fme_output.txt | head -200 &gt; results/claude/extracted.fmw
+python3 -c "
+import xml.etree.ElementTree as ET
+try:
+    tree = ET.parse('results/claude/extracted.fmw')
+    print('XML VALID - root tag:', tree.getroot().tag)
+except ET.ParseError as e:
+    print('XML INVALID:', e)
+"</code></pre>
+<p class="cur-p">#### 7.3 — Validate the Sentinel Hub Script Structurally</p>
+<pre><code># Extract the Python block from each output
+python3 &lt;&lt; 'PYEOF'
+import re
+
+for tool in ['gemini', 'claude']:
+    with open(f'results/{tool}/sentinel_output.txt') as f:
+        content = f.read()
+    
+    # Find Python code blocks
+    blocks = re.findall(r'```python\n(.*?)```', content, re.DOTALL)
+    if blocks:
+        # Take the largest block (most likely the complete script)
+        main_block = max(blocks, key=len)
+        with open(f'results/{tool}/extracted_sentinel.py', 'w') as out:
+            out.write(main_block)
+        print(f"{tool}: extracted {len(main_block)} chars of Python")
+    else:
+        print(f"{tool}: no Python code block found")
+PYEOF
+
+# Syntax check each extracted script
+python3 -m py_compile results/gemini/extracted_sentinel.py && echo "Gemini: syntax OK" || echo "Gemini: syntax ERROR"
+python3 -m py_compile results/claude/extracted_sentinel.py && echo "Claude: syntax OK" || echo "Claude: syntax ERROR"</code></pre>
+<p class="cur-p">#### 7.4 — Check for Key GIS-Correctness Markers</p>
+<pre><code>python3 &lt;&lt; 'PYEOF'
+import re
+
+checks = {
+    'sentinel': {
+        'DataCollection.SENTINEL2_L2A': 'Uses L2A (not L1C)',
+        'cloud_coverage_percentage': 'Cloud cover field name correct',
+        '(B08 - B04)': 'NDVI numerator correct',
+        '(B08 + B04)': 'NDVI denominator correct',
+        'SHConfig': 'SHConfig auth block present',
+        'BBox': 'BBox used for spatial filter',
+        'timedelta': 'Dynamic date range (not hardcoded)',
+        'ndvi_output.tif': 'Correct output filename',
+    }
+}
+
+for tool in ['gemini', 'claude']:
+    try:
+        with open(f'results/{tool}/extracted_sentinel.py') as f:
+            code = f.read()
+        print(f"\n=== {tool.upper()} Sentinel Script Checks ===")
+        for pattern, description in checks['sentinel'].items():
+            found = pattern in code
+            status = "✅" if found else "❌"
+            print(f"  {status} {description} ('{pattern}')")
+    except FileNotFoundError:
+        print(f"\n{tool}: extracted_sentinel.py not found — run Step 7.3 first")
+PYEOF</code></pre>
+<p class="cur-p">---</p>
+<h4 class="cur-h4">Phase 8 — Write Your Tool Critic Piece</h4>
+<p class="cur-p">Use this structure as your publishing template. The GIS-specific evidence you've collected fills in what general reviewers can't provide.</p>
+<pre><code>cat &gt; results/tool_critic_draft.md &lt;&lt; 'DRAFT'
+# Gemini CLI vs Claude Code CLI: A GIS Practitioner's Honest Benchmark
+
+**Test date:** [DATE]  
+**Gemini CLI version:** [run `gemini --version`]  
+**Claude Code version:** [run `claude --version`]  
+**Test environment:** [your OS, Node version]
+
+---
+
+## Why This Test Is Different
+
+[2–3 sentences: you ran FME workspace generation and Sentinel Hub scripting — 
+tasks that require spatial domain knowledge to evaluate. General reviewer 
+benchmarks don't cover this.]
+
+---
+
+## Setup Notes
+
+- Both tools ran from the same directory with identical project context files
+- Gemini CLI authenticated via Google OAuth (free tier: 60 req/min)
+- Model: Gemini [version shown at startup] | Claude [version]
+- Release channel: `@latest` (stable)
+
+---
+
+## Task A: FME Workspace Generation
+
+### The Prompt
+[paste your FME prompt]
+
+### What Gemini Did
+**Tool use:** Did it read sample.fmw first? [Y/N + what you observed]  
+**Output:** [1–2 sentences on quality]  
+**Score:** [X]/24  
+**Notable issues:** [e.g., "Used deprecated SpatialRelator transformer; 
+hallucinated a 'GeoPackageWriter2024' transformer that doesn't exist"]
+
+### What Claude Did
+**Tool use:** [Y/N]  
+**Output:** [1–2 sentences]  
+**Score:** [X]/24  
+**Notable issues:** [...]
+
+### Winner: [GEMINI / CLAUDE / TIE]
+[2–3 sentences of analysis]
+
+---
+
+## Task B: Sentinel Hub API Scripting
+
+### The Prompt
+[paste your Sentinel prompt]
+
+### What Gemini Did
+**Tool use:** Did it read sentinel_area.geojson? [Y/N]  
+**Google Search grounding:** [Y/N — did it ground against sentinelhub docs?]  
+**Score:** [X]/33  
+**Notable issues:** [...]
+
+### What Claude Did
+**Score:** [X]/33  
+**Notable issues:** [...]
+
+### Winner: [GEMINI / CLAUDE / TIE]
+
+---
+
+## Behavioral Comparison
+
+| Metric | Gemini CLI | Claude Code |
+|---|---|---|
+| Speed (time to complete response) | [Xs] | [Xs] |
+| Token transparency | [what it showed] | [what it showed] |
+| File reading (used local context) | Y/N | Y/N |
+| Google Search grounding | [observed?] | N/A |
+| Hallucination rate (GIS-specific) | [X instances] | [X instances] |
+| Context window usage | 1M available | [Claude's limit] |
+
+---
+
+## The One Differentiator That Matters for GIS
+
+[Your honest take: for large-codebase or large-dataset-description tasks, 
+does Gemini's 1M context window actually change what's possible? Did it 
+read more of your local files unprompted? Or did Claude's tool-use 
+patterns feel more controlled and predictable?]
+
+---
+
+## Recommendation
+
+**Use Gemini CLI when:** [specific scenarios from your test]  
+**Stick with Claude Code when:** [specific scenarios]  
+**Free tier makes Gemini CLI worth having as:** [parallel tool / fallback / 
+primary for X tasks]
+
+---
+
+## Reproducibility
+
+All prompts, raw outputs, and scoring sheets: [link to your repo or gist]
+
+DRAFT
+
+echo "Draft template created at results/tool_critic_draft.md"</code></pre>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">4. Validation</h3>
+<h4 class="cur-h4">Did You Complete the Exercise? Check Each Item:</h4>
+<pre><code># Run this checklist script
+python3 &lt;&lt; 'PYEOF'
+import os
+
+checks = [
+    ("results/gemini/fme_output.txt", "Gemini FME output captured"),
+    ("results/gemini/sentinel_output.txt", "Gemini Sentinel output captured"),
+    ("results/claude/fme_output.txt", "Claude FME output captured"),
+    ("results/claude/sentinel_output.txt", "Claude Sentinel output captured"),
+    ("results/gemini/extracted.fmw", "Gemini FMW XML extracted"),
+    ("results/claude/extracted.fmw", "Claude FMW XML extracted"),
+    ("results/gemini/extracted_sentinel.py", "Gemini Python script extracted"),
+    ("results/claude/extracted_sentinel.py", "Claude Python script extracted"),
+    ("results/scoring_rubric.md", "Scoring rubric exists"),
+    ("results/tool_critic_draft.md", "Tool Critic draft created"),
+    ("results/gemini/observations.md", "Live observations recorded"),
+    ("results/claude/observations.md", "Live observations recorded"),
+]
+
+passed = 0
+for path, description in checks:
+    exists = os.path.exists(path)
+    size = os.path.getsize(path) if exists else 0
+    non_empty = size &gt; 100  # files should have real content
+    status = "✅" if (exists and non_empty) else ("⚠️ empty" if exists else "❌ missing")
+    print(f"  {status}  {description}")
+    if exists and non_empty:
+        passed += 1
+
+print(f"\n{passed}/{len(checks)} checks passed")
+if passed == len(checks):
+    print("🎉 Benchmark complete — ready to write up!")
+elif passed &gt;= len(checks) * 0.75:
+    print("⚠️  Almost there — fill in the missing pieces above")
+else:
+    print("🔴 Significant gaps — revisit Phases 5–7")
+PYEOF</code></pre>
+<h4 class="cur-h4">Quality Gate: Your Write-Up Is Publishable When</h4>
+<ul class="cur-list">
+<li>[ ] Both tools were scored on the <strong>same rubric</strong> with the <strong>same prompts</strong></li>
+<li>[ ] You have at least <strong>one concrete GIS-correctness finding</strong> (e.g., wrong EPSG code, deprecated transformer, hallucinated API method name)</li>
+<li>[ ] You have a <strong>behavioral observation</strong> about tool-use patterns that isn't in any existing review (file reading, grounding, self-correction)</li>
+<li>[ ] Your timing numbers are <strong>real wall-clock measurements</strong>, not estimates</li>
+<li>[ ] Your recommendation is <strong>scenario-specific</strong>, not a blanket winner declaration</li>
+</ul>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">5. Next Steps</h3>
+<h4 class="cur-h4">Immediate Extensions</h4>
+<p class="cur-p"><strong>Extend the benchmark with more GIS tasks:</strong></p>
+<ul class="cur-list">
+<li>GDAL/OGR command generation — ask both tools to write a <code class="cur-inline">ogr2ogr</code> pipeline for a coordinate transformation + format conversion</li>
+<li>PostGIS query generation — spatial joins, ST_Within, raster operations</li>
+<li>QGIS PyQGIS scripting — processing algorithm chains</li>
+</ul>
+<p class="cur-p"><strong>Deepen the Gemini CLI tooling test:</strong></p>
+<ul class="cur-list">
+<li>Explore MCP (Model Context Protocol) server integration, which the source material identifies as supported for custom tool connections — this could enable direct FME Server API or Sentinel Hub API tool definitions</li>
+<li>Test Google Search grounding explicitly for "what is the current Sentinel-2 revisit time over my AOI?" — a factual spatial question where real-time grounding matters</li>
+</ul>
+<p class="cur-p"><strong>Automate the benchmark:</strong></p>
+<pre><code># Sketch of a repeatable benchmark runner
+for PROMPT_FILE in prompts/*.txt; do
+    TASK=$(basename $PROMPT_FILE .txt)
+    echo "Running: $TASK"
+    
+    time gemini &lt; $PROMPT_FILE &gt; results/gemini/${TASK}_output.txt 2&gt;&1
+    time claude &lt; $PROMPT_FILE &gt; results/claude/${TASK}_output.txt 2&gt;&1
+    
+    echo "Completed: $TASK at $(date)"
+done</code></pre>
+<h4 class="cur-h4">Publishing Your Tool Critic Piece</h4>
+<ul class="cur-list">
+<li><strong>Your differentiator to emphasize:</strong> GIS-specific hallucination patterns — general reviewers will never catch a hallucinated FME transformer name or a wrong Sentinel-2 band index</li>
+<li><strong>Platforms:</strong> Your own site/newsletter > LinkedIn article > dev.to — the specificity plays best with a GIS/geospatial audience who will immediately recognize whether your test was rigorous</li>
+<li><strong>Include the raw outputs</strong> as a linked Gist or repo so readers can verify your scoring — this separates a genuine benchmark from an opinion piece</li>
+<li><strong>Revisit quarterly:</strong> Both CLIs are updating rapidly (Gemini CLI ships weekly stable releases per the source). A re-run in 90 days will show trajectory, which is more valuable than a single-point snapshot</li>
+</ul>
+<h4 class="cur-h4">Integrate the Winner Into Your Workflow</h4>
+<p class="cur-p">If Gemini CLI scored competitively on your Sentinel Hub scripting tasks:</p>
+<pre><code># Add a project-level alias so you can call both in parallel
+alias gcli="gemini"
+alias ccli="claude"
+
+# Or: use Gemini CLI's free tier for exploratory/first-draft generation,
+# Claude Code for refinement — a tiered workflow that costs you nothing
+# on the Gemini side up to 1,000 requests/day</code></pre>
+<p class="cur-p">---</p>
+<p class="cur-p">> <strong>Source note:</strong> All Gemini CLI commands, authentication flows, release channels, and feature descriptions in this tutorial are drawn directly from the [google-gemini/gemini-cli](https://github.com/google-gemini/gemini-cli) repository README. Non-interactive mode invocation via stdin piping is a standard shell pattern; if your installed version requires a specific flag, run <code class="cur-inline">gemini --help</code> to confirm. Sentinel Hub API specifics (library methods, band names, configuration classes) reflect the <code class="cur-inline">sentinelhub</code> Python library conventions — verify against the current [Sentinel Hub Python library documentation](https://sentinelhub-py.readthedocs.io/) before production use.</p>
+</div>
+</body>
+</html>

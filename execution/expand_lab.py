@@ -184,6 +184,7 @@ def main():
             print(f"  [{i}] {ex['title']} ({ex['effort']} effort)")
             print(f"      - {ex['desc']}")
         print("\nUse --item <number> to generate a curriculum.")
+        _run_status["success"] = True
         sys.exit(0)
 
     if args.item < 1 or args.item > len(exercises):

@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Replace pdfplumber with markitdown in One Existing Pipeline and Compare Output — Lab Tutorial</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080b12; --bg2: #0e1220; --bg3: #151c2e; --bg4: #1d2540;
+    --border: #252e4a; --border2: #36416a; --text: #e6eaf4;
+    --text2: #8e9ab8; --text3: #58678e; --blue: #5b8af7;
+    --green: #34d89a; --orange: #f97c3c; --yellow: #f5c842;
+    --teal: #38c9d4; --cyan: #4fd9f5; --purple: #7c5cfc;
+    --font-sans: 'Inter', -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:var(--font-sans); line-height:1.7; }
+  .page { max-width:780px; margin:0 auto; padding:48px 32px 80px; }
+  .back { margin-bottom:32px; }
+  .back a { font-size:12px; font-family:var(--font-mono); color:var(--text3); text-decoration:none; border:1px solid var(--border); padding:6px 14px; border-radius:6px; transition:.15s; }
+  .back a:hover { color:var(--blue); border-color:var(--blue); }
+  .page-title { font-size:26px; font-weight:900; letter-spacing:-.4px; color:var(--text); margin-bottom:10px; line-height:1.25; }
+  .page-meta { font-size:11px; font-family:var(--font-mono); color:var(--text3); margin-bottom:40px; padding-bottom:24px; border-bottom:1px solid var(--border); }
+  h2.cur-h2 { font-size:19px; font-weight:800; color:var(--text); margin:40px 0 10px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+  h3.cur-h3 { font-size:15px; font-weight:700; color:var(--text2); margin:28px 0 8px; }
+  h4.cur-h4 { font-size:12.5px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.6px; margin:20px 0 6px; }
+  p.cur-p { font-size:14px; color:var(--text2); margin-bottom:12px; }
+  ul.cur-list { font-size:14px; color:var(--text2); margin:8px 0 14px 20px; }
+  ul.cur-list li { margin-bottom:6px; line-height:1.6; }
+  ul.cur-ol { list-style:decimal; }
+  pre { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:18px 20px; margin:14px 0 20px; overflow-x:auto; }
+  pre code { font-family:var(--font-mono); font-size:12px; color:var(--green); white-space:pre; line-height:1.6; }
+  code.cur-inline { font-family:var(--font-mono); font-size:12px; background:var(--bg4); color:var(--cyan); padding:2px 6px; border-radius:4px; }
+  strong { color:var(--text); font-weight:700; }
+  .disclaimer { background:rgba(249,124,60,.07); border:1px solid rgba(249,124,60,.3); border-radius:8px; padding:14px 18px; margin-bottom:32px; font-size:13px; color:var(--orange); line-height:1.6; }
+  .disclaimer strong { color:var(--orange); }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="back"><a href="../latest.html">← Back to Hub</a></div>
+  <div class="page-title">Replace pdfplumber with markitdown in One Existing Pipeline and Compare Output</div>
+  <div class="page-meta">AI Discovery Hub · Lab Tutorial</div>
+  <div class="disclaimer">⚠️ <strong>AI-generated tutorial.</strong> Steps and commands are synthesised from source material and model knowledge — verify against official documentation before running anything in a production environment.</div>
+  <h2 class="cur-h2">Replace `pdfplumber` with `markitdown` in One Existing Pipeline and Compare Output</h2>
+<h3 class="cur-h3">1. Introduction & Context</h3>
+<h4 class="cur-h4">What This Is</h4>
+<p class="cur-p">This tutorial walks you through swapping <code class="cur-inline">markitdown</code> — Microsoft's open-source Markdown conversion library — into an existing PDF parsing pipeline that currently uses <code class="cur-inline">pdfplumber</code>. The goal is concrete and measurable: run both parsers on the same GIS technical document, compare the output quality side-by-side, and determine whether <code class="cur-inline">markitdown</code>'s structured Markdown output improves the quality of prompts you send to the Claude API.</p>
+<h4 class="cur-h4">Why It's Worth Your Time</h4>
+<p class="cur-p">Your current <code class="cur-inline">pdfplumber</code> workflow extracts raw text that you then need to clean, structure, and format before passing to Claude. <code class="cur-inline">markitdown</code> outputs Markdown directly — headings, tables, lists, and links are preserved as semantic structure rather than raw character streams. LLMs including Claude are trained on vast amounts of Markdown and understand it natively, which means:</p>
+<ul class="cur-list">
+<li><strong>Less prompt engineering</strong> to explain document structure</li>
+<li><strong>More token-efficient</strong> context windows (Markdown markup is minimal)</li>
+<li><strong>Better table handling</strong> — critical for FME release notes, Sentinel Hub parameter tables, and coordinate reference system documentation</li>
+<li><strong>Broader format coverage</strong> as a free side-effect: Word, Excel, PowerPoint, and HTML all work with the same <code class="cur-inline">convert()</code> call</li>
+</ul>
+<p class="cur-p">This is a low-effort, high-signal exercise. You have the existing script. You swap one dependency. You measure the difference.</p>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">2. Prerequisites</h3>
+<h4 class="cur-h4">Software</h4>
+<p class="cur-p">| Requirement | Version | Notes |</p>
+<p class="cur-p">|---|---|---|</p>
+<p class="cur-p">| Python | 3.10+ | <code class="cur-inline">markitdown</code> hard requirement |</p>
+<p class="cur-p">| pip | Current | Or <code class="cur-inline">uv</code> if you prefer |</p>
+<p class="cur-p">| Existing <code class="cur-inline">pdfplumber</code> script | Any | Your GIS/FME/Sentinel Hub parser |</p>
+<p class="cur-p">| A target PDF | Any | FME release notes, Sentinel Hub docs, or similar |</p>
+<p class="cur-p">| Anthropic SDK | Current | <code class="cur-inline">pip install anthropic</code> |</p>
+<h4 class="cur-h4">Knowledge</h4>
+<ul class="cur-list">
+<li>You have a working <code class="cur-inline">pdfplumber</code> script that extracts text from a PDF and passes it to Claude</li>
+<li>You are comfortable running Python scripts from the command line</li>
+<li>You have an Anthropic API key set in your environment</li>
+</ul>
+<h4 class="cur-h4">Verify Your Python Version</h4>
+<pre><code>python --version
+# Must output 3.10 or higher</code></pre>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">3. Step-by-Step Guide</h3>
+<h4 class="cur-h4">Step 1: Set Up a Clean Virtual Environment</h4>
+<p class="cur-p">Create an isolated environment so this swap doesn't disturb your existing <code class="cur-inline">pdfplumber</code> project.</p>
+<pre><code># Using standard Python venv
+python -m venv .venv-markitdown
+source .venv-markitdown/bin/activate</code></pre>
+<p class="cur-p">Or with <code class="cur-inline">uv</code> (faster):</p>
+<pre><code>uv venv --python=3.12 .venv-markitdown
+source .venv-markitdown/bin/activate</code></pre>
+<h4 class="cur-h4">Step 2: Install `markitdown` with PDF Support</h4>
+<p class="cur-p">Install with all optional dependencies to ensure PDF parsing works out of the box:</p>
+<pre><code>pip install 'markitdown[all]'</code></pre>
+<p class="cur-p">If you want a minimal install scoped only to PDF (and optionally Word/PowerPoint for future use):</p>
+<pre><code>pip install 'markitdown[pdf,docx,pptx]'</code></pre>
+<p class="cur-p">Also install the Anthropic SDK if not already present:</p>
+<pre><code>pip install anthropic</code></pre>
+<h4 class="cur-h4">Step 3: Capture Your Baseline `pdfplumber` Output</h4>
+<p class="cur-p">Before touching anything, run your existing script and save its output to a file. This is your baseline for comparison.</p>
+<p class="cur-p">> <strong>Note:</strong> The script below is a representative example of a typical <code class="cur-inline">pdfplumber</code> → Claude pipeline. Adapt the function names and variable structure to match your own existing script.</p>
+<pre><code># baseline_pdfplumber.py
+# Run this FIRST, before any changes, to capture your baseline output.
+
+import pdfplumber
+import json
+
+PDF_PATH = "fme_release_notes.pdf"          # ← swap in your actual PDF path
+OUTPUT_PATH = "baseline_pdfplumber_raw.txt"
+
+def extract_with_pdfplumber(pdf_path: str) -&gt; str:
+    """Your existing extraction logic — adapt to match your actual script."""
+    full_text = []
+    with pdfplumber.open(pdf_path) as pdf:
+        for page_num, page in enumerate(pdf.pages, start=1):
+            text = page.extract_text()
+            if text:
+                full_text.append(f"--- Page {page_num} ---\n{text}")
+    return "\n\n".join(full_text)
+
+
+def build_claude_prompt(extracted_text: str) -&gt; str:
+    """Your existing prompt builder — adapt to match your actual script."""
+    return f"""You are a GIS technical analyst. The following text was extracted from a PDF document.
+Please summarise the key changes, features, or parameters described.
+
+DOCUMENT TEXT:
+{extracted_text}
+
+SUMMARY:"""
+
+
+if __name__ == "__main__":
+    raw_text = extract_with_pdfplumber(PDF_PATH)
+
+    # Save raw extraction for comparison
+    with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
+        f.write(raw_text)
+
+    print(f"✅ pdfplumber extraction saved to {OUTPUT_PATH}")
+    print(f"   Characters extracted: {len(raw_text):,}")
+    print(f"   Lines extracted:      {raw_text.count(chr(10)):,}")
+
+    # Save the prompt itself
+    prompt = build_claude_prompt(raw_text)
+    with open("baseline_pdfplumber_prompt.txt", "w", encoding="utf-8") as f:
+        f.write(prompt)
+    print("   Prompt saved to baseline_pdfplumber_prompt.txt")</code></pre>
+<p class="cur-p">Run it:</p>
+<pre><code>python baseline_pdfplumber.py</code></pre>
+<h4 class="cur-h4">Step 4: Run the CLI Smoke Test with `markitdown`</h4>
+<p class="cur-p">Before writing any Python, verify <code class="cur-inline">markitdown</code> is installed correctly and can parse your PDF at the command line:</p>
+<pre><code>markitdown fme_release_notes.pdf -o markitdown_output.md</code></pre>
+<p class="cur-p">Open <code class="cur-inline">markitdown_output.md</code> in any text editor and do a quick visual scan. You should immediately see:</p>
+<ul class="cur-list">
+<li><code class="cur-inline">#</code> and <code class="cur-inline">##</code> headings where pdfplumber gave you plain uppercase text</li>
+<li><code class="cur-inline">|</code> pipe-delimited tables where pdfplumber gave you space-aligned columns</li>
+<li><code class="cur-inline">-</code> bullet lists where pdfplumber gave you <code class="cur-inline">•</code> or <code class="cur-inline">–</code> characters</li>
+</ul>
+<p class="cur-p">If the file is empty or throws an error, check that the <code class="cur-inline">[pdf]</code> optional dependency was installed:</p>
+<pre><code>pip show pdfminer.six   # This is the backend markitdown[pdf] installs</code></pre>
+<h4 class="cur-h4">Step 5: Build the `markitdown` Equivalent Script</h4>
+<p class="cur-p">Now create the replacement script. The key change is the extraction function — the Claude API call stays identical so the comparison is fair.</p>
+<pre><code># markitdown_pipeline.py
+# Direct replacement for your pdfplumber extraction script.
+
+from markitdown import MarkItDown
+import anthropic
+import os
+
+PDF_PATH = "fme_release_notes.pdf"          # ← same PDF as Step 3
+MARKDOWN_OUTPUT_PATH = "markitdown_output.md"
+
+# ── Extraction ─────────────────────────────────────────────────────────────
+
+def extract_with_markitdown(pdf_path: str) -&gt; str:
+    """
+    Replace your pdfplumber extraction block with this single call.
+    MarkItDown returns a result object; .text_content holds the Markdown string.
+    """
+    md = MarkItDown()
+    result = md.convert(pdf_path)
+    return result.text_content
+
+
+# ── Prompt Builder ──────────────────────────────────────────────────────────
+
+def build_claude_prompt(markdown_text: str) -&gt; str:
+    """
+    Same prompt structure as your baseline — but now the document content
+    is already structured Markdown rather than raw extracted text.
+    """
+    return f"""You are a GIS technical analyst. The following document has been converted to Markdown.
+Please summarise the key changes, features, or parameters described.
+
+DOCUMENT MARKDOWN:
+{markdown_text}
+
+SUMMARY:"""
+
+
+# ── Claude API Call ─────────────────────────────────────────────────────────
+
+def call_claude(prompt: str) -&gt; str:
+    """
+    Identical Claude API call to your baseline — change nothing here
+    so the only variable is the input text quality.
+    """
+    client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+    message = client.messages.create(
+        model="claude-opus-4-5",
+        max_tokens=1024,
+        messages=[
+            {"role": "user", "content": prompt}
+        ]
+    )
+    return message.content[0].text
+
+
+# ── Main ────────────────────────────────────────────────────────────────────
+
+if __name__ == "__main__":
+    # 1. Extract
+    markdown_text = extract_with_markitdown(PDF_PATH)
+
+    # 2. Save Markdown output for comparison
+    with open(MARKDOWN_OUTPUT_PATH, "w", encoding="utf-8") as f:
+        f.write(markdown_text)
+
+    print(f"✅ markitdown extraction saved to {MARKDOWN_OUTPUT_PATH}")
+    print(f"   Characters extracted: {len(markdown_text):,}")
+    print(f"   Lines extracted:      {markdown_text.count(chr(10)):,}")
+
+    # 3. Build prompt and save for comparison
+    prompt = build_claude_prompt(markdown_text)
+    with open("markitdown_prompt.txt", "w", encoding="utf-8") as f:
+        f.write(prompt)
+    print("   Prompt saved to markitdown_prompt.txt")
+
+    # 4. Call Claude and save response
+    print("\n⏳ Calling Claude API...")
+    response = call_claude(prompt)
+    with open("markitdown_claude_response.txt", "w", encoding="utf-8") as f:
+        f.write(response)
+
+    print("✅ Claude response saved to markitdown_claude_response.txt")
+    print("\n── Claude Summary ─────────────────────────────────────────────")
+    print(response)</code></pre>
+<p class="cur-p">Run it:</p>
+<pre><code>python markitdown_pipeline.py</code></pre>
+<h4 class="cur-h4">Step 6: Build a Side-by-Side Comparison Script</h4>
+<p class="cur-p">This script quantifies the difference between the two extractions so your comparison is objective, not just vibes.</p>
+<pre><code># compare_outputs.py
+# Produces a structured before/after report you can include in your build notes.
+
+import re
+
+def load(path: str) -&gt; str:
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read()
+
+
+def count_tables(text: str) -&gt; int:
+    """Count Markdown pipe-table rows (lines containing |...|)."""
+    return sum(1 for line in text.splitlines() if re.match(r"^\s*\|.+\|", line))
+
+
+def count_headings(text: str) -&gt; int:
+    """Count Markdown headings (lines starting with #)."""
+    return sum(1 for line in text.splitlines() if re.match(r"^#{1,6} ", line))
+
+
+def count_list_items(text: str) -&gt; int:
+    """Count Markdown bullet/numbered list items."""
+    return sum(1 for line in text.splitlines() if re.match(r"^\s*[-*+] ", line) or
+               re.match(r"^\s*\d+\. ", line))
+
+
+def report(label: str, text: str) -&gt; dict:
+    return {
+        "label": label,
+        "characters": len(text),
+        "lines": text.count("\n"),
+        "headings": count_headings(text),
+        "table_rows": count_tables(text),
+        "list_items": count_list_items(text),
+    }
+
+
+if __name__ == "__main__":
+    pdfplumber_text = load("baseline_pdfplumber_raw.txt")
+    markitdown_text = load("markitdown_output.md")
+
+    results = [
+        report("pdfplumber (baseline)", pdfplumber_text),
+        report("markitdown (new)",      markitdown_text),
+    ]
+
+    print("\n┌─────────────────────────────────────────────────────────────┐")
+    print("│           PDF EXTRACTION COMPARISON REPORT                  │")
+    print("├─────────────────────┬──────────────────┬────────────────────┤")
+    print(f"│ {'Metric':&lt;19} │ {'pdfplumber':&gt;16} │ {'markitdown':&gt;18} │")
+    print("├─────────────────────┼──────────────────┼────────────────────┤")
+
+    metrics = ["characters", "lines", "headings", "table_rows", "list_items"]
+    labels  = ["Characters", "Lines", "Headings (#)", "Table rows", "List items"]
+
+    for metric, label in zip(metrics, labels):
+        a = results[0][metric]
+        b = results[1][metric]
+        delta = f"(+{b-a})" if b &gt; a else f"({b-a})" if b &lt; a else "(=)"
+        print(f"│ {label:&lt;19} │ {a:&gt;16,} │ {b:&gt;14,} {delta:&gt;3} │")
+
+    print("└─────────────────────┴──────────────────┴────────────────────┘")
+    print()
+
+    # Highlight structural wins
+    h_diff = results[1]["headings"]   - results[0]["headings"]
+    t_diff = results[1]["table_rows"] - results[0]["table_rows"]
+    l_diff = results[1]["list_items"] - results[0]["list_items"]
+
+    if h_diff &gt; 0:
+        print(f"✅ markitdown recovered {h_diff} heading(s) that pdfplumber missed")
+    if t_diff &gt; 0:
+        print(f"✅ markitdown recovered {t_diff} table row(s) as structured Markdown")
+    if l_diff &gt; 0:
+        print(f"✅ markitdown recovered {l_diff} list item(s) as structured Markdown")
+    if h_diff == 0 and t_diff == 0 and l_diff == 0:
+        print("⚠️  No structural difference detected — this PDF may be image-based.")
+        print("   Consider the markitdown-ocr plugin (see Next Steps).")</code></pre>
+<p class="cur-p">Run it:</p>
+<pre><code>python compare_outputs.py</code></pre>
+<h4 class="cur-h4">Step 7: Also Run the Baseline Claude Call for Direct Response Comparison</h4>
+<p class="cur-p">> <strong>Note:</strong> If your existing <code class="cur-inline">pdfplumber</code> script already calls Claude, you can skip this step and reuse that saved response. If not, run this minimal version to get a comparable Claude response from the pdfplumber text.</p>
+<pre><code># baseline_claude_call.py
+import anthropic
+import os
+
+def load(path):
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read()
+
+raw_text = load("baseline_pdfplumber_raw.txt")
+
+prompt = f"""You are a GIS technical analyst. The following text was extracted from a PDF document.
+Please summarise the key changes, features, or parameters described.
+
+DOCUMENT TEXT:
+{raw_text}
+
+SUMMARY:"""
+
+client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+message = client.messages.create(
+    model="claude-opus-4-5",
+    max_tokens=1024,
+    messages=[{"role": "user", "content": prompt}]
+)
+response_text = message.content[0].text
+
+with open("baseline_pdfplumber_claude_response.txt", "w", encoding="utf-8") as f:
+    f.write(response_text)
+
+print("── pdfplumber → Claude Response ───────────────────────────────")
+print(response_text)</code></pre>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">4. Validation</h3>
+<h4 class="cur-h4">Checklist: Did the Exercise Work?</h4>
+<p class="cur-p">Run through each item. All six should be true before you call this complete.</p>
+<pre><code>[ ] markitdown_output.md exists and is non-empty
+[ ] compare_outputs.py runs without errors and prints a table
+[ ] headings count is higher in markitdown output than pdfplumber output
+[ ] table_rows count is higher in markitdown output (if the PDF has tables)
+[ ] markitdown_claude_response.txt contains a coherent summary
+[ ] The markitdown Claude summary mentions specific section names or
+    table values that the pdfplumber summary missed or mangled</code></pre>
+<h4 class="cur-h4">What Good Output Looks Like</h4>
+<p class="cur-p"><strong><code class="cur-inline">pdfplumber</code> raw extraction (typical):</strong></p>
+<pre><code>COORDINATE REFERENCE SYSTEMS
+Supported CRS
+EPSG 4326 WGS 84 geographic   Yes
+EPSG 32633 UTM Zone 33N       Yes
+EPSG 3857 Web Mercator        Partial</code></pre>
+<p class="cur-p"><strong><code class="cur-inline">markitdown</code> Markdown output (typical):</strong></p>
+<pre><code>## Coordinate Reference Systems
+
+### Supported CRS
+
+| EPSG Code | Name                  | Supported |
+|-----------|-----------------------|-----------|
+| 4326      | WGS 84 geographic     | Yes       |
+| 32633     | UTM Zone 33N          | Yes       |
+| 3857      | Web Mercator          | Partial   |</code></pre>
+<p class="cur-p">The Markdown version gives Claude unambiguous column relationships — it no longer has to infer that <code class="cur-inline">Partial</code> belongs to the <code class="cur-inline">3857</code> row rather than floating in space after a line break.</p>
+<h4 class="cur-h4">Manual Quality Check: Three Specific Things to Verify</h4>
+<p class="cur-p">Open both output files side by side and check these three locations:</p>
+<ul class="cur-list cur-ol">
+<li><strong>Document title / first heading</strong> — Does <code class="cur-inline">markitdown</code> render it as <code class="cur-inline"># Title</code> rather than all-caps plain text?</li>
+<li><strong>First table in the document</strong> — Does <code class="cur-inline">markitdown</code> produce pipe syntax? Can you read which value belongs to which column?</li>
+<li><strong>Any bulleted list</strong> — Does <code class="cur-inline">markitdown</code> use <code class="cur-inline">- item</code> syntax rather than <code class="cur-inline">• item</code> or <code class="cur-inline">– item</code> with inconsistent spacing?</li>
+</ul>
+<p class="cur-p">If all three are yes: <code class="cur-inline">markitdown</code> is producing meaningfully better input for Claude.</p>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">5. Next Steps</h3>
+<h4 class="cur-h4">Immediate: Make the Swap Permanent</h4>
+<p class="cur-p">Once you're satisfied with the comparison, replace the <code class="cur-inline">pdfplumber</code> extraction block in your production script. The change is typically <strong>three lines</strong>:</p>
+<pre><code># BEFORE
+import pdfplumber
+with pdfplumber.open(pdf_path) as pdf:
+    text = "\n".join(p.extract_text() for p in pdf.pages if p.extract_text())
+
+# AFTER
+from markitdown import MarkItDown
+md = MarkItDown()
+text = md.convert(pdf_path).text_content</code></pre>
+<h4 class="cur-h4">If Your PDF is Scanned / Image-Based</h4>
+<p class="cur-p">If <code class="cur-inline">compare_outputs.py</code> showed no structural improvement (zero headings, zero tables), your PDF is likely scanned rather than born-digital. Use the <code class="cur-inline">markitdown-ocr</code> plugin with an LLM vision backend:</p>
+<pre><code>pip install markitdown-ocr
+pip install openai</code></pre>
+<pre><code>from markitdown import MarkItDown
+from openai import OpenAI
+
+md = MarkItDown(
+    enable_plugins=True,
+    llm_client=OpenAI(),
+    llm_model="gpt-4o",
+)
+result = md.convert("scanned_document.pdf")
+print(result.text_content)</code></pre>
+<p class="cur-p">> <strong>Note:</strong> This requires an OpenAI API key and will incur costs proportional to the number of pages. The source documentation states that if no <code class="cur-inline">llm_client</code> is provided the plugin loads but OCR is silently skipped.</p>
+<h4 class="cur-h4">Expand to Other Document Types</h4>
+<p class="cur-p">Your <code class="cur-inline">markitdown</code> install already supports formats you likely encounter in a GIS workflow — no additional code changes needed:</p>
+<pre><code>md = MarkItDown()
+
+# FME workbench documentation (Word)
+result = md.convert("fme_workspace_notes.docx")
+
+# Sentinel Hub parameter tables (Excel)
+result = md.convert("band_combinations.xlsx")
+
+# Conference slides (PowerPoint)
+result = md.convert("esri_uc_presentation.pptx")
+
+# All produce result.text_content as Markdown</code></pre>
+<h4 class="cur-h4">Refine Your Claude Prompt for Markdown Input</h4>
+<p class="cur-p">Now that Claude is receiving structured Markdown, update your system prompt to explicitly leverage it:</p>
+<pre><code>system_prompt = """You are a GIS technical analyst.
+The user will provide document content in Markdown format.
+Use the heading hierarchy to understand document structure.
+Reference table column headers explicitly when citing values.
+Use the same section headings in your response that appear in the source document."""</code></pre>
+<h4 class="cur-h4">Candidate Metrics for Your Build Notes</h4>
+<p class="cur-p">Record these before/after values for your write-up:</p>
+<p class="cur-p">| Metric | pdfplumber | markitdown |</p>
+<p class="cur-p">|---|---|---|</p>
+<p class="cur-p">| Headings detected | <code class="cur-inline">_</code> | <code class="cur-inline">_</code> |</p>
+<p class="cur-p">| Table rows structured | <code class="cur-inline">_</code> | <code class="cur-inline">_</code> |</p>
+<p class="cur-p">| Claude response accuracy* | <code class="cur-inline">_</code> | <code class="cur-inline">_</code> |</p>
+<p class="cur-p">| Prompt tokens used | <code class="cur-inline">_</code> | <code class="cur-inline">_</code> |</p>
+<p class="cur-p">*Accuracy = number of specific facts in the Claude response that are verifiably correct when checked against the source PDF.</p>
+</div>
+</body>
+</html>

@@ -40,3 +40,19 @@ Log of deterministic errors (concluded) and infrastructure errors (pattern-track
 | 2026-04-23 | 529 sustained 10+ min | Possible Anthropic platform outage mid-morning |
 | 2026-04-27 | build_hub.py | LLM call failed: APIConnectionError | (investigate) |
 | 2026-05-04 | build_hub.py | LLM call failed: APIConnectionError | (investigate) |
+| 2026-05-22 | fetch_feed.py | Sandbox DNS blocked all external sources; first run wrote a 0-item `hub-input.json`, then approved network rerun restored live counts |
+| 2026-05-22 | fetch_feed.py | YouTube API returned per-minute 429s mid-run; fetch still produced capped 10 videos from successful earlier calls |
+
+## 2026-05-22 — Template health-check command unavailable
+
+**Error:** `python3 scripts/health_check.py` failed with `No such file or directory`.
+**Cause:** This project does not include `scripts/health_check.py`, despite workspace/template task language asking for a project-specific health check.
+**Fix:** Use available verification for refresh runs: `python3 -m py_compile execution/fetch_feed.py execution/build_hub.py execution/expand_lab.py`, JSON load/count checks for `data/hub-input.json` and `data/hub-output.json`, and link checks in `dashboards/latest.html`.
+**Graduated to:** pending; likely a project governance scaffold gap rather than a pipeline bug.
+
+## 2026-05-22 — `expand_lab.py --list` logs false unexpected exit
+
+**Error:** `.venv/bin/python3 execution/expand_lab.py --list` printed exercises successfully but appended `expand_lab.py → exited_unexpectedly` to `knowledge/SESSION.md`.
+**Cause:** The atexit handler treats any path where `_run_status["success"]` remains false as unexpected, and the `--list` branch exited before setting success.
+**Fix:** Set `_run_status["success"] = True` before the successful `--list` exit.
+**Graduated to:** no; local script status bookkeeping fix.

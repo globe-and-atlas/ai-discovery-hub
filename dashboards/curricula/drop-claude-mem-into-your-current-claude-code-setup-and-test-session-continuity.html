@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drop claude-mem into Your Current Claude Code Setup and Test Session Continuity — Lab Tutorial</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080b12; --bg2: #0e1220; --bg3: #151c2e; --bg4: #1d2540;
+    --border: #252e4a; --border2: #36416a; --text: #e6eaf4;
+    --text2: #8e9ab8; --text3: #58678e; --blue: #5b8af7;
+    --green: #34d89a; --orange: #f97c3c; --yellow: #f5c842;
+    --teal: #38c9d4; --cyan: #4fd9f5; --purple: #7c5cfc;
+    --font-sans: 'Inter', -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:var(--font-sans); line-height:1.7; }
+  .page { max-width:780px; margin:0 auto; padding:48px 32px 80px; }
+  .back { margin-bottom:32px; }
+  .back a { font-size:12px; font-family:var(--font-mono); color:var(--text3); text-decoration:none; border:1px solid var(--border); padding:6px 14px; border-radius:6px; transition:.15s; }
+  .back a:hover { color:var(--blue); border-color:var(--blue); }
+  .page-title { font-size:26px; font-weight:900; letter-spacing:-.4px; color:var(--text); margin-bottom:10px; line-height:1.25; }
+  .page-meta { font-size:11px; font-family:var(--font-mono); color:var(--text3); margin-bottom:40px; padding-bottom:24px; border-bottom:1px solid var(--border); }
+  h2.cur-h2 { font-size:19px; font-weight:800; color:var(--text); margin:40px 0 10px; padding-bottom:6px; border-bottom:1px solid var(--border); }
+  h3.cur-h3 { font-size:15px; font-weight:700; color:var(--text2); margin:28px 0 8px; }
+  h4.cur-h4 { font-size:12.5px; font-weight:700; color:var(--text3); text-transform:uppercase; letter-spacing:.6px; margin:20px 0 6px; }
+  p.cur-p { font-size:14px; color:var(--text2); margin-bottom:12px; }
+  ul.cur-list { font-size:14px; color:var(--text2); margin:8px 0 14px 20px; }
+  ul.cur-list li { margin-bottom:6px; line-height:1.6; }
+  ul.cur-ol { list-style:decimal; }
+  pre { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:18px 20px; margin:14px 0 20px; overflow-x:auto; }
+  pre code { font-family:var(--font-mono); font-size:12px; color:var(--green); white-space:pre; line-height:1.6; }
+  code.cur-inline { font-family:var(--font-mono); font-size:12px; background:var(--bg4); color:var(--cyan); padding:2px 6px; border-radius:4px; }
+  strong { color:var(--text); font-weight:700; }
+  .disclaimer { background:rgba(249,124,60,.07); border:1px solid rgba(249,124,60,.3); border-radius:8px; padding:14px 18px; margin-bottom:32px; font-size:13px; color:var(--orange); line-height:1.6; }
+  .disclaimer strong { color:var(--orange); }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="back"><a href="../latest.html">← Back to Hub</a></div>
+  <div class="page-title">Drop claude-mem into Your Current Claude Code Setup and Test Session Continuity</div>
+  <div class="page-meta">AI Discovery Hub · Lab Tutorial</div>
+  <div class="disclaimer">⚠️ <strong>AI-generated tutorial.</strong> Steps and commands are synthesised from source material and model knowledge — verify against official documentation before running anything in a production environment.</div>
+  <h2 class="cur-h2">Drop `claude-mem` into Your Current Claude Code Setup and Test Session Continuity</h2>
+<p class="cur-p">*A hands-on tutorial for GIS/AI practitioners who are tired of re-explaining their FME workspace structure every single session.*</p>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">1. Introduction & Context</h3>
+<p class="cur-p">Every time you start a new Claude Code session, you're back to square one. You re-explain that your Sentinel Hub API calls use the Process API endpoint, not the older WMS-style interface. You re-describe your FME workspace naming conventions. You remind Claude which conda environment you're in and why you're pinned to a specific GDAL version. This is friction that compounds across dozens of sessions a week.</p>
+<p class="cur-p"><strong><code class="cur-inline">claude-mem</code></strong> is a persistent memory compression layer for Claude Code. It works by:</p>
+<ul class="cur-list cur-ol">
+<li><strong>Capturing</strong> tool usage observations and conversation context as your sessions run</li>
+<li><strong>Compressing</strong> that context into semantic summaries using AI</li>
+<li><strong>Injecting</strong> the relevant summaries back into future sessions automatically</li>
+</ul>
+<p class="cur-p">Crucially, it does this *without changing your existing stack*. You still use <code class="cur-inline">claude</code> from the CLI exactly as you do now. The tool hooks into Claude Code's existing plugin/MCP infrastructure.</p>
+<p class="cur-p"><strong>Why this matters for your GIS work specifically:</strong> Your sessions have unusually high setup cost. FME workspace topology, Sentinel Hub OAuth flows, coordinate reference system conventions, and Python geospatial environment quirks are all things Claude needs to understand before it can be genuinely useful — and right now you're paying that cost on every session. This one-week test will tell you whether <code class="cur-inline">claude-mem</code> meaningfully reduces that overhead, and your actual session logs will be the evidence.</p>
+<p class="cur-p"><strong>Effort level:</strong> Low. Installation is a single command. The experiment runs passively in the background.</p>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">2. Prerequisites</h3>
+<p class="cur-p">Before starting, confirm you have:</p>
+<p class="cur-p">| Requirement | Why It's Needed |</p>
+<p class="cur-p">|---|---|</p>
+<p class="cur-p">| <strong>Claude Code CLI</strong> installed and working | <code class="cur-inline">claude-mem</code> hooks directly into it |</p>
+<p class="cur-p">| <strong>Node.js ≥ 18.0.0</strong> | <code class="cur-inline">claude-mem</code> is an npm package requiring this minimum |</p>
+<p class="cur-p">| <strong><code class="cur-inline">npx</code> available</strong> (comes with Node.js) | Used for the install command |</p>
+<p class="cur-p">| <strong>Active GIS project(s)</strong> running through Claude Code | You need real sessions to test continuity against |</p>
+<p class="cur-p">| <strong><code class="cur-inline">ANTHROPIC_API_KEY</code> set</strong> in your environment | Claude Code needs this; <code class="cur-inline">claude-mem</code> uses the same SDK |</p>
+<p class="cur-p">Check your Node version:</p>
+<pre><code>node --version
+# Should output v18.0.0 or higher</code></pre>
+<p class="cur-p">Check Claude Code is working:</p>
+<pre><code>claude --version</code></pre>
+<p class="cur-p">> <strong>Note:</strong> If you're using conda environments for your Python geospatial work, make sure you have Node.js available in your base or system environment — you don't need it inside your geo conda env, just somewhere on your <code class="cur-inline">PATH</code>.</p>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">3. Step-by-Step Guide</h3>
+<h4 class="cur-h4">Step 3.1 — Install `claude-mem`</h4>
+<p class="cur-p">Run the install command from any directory. You don't need to be inside a specific project:</p>
+<pre><code>npx claude-mem install</code></pre>
+<p class="cur-p">That's it. The installer auto-detects your Claude Code configuration directory and wires itself in as a plugin.</p>
+<p class="cur-p">> <strong>Alternative — install via the Claude Code plugin marketplace</strong> (if you prefer keeping everything inside Claude Code):</p>
+<p class="cur-p">> <code class="cur-inline">`</code></p>
+<p class="cur-p">> /plugin marketplace add thedotmack/claude-mem</p>
+<p class="cur-p">> /plugin install claude-mem</p>
+<p class="cur-p">> <code class="cur-inline">`</code></p>
+<p class="cur-p">> Run these commands inside an active Claude Code session.</p>
+<h4 class="cur-h4">Step 3.2 — Restart Claude Code</h4>
+<p class="cur-p">The plugin won't be active in your current session. Fully exit and reopen:</p>
+<pre><code># Exit any active claude session, then:
+claude</code></pre>
+<p class="cur-p">On the first restart after install, there will be no prior memory to inject — that's expected. The system needs at least one completed session before it has anything to compress and restore.</p>
+<h4 class="cur-h4">Step 3.3 — Prime Your First Session with GIS Context</h4>
+<p class="cur-p">This is the most important setup step. You want <code class="cur-inline">claude-mem</code> to capture *rich, specific* context about your GIS environment. Don't be sparse — be explicit. Start a session and work through your actual tasks, but also deliberately surface the context that usually takes time to re-establish:</p>
+<pre><code>claude</code></pre>
+<p class="cur-p">Once inside, work through your projects naturally. To ensure <code class="cur-inline">claude-mem</code> captures the right things, weave in context-establishing statements as you work:</p>
+<pre><code>I'm working in the sentinel-hub-pipeline conda environment. 
+Key packages: sentinelhub==3.9.x, geopandas, rasterio, GDAL 3.6.4.
+
+My FME workspace structure:
+- /workspaces/sentinel_ingest/   → raw Scene processing workbenches  
+- /workspaces/analysis/          → derived product workbenches
+- /workspaces/shared/            → custom transformers used across both
+
+The Sentinel Hub Process API endpoint I always use is:
+https://services.sentinel-hub.com/api/v1/process
+
+Auth is OAuth2 client credentials, tokens cached at ~/.sentinelhub/token_cache</code></pre>
+<p class="cur-p">Then do actual work. Let Claude use tools — read files, write code, run commands. The tool-usage observations are a key part of what <code class="cur-inline">claude-mem</code> captures.</p>
+<h4 class="cur-h4">Step 3.4 — Set Up a Session Log File</h4>
+<p class="cur-p">You'll want raw evidence for your write-up. Keep a simple log file for the week. Create it now:</p>
+<pre><code>mkdir -p ~/claude-mem-experiment
+cat &gt; ~/claude-mem-experiment/session_log.md &lt;&lt; 'EOF'
+# claude-mem GIS Session Log
+
+## Experiment Start Date: [TODAY]
+
+## What I'm Testing
+- FME workspace structure continuity
+- Sentinel Hub API pattern recall
+- Python environment (conda env name, package versions, GDAL)
+- CRS / projection conventions
+- Any other GIS-specific context
+
+---
+
+## Sessions
+
+EOF</code></pre>
+<p class="cur-p">After each Claude Code session, append a brief entry:</p>
+<pre><code>cat &gt;&gt; ~/claude-mem-experiment/session_log.md &lt;&lt; 'EOF'
+
+### Session [DATE] [TIME]
+**Context injected at start?** [Yes/No]
+**What it got right:**
+- 
+
+**What it got wrong or missed:**
+- 
+
+**Surprising behavior:**
+- 
+
+---
+EOF</code></pre>
+<h4 class="cur-h4">Step 3.5 — Run Sessions Across the Week</h4>
+<p class="cur-p">Run your normal GIS workload through Claude Code for 7 days. Here's a structured test plan targeting your specific domain:</p>
+<p class="cur-p">#### Day 1–2: Baseline Establishment</p>
+<p class="cur-p">Work through real tasks. Don't do anything special except logging. The goal is populating memory with authentic context.</p>
+<p class="cur-p">#### Day 3–4: Test FME Workspace Continuity</p>
+<p class="cur-p">Start a fresh session. *Without re-explaining anything*, ask:</p>
+<pre><code>What do you remember about my FME workspace structure?</code></pre>
+<p class="cur-p">Log exactly what Claude reports. Then ask:</p>
+<pre><code>Which workbench directory would I put a new transformer 
+that processes Sentinel-2 L2A scenes before analysis?</code></pre>
+<p class="cur-p">A good memory restoration should get this right from prior context.</p>
+<p class="cur-p">#### Day 5: Test Sentinel Hub API Pattern Recall</p>
+<p class="cur-p">Start a fresh session and immediately ask:</p>
+<pre><code>Write me a minimal Python snippet to request a 
+True Color composite from Sentinel Hub — use the 
+API patterns from our previous sessions.</code></pre>
+<p class="cur-p">Log whether it uses the Process API endpoint correctly, whether it references your OAuth token cache location, and whether it uses the right Python environment's package versions.</p>
+<p class="cur-p">#### Day 6: Test Python Environment Recall</p>
+<p class="cur-p">Start a fresh session and ask:</p>
+<pre><code>Which conda environment should I activate for our 
+Sentinel Hub pipeline work, and what GDAL version 
+are we pinned to?</code></pre>
+<p class="cur-p">#### Day 7: Stress Test</p>
+<p class="cur-p">Intentionally start a session with a context-heavy task that *requires* prior knowledge to do correctly:</p>
+<pre><code>Continue the Sentinel Hub ingestion pipeline 
+we were working on. Pick up where we left off.</code></pre>
+<p class="cur-p">Document whether it can orient itself or whether it's lost.</p>
+<h4 class="cur-h4">Step 3.6 — Capture Raw Session Logs as Evidence</h4>
+<p class="cur-p">Before closing each Claude Code session, copy the conversation to your log directory. If your terminal supports it:</p>
+<pre><code># Save terminal scrollback to file (adjust for your terminal emulator)
+# Most straightforward: use script(1) to record sessions going forward
+
+# Start a recorded session:
+script ~/claude-mem-experiment/session_$(date +%Y%m%d_%H%M).txt
+claude
+# ... do your work ...
+exit  # ends the script recording</code></pre>
+<p class="cur-p">Or, within Claude Code, ask Claude to summarize what it remembers at the start and end of each session, then copy that output manually.</p>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">4. Validation</h3>
+<h4 class="cur-h4">How to Confirm `claude-mem` Is Actually Running</h4>
+<p class="cur-p">At the start of any session after Day 1, you should see injected context. You can verify the plugin loaded by checking whether Claude Code acknowledges prior session context at startup. If you're unsure, ask directly inside a session:</p>
+<pre><code>Are you loading any persistent memory context from previous sessions?
+What context do you have about my current GIS projects?</code></pre>
+<p class="cur-p">If <code class="cur-inline">claude-mem</code> is working, Claude should respond with compressed summaries of prior sessions — not a blank "I don't have context from previous conversations."</p>
+<h4 class="cur-h4">Scoring Your One-Week Test</h4>
+<p class="cur-p">At the end of Day 7, evaluate against these criteria:</p>
+<p class="cur-p">| Test | Pass Condition |</p>
+<p class="cur-p">|---|---|</p>
+<p class="cur-p">| <strong>FME workspace structure</strong> | Claude correctly names your workspace directories without being told |</p>
+<p class="cur-p">| <strong>Sentinel Hub endpoint</strong> | Claude uses <code class="cur-inline">https://services.sentinel-hub.com/api/v1/process</code> unprompted |</p>
+<p class="cur-p">| <strong>Auth pattern</strong> | Claude references OAuth2 client credentials (even if not the token path) |</p>
+<p class="cur-p">| <strong>Conda environment</strong> | Claude recalls the env name without prompting |</p>
+<p class="cur-p">| <strong>GDAL version</strong> | Claude recalls the pinned version |</p>
+<p class="cur-p">| <strong>Cross-session continuity</strong> | At least 3 of 7 sessions show meaningful injected context |</p>
+<h4 class="cur-h4">Review Your Log for The Build Post</h4>
+<p class="cur-p">Your <code class="cur-inline">~/claude-mem-experiment/session_log.md</code> file is your source material. Look for:</p>
+<ul class="cur-list">
+<li><strong>Concrete wins</strong>: verbatim quotes from Claude demonstrating recalled context</li>
+<li><strong>Concrete failures</strong>: cases where it hallucinated a detail or missed key context entirely</li>
+<li><strong>Surprising behaviors</strong>: things it remembered that you didn't expect, or forgot that you did</li>
+</ul>
+<p class="cur-p">---</p>
+<h3 class="cur-h3">5. Next Steps</h3>
+<h4 class="cur-h4">Write the Build Post</h4>
+<p class="cur-p">Your post structure, based on what the experiment will produce:</p>
+<pre><code>## Title: Does claude-mem Actually Remember My GIS Stack?
+
+### Setup (2 sentences)
+### What I tested (bullet list)
+### Session log evidence (3–4 verbatim excerpts)
+### What it got right (scored against the table above)
+### What it got wrong (be specific — this is the useful part)
+### Verdict: Is the friction reduction worth it?</code></pre>
+<p class="cur-p">Include at least one raw session log excerpt. The specificity of "it correctly recalled my FME workspace structure but hallucinated the GDAL version as 3.6.3 instead of 3.6.4" is far more useful to your readers than a general impression.</p>
+<h4 class="cur-h4">If It Works Well — Go Deeper</h4>
+<p class="cur-p">> <strong>Note:</strong> The source repository documents these directions, but specific configuration flags beyond those shown above should be verified against the [full README](https://github.com/thedotmack/claude-mem) before relying on them, as the fetched source was truncated.</p>
+<ul class="cur-list">
+<li>Explore whether <code class="cur-inline">claude-mem</code> exposes MCP search tools for querying your compressed session history directly</li>
+<li>Test whether the memory survives across machines if you're working across a desktop and a remote compute environment</li>
+<li>Evaluate whether project-specific memory isolation is possible (keeping your Sentinel Hub context separate from unrelated work)</li>
+</ul>
+<h4 class="cur-h4">If It Doesn't Work Well — Document the Gaps</h4>
+<p class="cur-p">Negative results are just as publishable. If <code class="cur-inline">claude-mem</code> fails to reliably restore your GIS context, document *why*:</p>
+<ul class="cur-list">
+<li>Is the compression too lossy for domain-specific technical details?</li>
+<li>Is the context injection happening but Claude Code ignoring it?</li>
+<li>Are your sessions too long/complex for effective compression?</li>
+</ul>
+<p class="cur-p">These are genuinely useful findings for the broader Claude Code user community.</p>
+<h4 class="cur-h4">Adjacent Experiments to Run Next</h4>
+<p class="cur-p">Once you have a baseline from this experiment:</p>
+<ul class="cur-list cur-ol">
+<li><strong>Combine with a project-level <code class="cur-inline">CLAUDE.md</code></strong>: Put your FME workspace conventions and Sentinel Hub patterns in a <code class="cur-inline">CLAUDE.md</code> file at the root of your GIS project directory. Test whether <code class="cur-inline">claude-mem</code> + <code class="cur-inline">CLAUDE.md</code> gives better continuity than either alone.</li>
+<li><strong>Test with Gemini CLI</strong>: <code class="cur-inline">claude-mem</code> supports Gemini CLI via <code class="cur-inline">npx claude-mem install --ide gemini-cli</code> — useful if you want to compare memory behavior across AI coding assistants.</li>
+<li><strong>Evaluate for team use</strong>: If you work with other practitioners on shared GIS pipelines, test whether <code class="cur-inline">claude-mem</code>'s compressed context is useful as onboarding material — what does it "know" about a project after a week of active use?</li>
+</ul>
+<p class="cur-p">---</p>
+<p class="cur-p">*Based on the <code class="cur-inline">thedotmack/claude-mem</code> repository (v6.5.0). All commands verified against the project's source content. Configuration options beyond those explicitly documented in the source should be confirmed against the [live README](https://github.com/thedotmack/claude-mem) before use.*</p>
+</div>
+</body>
+</html>
